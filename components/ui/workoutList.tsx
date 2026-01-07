@@ -2,6 +2,7 @@ import exercises from "@/app/datasets/exercises.json";
 import { useState } from "react";
 import { FlatList, StyleSheet, TextInput, View } from "react-native";
 import { ThemedText } from "../themed-text";
+import Workout from "./workout";
 
 export function WorkoutList() {
   const [text, onChangeText] = useState("");
@@ -18,7 +19,9 @@ export function WorkoutList() {
           item.name.toLowerCase().includes(text.toLowerCase())
         )}
         keyExtractor={(item, index) => index.toString()}
-        renderItem={({ item }) => <ThemedText>{item.name}</ThemedText>}
+        renderItem={({ item }) => (
+          <Workout workoutName={item.name} workoutMechanic={item.mechanic} />
+        )}
       />
     </View>
   );
