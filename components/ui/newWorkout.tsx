@@ -1,30 +1,25 @@
-import { useState } from "react";
+import { useWorkout } from "@/app/contexts/workoutContext";
+import { router } from "expo-router";
 import { Button, StyleSheet, View } from "react-native";
-import { ThemedText } from "../themed-text";
-import { WorkoutList } from "./workoutList";
+import Workout from "./workout";
 
 export function NewWorkout() {
-  const [text, onChangeText] = useState("");
-  const [exerciseListVisible, setExerciseListVisible] = useState(false);
+  const { exercises } = useWorkout();
 
   return (
     <View style={styles.container}>
-      {exerciseListVisible ? (
-        <WorkoutList />
-      ) : (
-        <>
-          <View style={styles.headerRow}>
-            <ThemedText type="title">New Workout</ThemedText>
-            <Button title="Complete" onPress={() => {}} />
-          </View>
-          <Button
-            title="Add An Exercise"
-            onPress={() => {
-              setExerciseListVisible(true);
-            }}
+      {exercises.map((exercise, index) => (
+        <View key={index} style={{ marginBottom: 5 }}>
+          <Workout
+            workoutName={exercise.name}
+            workoutMechanic={exercise.mechanic}
           />
-        </>
-      )}
+        </View>
+      ))}
+      <Button
+        title="Add an exercise"
+        onPress={() => router.push("/exercise-list")}
+      ></Button>
     </View>
   );
 }

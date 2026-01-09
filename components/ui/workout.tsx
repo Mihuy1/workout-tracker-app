@@ -1,4 +1,6 @@
-import { StyleSheet, View } from "react-native";
+import { useWorkout } from "@/app/contexts/workoutContext";
+import { Exercise } from "@/app/types/workout";
+import { Button, StyleSheet, View } from "react-native";
 import { ThemedText } from "../themed-text";
 
 type WorkoutProps = {
@@ -10,10 +12,21 @@ export default function Workout({
   workoutName,
   workoutMechanic,
 }: WorkoutProps) {
+  const { addExercise } = useWorkout();
+
   return (
     <View style={styles.container}>
       <ThemedText type="defaultSemiBold"> {workoutName} </ThemedText>
       <ThemedText type="default"> {workoutMechanic} </ThemedText>
+      <Button
+        title="Add Exercise"
+        onPress={() =>
+          addExercise({
+            name: workoutName,
+            mechanic: workoutMechanic,
+          } as Exercise)
+        }
+      />
     </View>
   );
 }

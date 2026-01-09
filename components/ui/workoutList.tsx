@@ -13,6 +13,7 @@ export function WorkoutList() {
         value={text}
         onChangeText={onChangeText}
         placeholder="Search exercises..."
+        style={styles.searchInput}
       />
       <FlatList
         data={exercises.filter((item) =>
@@ -31,5 +32,13 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 10,
+  },
+  searchInput: {
+    padding: 8,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#000",
+    marginBottom: 8,
+    marginTop: 8,
   },
 });
