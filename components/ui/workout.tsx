@@ -1,5 +1,6 @@
 import { useWorkout } from "@/app/contexts/workoutContext";
 import { Exercise } from "@/app/types/workout";
+import { router } from "expo-router";
 import { Button, StyleSheet, View } from "react-native";
 import { ThemedText } from "../themed-text";
 
@@ -12,21 +13,26 @@ export default function Workout({
   workoutName,
   workoutMechanic,
 }: WorkoutProps) {
-  const { addExercise } = useWorkout();
+  const { addExercise, checkIfExerciseAlreadyAdded } = useWorkout();
+
+  const alreadyAdded = checkIfExerciseAlreadyAdded(workoutName);
 
   return (
     <View style={styles.container}>
       <ThemedText type="defaultSemiBold"> {workoutName} </ThemedText>
       <ThemedText type="default"> {workoutMechanic} </ThemedText>
-      <Button
-        title="Add Exercise"
-        onPress={() =>
-          addExercise({
-            name: workoutName,
-            mechanic: workoutMechanic,
-          } as Exercise)
-        }
-      />
+      {!alreadyAdded && (
+        <Button
+          title="Add Exercise"
+          onPress={() => {
+            addExercise({
+              name: workoutName,
+              mechanic: workoutMechanic,
+            } as Exercise);
+            router.back();
+          }}
+        />
+      )}
     </View>
   );
 }
