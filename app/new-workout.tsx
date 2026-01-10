@@ -1,10 +1,26 @@
+import {
+  addCompletedExercise,
+  debugPrintCompletedExercises,
+} from "@/app/storage/completedExercises";
 import { NewWorkout } from "@/components/ui/newWorkout";
-import { Stack } from "expo-router";
+import { router, Stack } from "expo-router";
 import { Button } from "react-native";
+import { useWorkout } from "./contexts/workoutContext";
 
 export default function NewWorkoutScreen() {
-  const handleWorkoutComplete = () => {
-    // TODO: Implement workout completion logic
+  const { exercises, clearWorkout } = useWorkout();
+  const finishWorkout = async () => {
+    await addCompletedExercise({
+      id: Date.now().toString(),
+      workoutName: "Workout " + new Date().toLocaleDateString(),
+      date: new Date().toISOString(),
+      exercises: exercises,
+    });
+
+    await debugPrintCompletedExercises();
+
+    clearWorkout();
+    router.back();
   };
   return (
     <>
@@ -13,7 +29,7 @@ export default function NewWorkoutScreen() {
           title: "New Workout",
           headerBackTitle: "Back",
           headerRight: () => (
-            <Button title="Complete" onPress={handleWorkoutComplete} />
+            <Button title="Complete" onPress={finishWorkout} />
           ),
         }}
       />

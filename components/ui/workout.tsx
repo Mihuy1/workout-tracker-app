@@ -1,7 +1,7 @@
 import { useWorkout } from "@/app/contexts/workoutContext";
 import { Exercise } from "@/app/types/workout";
 import { router } from "expo-router";
-import React, { useState } from "react";
+import React from "react";
 import {
   Button,
   FlatList,
@@ -19,42 +19,24 @@ type WorkoutProps = {
   workoutMechanic?: string | null;
 };
 
-type SetRow = {
-  id: number;
-  complete: boolean;
-  weight: string; // keep as string for TextInput
-  reps: string; // keep as string for TextInput
-};
-
 export default function Workout({
   workoutId,
   workoutName,
   workoutMechanic,
 }: WorkoutProps) {
-  const { addExercise, checkIfExerciseAlreadyAdded, removeExercise } =
-    useWorkout();
+  const {
+    exercises,
+    addExercise,
+    checkIfExerciseAlreadyAdded,
+    removeExercise,
+    addSet,
+    removeSet,
+    updateSet,
+  } = useWorkout();
   const alreadyAdded = checkIfExerciseAlreadyAdded(workoutName);
 
-  const [sets, setSets] = useState<SetRow[]>([
-    { id: 1, complete: false, weight: "", reps: "" },
-  ]);
-  const addSet = () => {
-    setSets((prev) => {
-      const nextId = prev.length ? Math.max(...prev.map((s) => s.id)) + 1 : 1;
-      return [...prev, { id: nextId, complete: false, weight: "", reps: "" }];
-    });
-  };
-
-  const removeSet = (id: number) => {
-    setSets((prev) => prev.filter((s) => s.id !== id));
-  };
-
-  const updateSet = (
-    id: number,
-    patch: Partial<Pick<SetRow, "weight" | "reps" | "complete">>
-  ) => {
-    setSets((prev) => prev.map((s) => (s.id === id ? { ...s, ...patch } : s)));
-  };
+  const exercise = exercises.find((ex) => ex.name === workoutName);
+  const sets = exercise?.sets ?? [];
 
   return (
     <View style={styles.container}>
@@ -114,7 +96,13 @@ export default function Workout({
                 <TextInput
                   style={[styles.input, styles.kgCol]}
                   value={item.weight}
-                  onChangeText={(text) => updateSet(item.id, { weight: text })}
+                  onChangeText={(text) =>
+                    updateSet(workoutName, item.id, {
+                      weight: text,
+                      reps: item.reps,
+                      complete: item.complete,
+                    })
+                  }
                   placeholder="0"
                   keyboardType="numeric"
                 />
@@ -122,14 +110,24 @@ export default function Workout({
                 <TextInput
                   style={[styles.input, styles.repsCol]}
                   value={item.reps}
-                  onChangeText={(text) => updateSet(item.id, { reps: text })}
+                  onChangeText={(text) =>
+                    updateSet(workoutName, item.id, {
+                      weight: item.weight,
+                      reps: text,
+                      complete: item.complete,
+                    })
+                  }
                   placeholder="0"
                   keyboardType="numeric"
                 />
 
                 <Pressable
                   onPress={() =>
-                    updateSet(item.id, { complete: !item.complete })
+                    updateSet(workoutName, item.id, {
+                      weight: item.weight,
+                      reps: item.reps,
+                      complete: !item.complete,
+                    })
                   }
                 >
                   <IconSymbol
@@ -139,7 +137,7 @@ export default function Workout({
                   />
                 </Pressable>
                 <View style={[styles.cell, styles.actionCol]}>
-                  <Pressable onPress={() => removeSet(item.id)}>
+                  <Pressable onPress={() => removeSet(workoutName, item.id)}>
                     <IconSymbol name="minus.circle" size={16} color="red" />
                   </Pressable>
                 </View>
@@ -147,7 +145,7 @@ export default function Workout({
             )}
           />
 
-          <Button title="Add Set" onPress={addSet} />
+          <Button title="Add Set" onPress={() => addSet(workoutName)} />
         </>
       )}
       {!alreadyAdded && (
