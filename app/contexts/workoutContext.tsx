@@ -5,6 +5,7 @@ type workoutContextType = {
   exercises: Exercise[];
   addExercise: (exercise: Exercise) => void;
   addExercises: (exercises: Exercise[]) => void;
+  removeExercise: (exerciseName: string) => void;
   checkIfExerciseAlreadyAdded: (exerciseName: string) => boolean;
 };
 
@@ -23,6 +24,12 @@ export const WorkoutProvider: React.FC<React.PropsWithChildren> = ({
     setExercises((prevExercises) => [...prevExercises, ...newExercises]);
   };
 
+  const removeExercise = (exerciseName: string) => {
+    setExercises((prevExercises) =>
+      prevExercises.filter((ex) => ex.name !== exerciseName)
+    );
+  };
+
   const checkIfExerciseAlreadyAdded = (exerciseName: string) => {
     return exercises.some((ex) => ex.name === exerciseName);
   };
@@ -33,6 +40,7 @@ export const WorkoutProvider: React.FC<React.PropsWithChildren> = ({
         exercises,
         addExercise,
         addExercises,
+        removeExercise,
         checkIfExerciseAlreadyAdded,
       }}
     >

@@ -2,10 +2,19 @@ import { useWorkout } from "@/app/contexts/workoutContext";
 import { Exercise } from "@/app/types/workout";
 import { router } from "expo-router";
 import React, { useState } from "react";
-import { Button, FlatList, StyleSheet, TextInput, View } from "react-native";
+import {
+  Button,
+  FlatList,
+  Pressable,
+  StyleSheet,
+  TextInput,
+  View,
+} from "react-native";
 import { ThemedText } from "../themed-text";
+import { IconSymbol } from "./icon-symbol";
 
 type WorkoutProps = {
+  workoutId?: string;
   workoutName: string;
   workoutMechanic?: string | null;
 };
@@ -18,16 +27,17 @@ type SetRow = {
 };
 
 export default function Workout({
+  workoutId,
   workoutName,
   workoutMechanic,
 }: WorkoutProps) {
-  const { addExercise, checkIfExerciseAlreadyAdded } = useWorkout();
+  const { addExercise, checkIfExerciseAlreadyAdded, removeExercise } =
+    useWorkout();
   const alreadyAdded = checkIfExerciseAlreadyAdded(workoutName);
 
   const [sets, setSets] = useState<SetRow[]>([
     { id: 1, complete: false, weight: "", reps: "" },
   ]);
-
   const addSet = () => {
     setSets((prev) => {
       const nextId = prev.length ? Math.max(...prev.map((s) => s.id)) + 1 : 1;
@@ -41,14 +51,22 @@ export default function Workout({
 
   const updateSet = (
     id: number,
-    patch: Partial<Pick<SetRow, "weight" | "reps">>
+    patch: Partial<Pick<SetRow, "weight" | "reps" | "complete">>
   ) => {
     setSets((prev) => prev.map((s) => (s.id === id ? { ...s, ...patch } : s)));
   };
 
   return (
     <View style={styles.container}>
-      <ThemedText type="defaultSemiBold">{workoutName}</ThemedText>
+      <View style={styles.titleRow}>
+        <ThemedText type="defaultSemiBold">{workoutName}</ThemedText>
+
+        {alreadyAdded && (
+          <Pressable onPress={() => removeExercise(workoutName)}>
+            <IconSymbol name="x.circle" size={24} color="red" />
+          </Pressable>
+        )}
+      </View>
       {!!workoutMechanic && (
         <ThemedText type="default">{workoutMechanic}</ThemedText>
       )}
@@ -74,6 +92,13 @@ export default function Workout({
             >
               REPS
             </ThemedText>
+            <IconSymbol
+              name="checkmark"
+              size={16}
+              color="#000"
+              style={[styles.cell, styles.actionCol]}
+            />
+
             <View style={[styles.cell, styles.actionCol]} />
           </View>
 
@@ -102,8 +127,21 @@ export default function Workout({
                   keyboardType="numeric"
                 />
 
+                <Pressable
+                  onPress={() =>
+                    updateSet(item.id, { complete: !item.complete })
+                  }
+                >
+                  <IconSymbol
+                    name={item.complete ? "checkmark" : "circle"}
+                    size={16}
+                    color={item.complete ? "green" : "#000"}
+                  />
+                </Pressable>
                 <View style={[styles.cell, styles.actionCol]}>
-                  <Button title="Remove" onPress={() => removeSet(item.id)} />
+                  <Pressable onPress={() => removeSet(item.id)}>
+                    <IconSymbol name="minus.circle" size={16} color="red" />
+                  </Pressable>
                 </View>
               </View>
             )}
@@ -135,6 +173,13 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#000",
     marginBottom: 8,
+  },
+
+  titleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 12,
   },
 
   tableHeader: {
