@@ -88,7 +88,12 @@ export default function Workout({
             data={sets}
             keyExtractor={(item) => item.id.toString()}
             renderItem={({ item }) => (
-              <View style={styles.tableRow}>
+              <View
+                style={[
+                  styles.tableRow,
+                  item.complete ? styles.complete : styles.notComplete,
+                ]}
+              >
                 <ThemedText type="default" style={[styles.cell, styles.setCol]}>
                   {item.id}
                 </ThemedText>
@@ -213,5 +218,13 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     paddingHorizontal: 8,
     marginHorizontal: 6,
+  },
+
+  complete: {
+    backgroundColor: "#42f55d",
+  },
+
+  notComplete: {
+    backgroundColor: "white",
   },
 });

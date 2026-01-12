@@ -12,6 +12,22 @@ export const getCompletedExercises = async () => {
   }
 };
 
+export const getSavedPresets = async () => {
+  try {
+    const keys = await AsyncStorage.getAllKeys();
+    const presetKeys = keys.filter((key) => key.startsWith("preset_"));
+    const presets = {};
+    for (const key of presetKeys) {
+      const value = await AsyncStorage.getItem(key);
+      presets[key.replace("preset_", "")] = value ? JSON.parse(value) : [];
+    }
+    return presets;
+  } catch (error) {
+    console.error("Error getting saved presets:", error);
+    return {};
+  }
+};
+
 export const saveCompletedExercises = async (exercises) => {
   try {
     await AsyncStorage.setItem(
@@ -20,6 +36,15 @@ export const saveCompletedExercises = async (exercises) => {
     );
   } catch (error) {
     console.error("Error saving completed exercises:", error);
+  }
+};
+
+export const saveCompletedExerciseAsPreset = async (exercises, presetName) => {
+  try {
+    const presetKey = `preset_${presetName}`;
+    await AsyncStorage.setItem(presetKey, JSON.stringify(exercises));
+  } catch (error) {
+    console.error("Error saving preset:", error);
   }
 };
 

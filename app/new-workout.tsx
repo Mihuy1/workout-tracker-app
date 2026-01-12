@@ -1,6 +1,7 @@
 import {
   addCompletedExercise,
   debugPrintCompletedExercises,
+  saveCompletedExerciseAsPreset,
 } from "@/app/storage/completedExercises";
 import { NewWorkout } from "@/components/ui/newWorkout";
 import { usePreventRemove } from "@react-navigation/native";
@@ -13,16 +14,21 @@ export default function NewWorkoutScreen() {
   const { exercises, clearWorkout } = useWorkout();
   const navigation = useNavigation();
   const isFinishingRef = useRef(false);
-  const finishWorkout = async () => {
+  const finishWorkout = async (presetName: string | null) => {
     isFinishingRef.current = true;
+
     await addCompletedExercise({
       id: Date.now().toString(),
-      workoutName: "Workout " + new Date().toLocaleDateString(),
+      workoutName: presetName ?? "Workout " + new Date().toLocaleDateString(),
       date: new Date().toISOString(),
       exercises: exercises,
     });
 
     await debugPrintCompletedExercises();
+
+    if (presetName) {
+      await saveCompletedExerciseAsPreset(exercises, presetName);
+    }
 
     clearWorkout();
     router.back();
@@ -49,6 +55,26 @@ export default function NewWorkoutScreen() {
     );
   });
 
+  const handleCompletePress = () => {
+    Alert.prompt(
+      "Save Workout",
+      "Would you like to save this as preset? Enter name below",
+      [
+        {
+          text: "No",
+          onPress: () => finishWorkout(null),
+          style: "cancel",
+        },
+        {
+          text: "Yes",
+          onPress: (name?: string) => finishWorkout(name || null),
+        },
+      ],
+      "plain-text",
+      "Leg Day"
+    );
+  };
+
   return (
     <>
       <Stack.Screen
@@ -57,7 +83,7 @@ export default function NewWorkoutScreen() {
           headerBackTitle: "Back",
           headerBackButtonMenuEnabled: false,
           headerRight: () => (
-            <Button title="Complete" onPress={finishWorkout} />
+            <Button title="Complete" onPress={handleCompletePress} />
           ),
         }}
       />
