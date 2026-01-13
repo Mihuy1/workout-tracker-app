@@ -42,7 +42,15 @@ export default function HomeScreen() {
           data={presets}
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => (
-            <Button title={item.title} onPress={() => {}} />
+            <Button
+              title={item.title}
+              onPress={() =>
+                router.push({
+                  pathname: "../new-workout",
+                  params: { presetTitle: item.title },
+                })
+              }
+            />
           )}
         />
       </View>

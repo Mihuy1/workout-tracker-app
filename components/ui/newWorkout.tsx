@@ -1,10 +1,49 @@
 import { useWorkout } from "@/app/contexts/workoutContext";
+import { getSavedPresetByTitle } from "@/app/storage/completedExercises";
 import { router } from "expo-router";
+import { useEffect, useRef } from "react";
 import { Button, StyleSheet, View } from "react-native";
 import Workout from "./workout";
 
-export function NewWorkout() {
-  const { exercises } = useWorkout();
+type NewWorkoutProps = {
+  presetTitle?: string | null;
+};
+
+export function NewWorkout({ presetTitle }: NewWorkoutProps) {
+  const { exercises, addExercise, checkIfExerciseAlreadyAdded } = useWorkout();
+
+  const loadedPresetRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (!presetTitle) return;
+
+    if (loadedPresetRef.current === presetTitle) return;
+
+    let cancelled = false;
+
+    const loadPreset = async () => {
+      const presetExercises = await getSavedPresetByTitle(presetTitle);
+      if (cancelled) return;
+      if (!presetExercises || presetExercises.length === 0) return;
+
+      loadedPresetRef.current = presetTitle;
+
+      for (const ex of presetExercises) {
+        for (const set of ex.sets) {
+          set.complete = false;
+        }
+
+        if (!checkIfExerciseAlreadyAdded(ex.name)) {
+          addExercise(ex);
+        }
+      }
+    };
+    loadPreset();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [presetTitle, addExercise, checkIfExerciseAlreadyAdded]);
 
   return (
     <View style={styles.container}>

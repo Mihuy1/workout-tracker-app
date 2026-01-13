@@ -24,6 +24,8 @@ export const WorkoutProvider: React.FC<React.PropsWithChildren> = ({
 }) => {
   const [exercises, setExercises] = useState<Exercise[]>([]);
 
+  console.log("WorkoutProvider exercises:", exercises);
+
   const addExercise = (exercise: Exercise) => {
     const exerciseWithSets = {
       ...exercise,

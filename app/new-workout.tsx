@@ -6,12 +6,18 @@ import {
 import { NewWorkout } from "@/components/ui/newWorkout";
 import Alert from "@blazejkustra/react-native-alert";
 import { usePreventRemove } from "@react-navigation/native";
-import { router, Stack, useNavigation } from "expo-router";
+import {
+  router,
+  Stack,
+  useLocalSearchParams,
+  useNavigation,
+} from "expo-router";
 import { useRef } from "react";
 import { Button } from "react-native";
 import { useWorkout } from "./contexts/workoutContext";
 
 export default function NewWorkoutScreen() {
+  const { presetTitle } = useLocalSearchParams<{ presetTitle?: string }>();
   const { exercises, clearWorkout } = useWorkout();
   const navigation = useNavigation();
   const isFinishingRef = useRef(false);
@@ -80,7 +86,7 @@ export default function NewWorkoutScreen() {
     <>
       <Stack.Screen
         options={{
-          title: "New Workout",
+          title: presetTitle ? presetTitle : "New Workout",
           headerBackTitle: "Back",
           headerBackButtonMenuEnabled: false,
           headerRight: () => (
@@ -88,7 +94,7 @@ export default function NewWorkoutScreen() {
           ),
         }}
       />
-      <NewWorkout />
+      <NewWorkout presetTitle={presetTitle} />
     </>
   );
 }
