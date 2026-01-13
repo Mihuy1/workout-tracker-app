@@ -4,10 +4,11 @@ import {
   saveCompletedExerciseAsPreset,
 } from "@/app/storage/completedExercises";
 import { NewWorkout } from "@/components/ui/newWorkout";
+import Alert from "@blazejkustra/react-native-alert";
 import { usePreventRemove } from "@react-navigation/native";
 import { router, Stack, useNavigation } from "expo-router";
 import { useRef } from "react";
-import { Alert, Button } from "react-native";
+import { Button } from "react-native";
 import { useWorkout } from "./contexts/workoutContext";
 
 export default function NewWorkoutScreen() {

@@ -1,10 +1,11 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { MMKV } from "react-native-mmkv";
 
+const storage = new MMKV();
 const COMPLETED_EXERCISES_KEY = "completedExercises";
 
 export const getCompletedExercises = async () => {
   try {
-    const value = await AsyncStorage.getItem(COMPLETED_EXERCISES_KEY);
+    const value = storage.getString(COMPLETED_EXERCISES_KEY);
     return value != null ? JSON.parse(value) : [];
   } catch (error) {
     console.error("Error getting completed exercises:", error);
@@ -14,11 +15,11 @@ export const getCompletedExercises = async () => {
 
 export const getSavedPresets = async () => {
   try {
-    const keys = await AsyncStorage.getAllKeys();
+    const keys = storage.getAllKeys();
     const presetKeys = keys.filter((key) => key.startsWith("preset_"));
     const presets = {};
     for (const key of presetKeys) {
-      const value = await AsyncStorage.getItem(key);
+      const value = storage.getString(key);
       presets[key.replace("preset_", "")] = value ? JSON.parse(value) : [];
     }
     return presets;
@@ -30,10 +31,7 @@ export const getSavedPresets = async () => {
 
 export const saveCompletedExercises = async (exercises) => {
   try {
-    await AsyncStorage.setItem(
-      COMPLETED_EXERCISES_KEY,
-      JSON.stringify(exercises)
-    );
+    storage.set(COMPLETED_EXERCISES_KEY, JSON.stringify(exercises));
   } catch (error) {
     console.error("Error saving completed exercises:", error);
   }
@@ -42,7 +40,7 @@ export const saveCompletedExercises = async (exercises) => {
 export const saveCompletedExerciseAsPreset = async (exercises, presetName) => {
   try {
     const presetKey = `preset_${presetName}`;
-    await AsyncStorage.setItem(presetKey, JSON.stringify(exercises));
+    storage.set(presetKey, JSON.stringify(exercises));
   } catch (error) {
     console.error("Error saving preset:", error);
   }
@@ -59,7 +57,7 @@ export const addCompletedExercise = async (exercise) => {
 };
 
 export const debugPrintCompletedExercises = async () => {
-  const raw = await AsyncStorage.getItem(COMPLETED_EXERCISES_KEY);
+  const raw = storage.getString(COMPLETED_EXERCISES_KEY);
   console.log("Raw completed exercises data:", raw);
   const parsed = raw ? JSON.parse(raw) : [];
   console.log("Parsed completed exercises data:", parsed);
