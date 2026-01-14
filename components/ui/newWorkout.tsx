@@ -2,7 +2,7 @@ import { useWorkout } from "@/app/contexts/workoutContext";
 import { getSavedPresetByTitle } from "@/app/storage/completedExercises";
 import { router } from "expo-router";
 import { useEffect, useRef } from "react";
-import { Button, StyleSheet, View } from "react-native";
+import { Button, FlatList, StyleSheet, View } from "react-native";
 import Workout from "./workout";
 
 type NewWorkoutProps = {
@@ -45,20 +45,39 @@ export function NewWorkout({ presetTitle }: NewWorkoutProps) {
     };
   }, [presetTitle, addExercise, checkIfExerciseAlreadyAdded]);
 
+  // return (
+  //   <View style={styles.container}>
+  //     {exercises.map((exercise, index) => (
+  //       <View key={index} style={{ marginBottom: 5 }}>
+  //         <Workout
+  //           workoutName={exercise.name}
+  //           workoutMechanic={exercise.mechanic}
+  //         />
+  //       </View>
+  //     ))}
+  //     <Button
+  //       title="Add an exercise"
+  //       onPress={() => router.push("/exercise-list")}
+  //     ></Button>
+  //   </View>
+  // );
+
   return (
     <View style={styles.container}>
-      {exercises.map((exercise, index) => (
-        <View key={index} style={{ marginBottom: 5 }}>
-          <Workout
-            workoutName={exercise.name}
-            workoutMechanic={exercise.mechanic}
-          />
-        </View>
-      ))}
+      <FlatList
+        data={exercises}
+        keyExtractor={(_, index) => index.toString()}
+        renderItem={({ item }) => (
+          <View style={{ marginBottom: 5 }}>
+            <Workout workoutName={item.name} workoutMechanic={item.mechanic} />
+          </View>
+        )}
+      />
+
       <Button
         title="Add an exercise"
         onPress={() => router.push("/exercise-list")}
-      ></Button>
+      />
     </View>
   );
 }

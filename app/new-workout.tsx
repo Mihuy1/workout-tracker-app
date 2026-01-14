@@ -21,6 +21,7 @@ export default function NewWorkoutScreen() {
   const { exercises, clearWorkout } = useWorkout();
   const navigation = useNavigation();
   const isFinishingRef = useRef(false);
+
   const finishWorkout = async (presetName: string | null) => {
     isFinishingRef.current = true;
 
@@ -63,6 +64,21 @@ export default function NewWorkoutScreen() {
   });
 
   const handleCompletePress = () => {
+    if (presetTitle) {
+      Alert.alert(
+        "Update Preset?",
+        "Do you want to update the existing preset with the current exercises?",
+        [
+          { text: "No", onPress: () => finishWorkout(null), style: "cancel" },
+          {
+            text: "Yes",
+            onPress: () => finishWorkout(presetTitle || null),
+          },
+        ]
+      );
+
+      return;
+    }
     Alert.prompt(
       "Save Workout",
       "Would you like to save this as preset? Enter name below",

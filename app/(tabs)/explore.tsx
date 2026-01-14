@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { FlatList, Pressable, StyleSheet, Text } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { getCompletedExercises } from "../storage/completedExercises";
 
@@ -27,18 +27,21 @@ export default function TabTwoScreen() {
   }, []);
   return (
     <SafeAreaView>
-      <View style={styles.container}>
-        {history.map((workout) => (
-          <View key={workout.id} style={styles.card}>
-            <Text style={styles.title}>{workout.workoutName}</Text>
-            <Text style={styles.subtitle}>
-              {new Date(workout.date).toLocaleString()}
-            </Text>
+      <FlatList
+        data={history}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item }) => (
+          <Pressable style={styles.card} onPress={() => null}>
+            <Text style={styles.title}>{item.workoutName}</Text>
 
-            <Text>{workout.exercises.map((ex) => ex.name).join(", ")}</Text>
-          </View>
-        ))}
-      </View>
+            {item.exercises.map((exercise, index) => (
+              <Text key={index} style={styles.row}>
+                {exercise.name} - {exercise.sets.length} sets
+              </Text>
+            ))}
+          </Pressable>
+        )}
+      ></FlatList>
     </SafeAreaView>
   );
 }
@@ -49,11 +52,20 @@ const styles = StyleSheet.create({
     padding: 12,
   },
   card: {
-    gap: 6,
+    paddingVertical: 12,
+    paddingHorizontal: 12,
+
+    borderBottomWidth: 1,
+    borderColor: "#ccc",
   },
   title: {
     fontSize: 16,
     fontWeight: "600",
+    marginBottom: 4,
+  },
+  row: {
+    fontSize: 14,
+    color: "#555",
   },
   subtitle: {
     opacity: 0.7,
