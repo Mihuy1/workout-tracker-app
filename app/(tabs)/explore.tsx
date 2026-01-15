@@ -1,9 +1,11 @@
+import { ThemedText } from "@/components/themed-text";
+import WorkoutHistoryCard from "@/components/ui/workoutHistoryCard";
 import { useEffect, useState } from "react";
-import { FlatList, Pressable, StyleSheet, Text } from "react-native";
+import { FlatList, Pressable, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { getCompletedExercises } from "../storage/completedExercises";
 
-type CompletedWorkout = {
+export type CompletedWorkout = {
   id: string;
   workoutName: string;
   date: string;
@@ -21,26 +23,30 @@ type CompletedWorkout = {
 
 export default function TabTwoScreen() {
   const [history, setHistory] = useState<CompletedWorkout[]>([]);
-
+  const [expandedId, setExpandedId] = useState<string | null>(null);
   useEffect(() => {
     getCompletedExercises().then(setHistory);
   }, []);
   return (
-    <SafeAreaView>
+    <SafeAreaView style={{ flex: 1 }}>
       <FlatList
         data={history}
         keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <Pressable style={styles.card} onPress={() => null}>
-            <Text style={styles.title}>{item.workoutName}</Text>
-
-            {item.exercises.map((exercise, index) => (
-              <Text key={index} style={styles.row}>
-                {exercise.name} - {exercise.sets.length} sets
-              </Text>
-            ))}
-          </Pressable>
-        )}
+        renderItem={({ item }) => {
+          const isExpanded = expandedId === item.id;
+          return (
+            <View style={styles.card}>
+              <Pressable>
+                <View style={styles.titleContainer}>
+                  <ThemedText type="default" style={styles.title}>
+                    {item.workoutName}
+                  </ThemedText>
+                </View>
+                <WorkoutHistoryCard exercises={item.exercises} />
+              </Pressable>
+            </View>
+          );
+        }}
       ></FlatList>
     </SafeAreaView>
   );
@@ -54,14 +60,22 @@ const styles = StyleSheet.create({
   card: {
     paddingVertical: 12,
     paddingHorizontal: 12,
-
-    borderBottomWidth: 1,
-    borderColor: "#ccc",
+    marginHorizontal: 12,
+    marginVertical: 8,
+    backgroundColor: "#fff",
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#ddd",
+    // Add shadow for depth
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3, // For Android
   },
   title: {
     fontSize: 16,
     fontWeight: "600",
-    marginBottom: 4,
   },
   row: {
     fontSize: 14,
@@ -77,7 +91,8 @@ const styles = StyleSheet.create({
     position: "absolute",
   },
   titleContainer: {
-    flexDirection: "row",
-    gap: 8,
+    flexDirection: "column",
+    gap: 4,
+    paddingLeft: 12,
   },
 });

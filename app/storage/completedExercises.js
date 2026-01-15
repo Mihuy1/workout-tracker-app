@@ -5,6 +5,7 @@ const COMPLETED_EXERCISES_KEY = "completedExercises";
 export const getCompletedExercises = async () => {
   try {
     const value = await AsyncStorage.getItem(COMPLETED_EXERCISES_KEY);
+
     return value != null ? JSON.parse(value) : [];
   } catch (error) {
     console.error("Error getting completed exercises:", error);
