@@ -36,13 +36,22 @@ export default function TabTwoScreen() {
           const isExpanded = expandedId === item.id;
           return (
             <View style={styles.card}>
-              <Pressable>
+              <Pressable
+                onPress={() => {
+                  if (isExpanded) setExpandedId(null);
+                  else setExpandedId(item.id);
+                }}
+              >
                 <View style={styles.titleContainer}>
                   <ThemedText type="default" style={styles.title}>
                     {item.workoutName}
                   </ThemedText>
                 </View>
-                <WorkoutHistoryCard exercises={item.exercises} />
+                <WorkoutHistoryCard
+                  exercises={item.exercises}
+                  expandId={expandedId}
+                  itemId={item.id}
+                />
               </Pressable>
             </View>
           );

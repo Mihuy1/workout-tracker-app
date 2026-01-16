@@ -1,16 +1,56 @@
 import { CompletedWorkout } from "@/app/(tabs)/explore";
-import { FlatList, StyleSheet, Text, View } from "react-native";
+import { useEffect, useRef } from "react";
+import { Animated, FlatList, StyleSheet, Text, View } from "react-native";
 import { ThemedText } from "../themed-text";
 
 type WorkoutHistoryCardProps = {
   exercises: CompletedWorkout["exercises"];
+  expandId: string | null;
+  itemId: string;
 };
 
 export default function WorkoutHistoryCard({
   exercises,
+  expandId,
+  itemId,
 }: WorkoutHistoryCardProps) {
-  // renderItem for the Exercise list
-  const renderExercise = ({
+  const isExpanded = expandId === itemId;
+  const animatedHeight = useRef(new Animated.Value(0)).current;
+  const animatedOpacity = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    if (isExpanded) {
+      // Expand animation
+      Animated.parallel([
+        Animated.timing(animatedHeight, {
+          toValue: 1,
+          duration: 300,
+          useNativeDriver: false,
+        }),
+        Animated.timing(animatedOpacity, {
+          toValue: 1,
+          duration: 300,
+          useNativeDriver: false,
+        }),
+      ]).start();
+    } else {
+      // Collapse animation
+      Animated.parallel([
+        Animated.timing(animatedHeight, {
+          toValue: 0,
+          duration: 300,
+          useNativeDriver: false,
+        }),
+        Animated.timing(animatedOpacity, {
+          toValue: 0,
+          duration: 200,
+          useNativeDriver: false,
+        }),
+      ]).start();
+    }
+  }, [isExpanded]);
+
+  const renderExpandedExercise = ({
     item: exercise,
   }: {
     item: CompletedWorkout["exercises"][0];
@@ -43,11 +83,27 @@ export default function WorkoutHistoryCard({
     </View>
   );
 
+  const renderUnExpandedExercise = ({
+    item: exercise,
+  }: {
+    item: CompletedWorkout["exercises"][0];
+  }) => (
+    <View style={styles.exerciseWrapper}>
+      <View>
+        <Text>
+          {exercise.sets.length} sets of {exercise.name}
+        </Text>
+      </View>
+    </View>
+  );
+
   return (
     <FlatList
       data={exercises}
       keyExtractor={(item, index) => item.name + index}
-      renderItem={renderExercise}
+      renderItem={
+        isExpanded ? renderExpandedExercise : renderUnExpandedExercise
+      }
       scrollEnabled={false} // Disable to avoid nested scroll issues
     />
   );
