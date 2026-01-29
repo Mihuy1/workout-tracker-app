@@ -44,7 +44,7 @@ export const saveCompletedExercises = async (exercises) => {
   try {
     await AsyncStorage.setItem(
       COMPLETED_EXERCISES_KEY,
-      JSON.stringify(exercises)
+      JSON.stringify(exercises),
     );
   } catch (error) {
     console.error("Error saving completed exercises:", error);
@@ -67,6 +67,21 @@ export const addCompletedExercise = async (exercise) => {
     await saveCompletedExercises(updated);
   } catch (error) {
     console.error("Failed to add exercise", error);
+  }
+};
+
+export const removeCompletedExercise = async (exerciseId) => {
+  try {
+    const raw = await getCompletedExercises();
+    const newRaw = raw.filter((prev) => prev.id !== exerciseId);
+
+    if (newRaw.length !== raw.length) {
+      await saveCompletedExercises(newRaw);
+      return newRaw;
+    } else return null;
+  } catch (error) {
+    console.error("Error:", error);
+    return null;
   }
 };
 

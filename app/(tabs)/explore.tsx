@@ -1,9 +1,13 @@
 import { ThemedText } from "@/components/themed-text";
+import { IconSymbol } from "@/components/ui/icon-symbol";
 import WorkoutHistoryCard from "@/components/ui/workoutHistoryCard";
 import { useEffect, useState } from "react";
 import { FlatList, Pressable, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { getCompletedExercises } from "../storage/completedExercises";
+import {
+  getCompletedExercises,
+  removeCompletedExercise,
+} from "../storage/completedExercises";
 
 export type CompletedWorkout = {
   id: string;
@@ -27,6 +31,15 @@ export default function TabTwoScreen() {
   useEffect(() => {
     getCompletedExercises().then(setHistory);
   }, []);
+
+  const handleRemove = async (id: string) => {
+    const didRemove = await removeCompletedExercise(id);
+    if (!didRemove) return;
+
+    setHistory(didRemove);
+    setExpandedId((prev) => (prev === id ? null : prev));
+  };
+
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <FlatList
@@ -46,6 +59,16 @@ export default function TabTwoScreen() {
                   <ThemedText type="default" style={styles.title}>
                     {item.workoutName}
                   </ThemedText>
+                  <View style={styles.removeView}>
+                    <Pressable
+                      onPress={(e) => {
+                        e.stopPropagation?.();
+                        handleRemove(item.id);
+                      }}
+                    >
+                      <IconSymbol name={"x.circle"} size={18} color={"red"} />
+                    </Pressable>
+                  </View>
                 </View>
                 <WorkoutHistoryCard
                   exercises={item.exercises}
@@ -65,6 +88,10 @@ const styles = StyleSheet.create({
   container: {
     gap: 12,
     padding: 12,
+  },
+  removeView: {
+    marginLeft: "auto",
+    flexDirection: "row",
   },
   card: {
     paddingVertical: 12,
@@ -100,8 +127,8 @@ const styles = StyleSheet.create({
     position: "absolute",
   },
   titleContainer: {
-    flexDirection: "column",
+    flexDirection: "row",
     gap: 4,
-    paddingLeft: 12,
+    alignItems: "center",
   },
 });
