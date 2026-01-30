@@ -12,7 +12,7 @@ import {
   useLocalSearchParams,
   useNavigation,
 } from "expo-router";
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "react-native";
 import { useWorkout } from "./contexts/workoutContext";
 
@@ -22,14 +22,28 @@ export default function NewWorkoutScreen() {
   const navigation = useNavigation();
   const isFinishingRef = useRef(false);
 
+  const startTimeRef = useRef<number>(Date.now());
+  const [elapsedTimeMs, setElapsedTimeMs] = useState<number>(0);
+
+  useEffect(() => {
+    const id = setInterval(() => {
+      setElapsedTimeMs(Date.now() - startTimeRef.current);
+    }, 1000);
+
+    return () => clearInterval(id);
+  }, []);
+
   const finishWorkout = async (presetName: string | null) => {
     isFinishingRef.current = true;
+
+    const workoutDurMs = Date.now() - startTimeRef.current;
 
     await addCompletedExercise({
       id: Date.now().toString(),
       workoutName: presetName ?? "Workout " + new Date().toLocaleDateString(),
       date: new Date().toISOString(),
       exercises: exercises,
+      workoutDurationMs: workoutDurMs,
     });
 
     await debugPrintCompletedExercises();
@@ -59,7 +73,7 @@ export default function NewWorkoutScreen() {
             navigation.dispatch(action); // Resume the blocked navigation
           },
         },
-      ]
+      ],
     );
   });
 
@@ -74,7 +88,7 @@ export default function NewWorkoutScreen() {
             text: "Yes",
             onPress: () => finishWorkout(presetTitle || null),
           },
-        ]
+        ],
       );
 
       return;
@@ -94,7 +108,7 @@ export default function NewWorkoutScreen() {
         },
       ],
       "plain-text",
-      "Leg Day"
+      "Leg Day",
     );
   };
 
@@ -110,7 +124,7 @@ export default function NewWorkoutScreen() {
           ),
         }}
       />
-      <NewWorkout presetTitle={presetTitle} />
+      <NewWorkout presetTitle={presetTitle} elapsedTimeMs={elapsedTimeMs} />
     </>
   );
 }

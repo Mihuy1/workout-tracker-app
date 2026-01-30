@@ -8,9 +8,10 @@ import { WorkoutTimer } from "./workoutTimer";
 
 type NewWorkoutProps = {
   presetTitle?: string | null;
+  elapsedTimeMs: number;
 };
 
-export function NewWorkout({ presetTitle }: NewWorkoutProps) {
+export function NewWorkout({ presetTitle, elapsedTimeMs }: NewWorkoutProps) {
   const { exercises, addExercise, checkIfExerciseAlreadyAdded } = useWorkout();
 
   const loadedPresetRef = useRef<string | null>(null);
@@ -48,7 +49,8 @@ export function NewWorkout({ presetTitle }: NewWorkoutProps) {
 
   return (
     <View style={styles.container}>
-      <WorkoutTimer />
+      <WorkoutTimer elapsedTimeMs={elapsedTimeMs}></WorkoutTimer>
+
       <FlatList
         data={exercises}
         keyExtractor={(_, index) => index.toString()}

@@ -1,7 +1,9 @@
 import { ThemedText } from "@/components/themed-text";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import WorkoutHistoryCard from "@/components/ui/workoutHistoryCard";
-import { useEffect, useState } from "react";
+import { WorkoutTimer } from "@/components/ui/workoutTimer";
+import { useFocusEffect } from "expo-router";
+import { useCallback, useState } from "react";
 import { FlatList, Pressable, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import {
@@ -13,6 +15,7 @@ export type CompletedWorkout = {
   id: string;
   workoutName: string;
   date: string;
+  workoutDurationMs: number;
   exercises: {
     name: string;
     mechanic: string | null;
@@ -28,9 +31,21 @@ export type CompletedWorkout = {
 export default function TabTwoScreen() {
   const [history, setHistory] = useState<CompletedWorkout[]>([]);
   const [expandedId, setExpandedId] = useState<string | null>(null);
-  useEffect(() => {
-    getCompletedExercises().then(setHistory);
-  }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      let cancelled = false;
+
+      (async () => {
+        const data = await getCompletedExercises();
+        if (!cancelled) setHistory(data);
+      })();
+
+      return () => {
+        cancelled = true;
+      };
+    }, []),
+  );
 
   const handleRemove = async (id: string) => {
     const didRemove = await removeCompletedExercise(id);
@@ -59,6 +74,7 @@ export default function TabTwoScreen() {
                   <ThemedText type="default" style={styles.title}>
                     {item.workoutName}
                   </ThemedText>
+                  <WorkoutTimer elapsedTimeMs={item.workoutDurationMs} />
                   <View style={styles.removeView}>
                     <Pressable
                       onPress={(e) => {

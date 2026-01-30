@@ -16,4 +16,5 @@ export type Workout = {
   workoutName: string;
   date: string;
   exercises: Exercise[];
+  workoutDuration: number;
 };

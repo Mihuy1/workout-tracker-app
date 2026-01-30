@@ -1,10 +1,10 @@
-import { useEffect, useRef, useState } from "react";
 import { Text, View } from "react-native";
 
-export function WorkoutTimer() {
-  const startTime = useRef<number>(Date.now());
-  const [elapsedTime, setElapsedTime] = useState<number>(0);
+type WorkoutTimerProps = {
+  elapsedTimeMs: number;
+};
 
+export function WorkoutTimer({ elapsedTimeMs }: WorkoutTimerProps) {
   const formatElapsed = (ms: number) => {
     let totalSeconds: number = Math.floor(ms / 1000);
 
@@ -23,17 +23,9 @@ export function WorkoutTimer() {
     return `${mDisplay}m ${sDisplay}s`;
   };
 
-  useEffect(() => {
-    const id = setInterval(() => {
-      setElapsedTime(Date.now() - startTime.current);
-    }, 1000);
-
-    return () => clearInterval(id);
-  }, []);
-
   return (
     <View>
-      <Text> {formatElapsed(elapsedTime)} </Text>
+      <Text> {formatElapsed(elapsedTimeMs)} </Text>
     </View>
   );
 }
