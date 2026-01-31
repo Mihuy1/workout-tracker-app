@@ -78,6 +78,30 @@ export default function NewWorkoutScreen() {
   });
 
   const handleCompletePress = () => {
+    if (exercises.length === 0) {
+      Alert.alert("Nothing to save", "You can't complete an empty workout.", [
+        { text: "OK", style: "cancel" },
+      ]);
+      return;
+    }
+    Alert.prompt(
+      "Save Workout",
+      "Would you like to save this as a preset? Enter name below",
+      [
+        {
+          text: "No",
+          onPress: () => finishWorkout(null),
+          style: "cancel",
+        },
+        {
+          text: "Yes",
+          onPress: (name?: string) => finishWorkout(name || null),
+        },
+      ],
+      "plain-text",
+      "Leg Day",
+    );
+
     if (presetTitle) {
       Alert.alert(
         "Update Preset?",
@@ -93,23 +117,6 @@ export default function NewWorkoutScreen() {
 
       return;
     }
-    Alert.prompt(
-      "Save Workout",
-      "Would you like to save this as preset? Enter name below",
-      [
-        {
-          text: "No",
-          onPress: () => finishWorkout(null),
-          style: "cancel",
-        },
-        {
-          text: "Yes",
-          onPress: (name?: string) => finishWorkout(name || null),
-        },
-      ],
-      "plain-text",
-      "Leg Day",
-    );
   };
 
   return (

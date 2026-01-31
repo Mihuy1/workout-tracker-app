@@ -2,9 +2,10 @@ import { ThemedText } from "@/components/themed-text";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import WorkoutHistoryCard from "@/components/ui/workoutHistoryCard";
 import { WorkoutTimer } from "@/components/ui/workoutTimer";
+import { useThemeColor } from "@/hooks/use-theme-color";
 import { useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
-import { FlatList, Pressable, StyleSheet, View } from "react-native";
+import { Alert, FlatList, Pressable, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import {
   getCompletedExercises,
@@ -32,6 +33,19 @@ export default function TabTwoScreen() {
   const [history, setHistory] = useState<CompletedWorkout[]>([]);
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
+  const screenBg = useThemeColor({}, "background");
+  const cardBg = useThemeColor(
+    { light: "#fff", dark: "#1c1c1e" },
+    "background",
+  );
+  const cardBorder = useThemeColor(
+    {
+      light: "#ddd",
+      dark: "#000000",
+    },
+    "background",
+  );
+
   useFocusEffect(
     useCallback(() => {
       let cancelled = false;
@@ -48,22 +62,40 @@ export default function TabTwoScreen() {
   );
 
   const handleRemove = async (id: string) => {
-    const didRemove = await removeCompletedExercise(id);
-    if (!didRemove) return;
+    Alert.alert(
+      "Delete Workout?",
+      "Are you sure you want to delete the workout?",
+      [
+        { text: "No", style: "default" },
+        {
+          text: "Yes",
+          style: "destructive",
+          onPress: async () => {
+            const didRemove = await removeCompletedExercise(id);
+            if (!didRemove) return;
 
-    setHistory(didRemove);
-    setExpandedId((prev) => (prev === id ? null : prev));
+            setHistory(didRemove);
+            setExpandedId((prev) => (prev === id ? null : prev));
+          },
+        },
+      ],
+    );
   };
 
   return (
-    <SafeAreaView style={{ flex: 1 }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: screenBg }}>
       <FlatList
         data={history}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => {
           const isExpanded = expandedId === item.id;
           return (
-            <View style={styles.card}>
+            <View
+              style={[
+                styles.card,
+                { backgroundColor: cardBg, borderColor: cardBorder },
+              ]}
+            >
               <Pressable
                 onPress={() => {
                   if (isExpanded) setExpandedId(null);

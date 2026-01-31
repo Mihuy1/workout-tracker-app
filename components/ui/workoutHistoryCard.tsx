@@ -1,4 +1,4 @@
-import { CompletedWorkout } from "@/app/(tabs)/explore";
+import { CompletedWorkout } from "@/app/(tabs)/history";
 import { FlatList, StyleSheet, Text, View } from "react-native";
 import Animated from "react-native-reanimated";
 import { ThemedText } from "../themed-text";

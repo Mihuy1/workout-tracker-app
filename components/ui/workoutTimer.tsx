@@ -1,4 +1,5 @@
-import { Text, View } from "react-native";
+import { View } from "react-native";
+import { ThemedText } from "../themed-text";
 
 type WorkoutTimerProps = {
   elapsedTimeMs: number;
@@ -25,7 +26,7 @@ export function WorkoutTimer({ elapsedTimeMs }: WorkoutTimerProps) {
 
   return (
     <View>
-      <Text> {formatElapsed(elapsedTimeMs)} </Text>
+      <ThemedText> {formatElapsed(elapsedTimeMs)} </ThemedText>
     </View>
   );
 }
