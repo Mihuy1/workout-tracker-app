@@ -1,5 +1,6 @@
 import { useWorkout } from "@/app/contexts/workoutContext";
 import { Exercise } from "@/app/types/workout";
+import { useThemeColor } from "@/hooks/use-theme-color";
 import { router } from "expo-router";
 import React from "react";
 import {
@@ -38,8 +39,15 @@ export default function Workout({
   const exercise = exercises.find((ex) => ex.name === workoutName);
   const sets = exercise?.sets ?? [];
 
+  const borderColor = useThemeColor({}, "border");
+  const surface = useThemeColor({}, "surface");
+  const surfaceMuted = useThemeColor({}, "surfaceMuted");
+  const textColor = useThemeColor({}, "text");
+  const placeholderColor = useThemeColor({}, "placeholder");
+  const iconColor = useThemeColor({}, "icon");
+
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { borderColor, backgroundColor: surface }]}>
       <View style={styles.titleRow}>
         <ThemedText type="defaultSemiBold">{workoutName}</ThemedText>
 
@@ -55,7 +63,7 @@ export default function Workout({
 
       {alreadyAdded && (
         <>
-          <View style={styles.tableHeader}>
+          <View style={[styles.tableHeader, { borderColor }]}>
             <ThemedText
               type="defaultSemiBold"
               style={[styles.cell, styles.setCol]}
@@ -77,7 +85,7 @@ export default function Workout({
             <IconSymbol
               name="checkmark"
               size={16}
-              color="#000"
+              color={iconColor}
               style={[styles.cell, styles.actionCol]}
             />
 
@@ -91,7 +99,10 @@ export default function Workout({
               <View
                 style={[
                   styles.tableRow,
-                  item.complete ? styles.complete : styles.notComplete,
+                  { borderColor },
+                  item.complete
+                    ? styles.complete
+                    : [styles.notComplete, { backgroundColor: surfaceMuted }],
                 ]}
               >
                 <ThemedText type="default" style={[styles.cell, styles.setCol]}>
@@ -99,7 +110,11 @@ export default function Workout({
                 </ThemedText>
 
                 <TextInput
-                  style={[styles.input, styles.kgCol]}
+                  style={[
+                    styles.input,
+                    styles.kgCol,
+                    { borderColor, color: textColor, backgroundColor: surface },
+                  ]}
                   value={item.weight}
                   onChangeText={(text) =>
                     updateSet(workoutName, item.id, {
@@ -109,11 +124,16 @@ export default function Workout({
                     })
                   }
                   placeholder="0"
+                  placeholderTextColor={placeholderColor}
                   keyboardType="numeric"
                 />
 
                 <TextInput
-                  style={[styles.input, styles.repsCol]}
+                  style={[
+                    styles.input,
+                    styles.repsCol,
+                    { borderColor, color: textColor, backgroundColor: surface },
+                  ]}
                   value={item.reps}
                   onChangeText={(text) =>
                     updateSet(workoutName, item.id, {
@@ -123,6 +143,7 @@ export default function Workout({
                     })
                   }
                   placeholder="0"
+                  placeholderTextColor={placeholderColor}
                   keyboardType="numeric"
                 />
 
@@ -138,7 +159,7 @@ export default function Workout({
                   <IconSymbol
                     name={item.complete ? "checkmark" : "circle"}
                     size={16}
-                    color={item.complete ? "green" : "#000"}
+                    color={item.complete ? "green" : iconColor}
                   />
                 </Pressable>
                 <View style={[styles.cell, styles.actionCol]}>
@@ -174,7 +195,6 @@ const styles = StyleSheet.create({
     padding: 10,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: "#000",
     marginBottom: 8,
   },
 
@@ -191,7 +211,6 @@ const styles = StyleSheet.create({
     marginTop: 12,
     paddingVertical: 6,
     borderBottomWidth: 1,
-    borderColor: "#000",
   },
 
   tableRow: {
@@ -199,7 +218,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingVertical: 8,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderColor: "#999",
   },
 
   cell: {
@@ -214,7 +232,6 @@ const styles = StyleSheet.create({
   input: {
     height: 36,
     borderWidth: 1,
-    borderColor: "#000",
     borderRadius: 6,
     paddingHorizontal: 8,
     marginHorizontal: 6,
@@ -225,6 +242,6 @@ const styles = StyleSheet.create({
   },
 
   notComplete: {
-    backgroundColor: "white",
+    backgroundColor: "transparent",
   },
 });

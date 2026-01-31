@@ -34,17 +34,9 @@ export default function TabTwoScreen() {
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
   const screenBg = useThemeColor({}, "background");
-  const cardBg = useThemeColor(
-    { light: "#fff", dark: "#1c1c1e" },
-    "background",
-  );
-  const cardBorder = useThemeColor(
-    {
-      light: "#ddd",
-      dark: "#000000",
-    },
-    "background",
-  );
+  const cardBg = useThemeColor({}, "surface");
+  const cardBorder = useThemeColor({}, "border");
+  const shadowColor = "#000";
 
   useFocusEffect(
     useCallback(() => {
@@ -66,7 +58,7 @@ export default function TabTwoScreen() {
       "Delete Workout?",
       "Are you sure you want to delete the workout?",
       [
-        { text: "No", style: "default" },
+        { text: "No", style: "cancel" },
         {
           text: "Yes",
           style: "destructive",
@@ -93,7 +85,11 @@ export default function TabTwoScreen() {
             <View
               style={[
                 styles.card,
-                { backgroundColor: cardBg, borderColor: cardBorder },
+                {
+                  backgroundColor: cardBg,
+                  borderColor: cardBorder,
+                  shadowColor,
+                },
               ]}
             >
               <Pressable
@@ -146,12 +142,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     marginHorizontal: 12,
     marginVertical: 8,
-    backgroundColor: "#fff",
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: "#ddd",
     // Add shadow for depth
-    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
@@ -160,10 +153,6 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 16,
     fontWeight: "600",
-  },
-  row: {
-    fontSize: 14,
-    color: "#555",
   },
   subtitle: {
     opacity: 0.7,
