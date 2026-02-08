@@ -63,7 +63,7 @@ export function CustomModal({
           style={styles.modalView}
           onPress={(e) => e.stopPropagation()}
         >
-          <Text>{title}</Text>
+          <Text style={styles.title}>{title}</Text>
 
           {!!message && <Text style={styles.message}>{message}</Text>}
 
@@ -72,13 +72,14 @@ export function CustomModal({
               value={value}
               onChangeText={setValue}
               placeholder={placeHolderText}
+              style={styles.input}
             />
           )}
 
           <View style={styles.buttonRow}>
             {!!onSecondary && (
               <Pressable style={styles.button} onPress={onSecondary}>
-                <Text style={styles.secondaryText}>{secondaryButtonText}</Text>
+                <Text>{secondaryButtonText}</Text>
               </Pressable>
             )}
 
@@ -106,19 +107,40 @@ const styles = StyleSheet.create({
     margin: 20,
     backgroundColor: "white",
     borderRadius: 20,
-    padding: 35,
-    alignItems: "center",
+    padding: 24,
+    width: "88%",
+    maxWidth: 420,
+    alignItems: "stretch",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 4,
     elevation: 5,
+    gap: 12,
   },
-  message: { marginBottom: 12 },
+  title: {
+    fontSize: 18,
+    fontWeight: "600",
+    textAlign: "center",
+  },
+  message: {
+    textAlign: "center",
+    lineHeight: 20,
+  },
+  input: {
+    width: "100%",
+    minHeight: 44,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    borderRadius: 10,
+    backgroundColor: "#f5f5f5",
+    borderWidth: 1,
+    borderColor: "#d9d9d9",
+  },
   buttonRow: {
     flexDirection: "row",
-    justifyContent: "flex-end",
-    gap: 10,
+    justifyContent: "center",
+    gap: 12,
   },
   button: {
     paddingHorizontal: 12,

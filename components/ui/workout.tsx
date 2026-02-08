@@ -2,7 +2,7 @@ import { useWorkout } from "@/app/contexts/workoutContext";
 import { Exercise } from "@/app/types/workout";
 import { useThemeColor } from "@/hooks/use-theme-color";
 import { router } from "expo-router";
-import React from "react";
+import React, { useState } from "react";
 import {
   Button,
   FlatList,
@@ -12,6 +12,7 @@ import {
   View,
 } from "react-native";
 import { ThemedText } from "../themed-text";
+import { CustomModal } from "./customModal";
 import { IconSymbol } from "./icon-symbol";
 
 type WorkoutProps = {
@@ -46,13 +47,28 @@ export default function Workout({
   const placeholderColor = useThemeColor({}, "placeholder");
   const iconColor = useThemeColor({}, "icon");
 
+  const [confirmVisible, setConfirmVisible] = useState(false);
+
   return (
     <View style={[styles.container, { borderColor, backgroundColor: surface }]}>
+      <CustomModal
+        visible={confirmVisible}
+        title="Remove Exercise? "
+        message={`Are you sure you want to remove "${workoutName}"`}
+        primaryButtonText="Yes"
+        secondaryButtonText="No"
+        onRequestClose={() => setConfirmVisible(false)}
+        onPrimary={() => {
+          setConfirmVisible(false);
+          removeExercise(workoutName);
+        }}
+        onSecondary={() => setConfirmVisible(false)}
+      />
       <View style={styles.titleRow}>
         <ThemedText type="defaultSemiBold">{workoutName}</ThemedText>
 
         {alreadyAdded && (
-          <Pressable onPress={() => removeExercise(workoutName)}>
+          <Pressable onPress={() => setConfirmVisible(true)}>
             <IconSymbol name="x.circle" size={24} color="red" />
           </Pressable>
         )}
