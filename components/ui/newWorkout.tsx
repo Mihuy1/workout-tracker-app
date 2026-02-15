@@ -1,7 +1,10 @@
 import { useWorkout } from "@/app/contexts/workoutContext";
-import { getSavedPresetByTitle } from "@/app/storage/completedExercises";
+import {
+  getAllLatestExercisesMap,
+  getSavedPresetByTitle,
+} from "@/app/storage/completedExercises";
 import { router } from "expo-router";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button, FlatList, StyleSheet, View } from "react-native";
 import Workout from "./workout";
 import { WorkoutTimer } from "./workoutTimer";
@@ -13,8 +16,17 @@ type NewWorkoutProps = {
 
 export function NewWorkout({ presetTitle, elapsedTimeMs }: NewWorkoutProps) {
   const { exercises, addExercise, checkIfExerciseAlreadyAdded } = useWorkout();
+  const [historyMap, setHistoryMap] = useState<Record<string, any>>({});
 
   const loadedPresetRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    const loadHistory = async () => {
+      const map = await getAllLatestExercisesMap();
+      setHistoryMap(map);
+    };
+    loadHistory();
+  }, []);
 
   useEffect(() => {
     if (!presetTitle) return;
@@ -56,7 +68,11 @@ export function NewWorkout({ presetTitle, elapsedTimeMs }: NewWorkoutProps) {
         keyExtractor={(_, index) => index.toString()}
         renderItem={({ item }) => (
           <View style={{ marginBottom: 5 }}>
-            <Workout workoutName={item.name} workoutMechanic={item.mechanic} />
+            <Workout
+              workoutName={item.name}
+              workoutMechanic={item.mechanic}
+              prefilledSets={historyMap[item.name] || []}
+            />
           </View>
         )}
       />

@@ -1,6 +1,7 @@
 import {
   addCompletedExercise,
   debugPrintCompletedExercises,
+  getSavedPresetByTitle,
   saveCompletedExerciseAsPreset,
 } from "@/app/storage/completedExercises";
 import { CustomModal } from "@/components/ui/customModal";
@@ -20,6 +21,7 @@ export default function NewWorkoutScreen() {
   const { presetTitle } = useLocalSearchParams<{ presetTitle?: string }>();
   const { exercises, clearWorkout } = useWorkout();
   const navigation = useNavigation();
+  const [isFinishing, setIsFinishing] = useState(false);
   const isFinishingRef = useRef(false);
 
   const startTimeRef = useRef<number>(Date.now());
@@ -36,6 +38,15 @@ export default function NewWorkoutScreen() {
   const [updatePresetVisible, setUpdatePresetVisible] = useState(false);
 
   const pendingNavActionRef = useRef<any>(null);
+  const originalExercisesRef = useRef<any[]>([]);
+
+  useEffect(() => {
+    if (presetTitle) {
+      getSavedPresetByTitle(presetTitle).then((exercises) => {
+        originalExercisesRef.current = exercises || [];
+      });
+    }
+  }, [presetTitle]);
 
   useEffect(() => {
     const id = setInterval(() => {
@@ -45,7 +56,11 @@ export default function NewWorkoutScreen() {
     return () => clearInterval(id);
   }, []);
 
-  const finishWorkout = async (presetName: string | null) => {
+  const finishWorkout = async (
+    presetName: string | null,
+    shouldUpdatePreset: boolean = true,
+  ) => {
+    setIsFinishing(true);
     isFinishingRef.current = true;
 
     const workoutDurMs = Date.now() - startTimeRef.current;
@@ -60,7 +75,7 @@ export default function NewWorkoutScreen() {
 
     await debugPrintCompletedExercises();
 
-    if (presetName) {
+    if (presetName && shouldUpdatePreset) {
       await saveCompletedExerciseAsPreset(exercises, presetName);
     }
 
@@ -68,7 +83,7 @@ export default function NewWorkoutScreen() {
     router.back();
   };
 
-  const shouldPreventRemove = exercises.length > 0 && !isFinishingRef.current;
+  const shouldPreventRemove = exercises.length > 0 && !isFinishing;
 
   usePreventRemove(shouldPreventRemove, ({ data }) => {
     pendingNavActionRef.current = data.action;
@@ -82,55 +97,33 @@ export default function NewWorkoutScreen() {
     }
 
     if (presetTitle) {
-      setUpdatePresetVisible(true);
-      return;
+      const presetExerciseNames = new Set(
+        originalExercisesRef.current.map((ex: any) => ex.name),
+      );
+      const currentExerciseNames = exercises.map((ex) => ex.name);
+
+      const hasNewExercise = currentExerciseNames.some(
+        (name) => !presetExerciseNames.has(name),
+      );
+
+      if (hasNewExercise) {
+        setUpdatePresetVisible(true);
+        return;
+      } else {
+        finishWorkout(presetTitle, false);
+        return;
+      }
     }
 
     setSaveWorkoutVisible(true);
+  };
 
-    // if (saveWorkoutVisible) {
-    //   setSaveAsPresetVisible(true);
-    // }
-
-    // if (exercises.length === 0) {
-    //   Alert.alert("Nothing to save", "You can't complete an empty workout.", [
-    //     { text: "OK", style: "cancel" },
-    //   ]);
-    //   return;
-    // }
-    // Alert.prompt(
-    //   "Save Workout",
-    //   "Would you like to save this as a preset? Enter name below",
-    //   [
-    //     {
-    //       text: "No",
-    //       onPress: () => finishWorkout(null),
-    //       style: "cancel",
-    //     },
-    //     {
-    //       text: "Yes",
-    //       onPress: (name?: string) => finishWorkout(name || null),
-    //     },
-    //   ],
-    //   "plain-text",
-    //   "Leg Day",
-    // );
-
-    // if (presetTitle) {
-    //   Alert.alert(
-    //     "Update Preset?",
-    //     "Do you want to update the existing preset with the current exercises?",
-    //     [
-    //       { text: "No", onPress: () => finishWorkout(null), style: "cancel" },
-    //       {
-    //         text: "Yes",
-    //         onPress: () => finishWorkout(presetTitle || null),
-    //       },
-    //     ],
-    //   );
-
-    //   return;
-    // }
+  const handleDiscardPress = () => {
+    if (exercises.length > 0) {
+      setDiscardVisible(true);
+    } else {
+      router.back();
+    }
   };
 
   return (
@@ -138,7 +131,9 @@ export default function NewWorkoutScreen() {
       <Stack.Screen
         options={{
           title: presetTitle ? presetTitle : "New Workout",
-          headerBackTitle: "Back",
+          headerLeft: () => (
+            <Button title="Discard" onPress={handleDiscardPress} />
+          ),
           headerBackButtonMenuEnabled: false,
           headerRight: () => (
             <Button title="Complete" onPress={handleCompletePress} />
@@ -156,13 +151,22 @@ export default function NewWorkoutScreen() {
         onRequestClose={() => setDiscardVisible(false)}
         onPrimary={() => {
           setDiscardVisible(false);
+          setIsFinishing(true);
+          isFinishingRef.current = true;
           clearWorkout();
 
           const action = pendingNavActionRef.current;
           pendingNavActionRef.current = null;
-          if (action) navigation.dispatch(action);
+          if (action) {
+            navigation.dispatch(action);
+          } else {
+            router.back();
+          }
         }}
-        onSecondary={() => setDiscardVisible(false)}
+        onSecondary={() => {
+          setDiscardVisible(false);
+          pendingNavActionRef.current = null;
+        }}
       />
 
       <CustomModal
@@ -230,7 +234,7 @@ export default function NewWorkoutScreen() {
         }}
         onSecondary={() => {
           setUpdatePresetVisible(false);
-          finishWorkout(null);
+          finishWorkout(presetTitle || null, false);
         }}
       />
     </>

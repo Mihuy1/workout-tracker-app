@@ -1,5 +1,5 @@
 import { useWorkout } from "@/app/contexts/workoutContext";
-import { Exercise } from "@/app/types/workout";
+import { Exercise } from "@/types/workout";
 import { useThemeColor } from "@/hooks/use-theme-color";
 import { router } from "expo-router";
 import React, { useState } from "react";
@@ -19,12 +19,14 @@ type WorkoutProps = {
   workoutId?: string;
   workoutName: string;
   workoutMechanic?: string | null;
+  prefilledSets?: Record<string, any>;
 };
 
 export default function Workout({
   workoutId,
   workoutName,
   workoutMechanic,
+  prefilledSets,
 }: WorkoutProps) {
   const {
     exercises,
@@ -111,7 +113,7 @@ export default function Workout({
           <FlatList
             data={sets}
             keyExtractor={(item) => item.id.toString()}
-            renderItem={({ item }) => (
+            renderItem={({ item, index }) => (
               <View
                 style={[
                   styles.tableRow,
@@ -139,7 +141,11 @@ export default function Workout({
                       complete: item.complete,
                     })
                   }
-                  placeholder="0"
+                  placeholder={
+                    prefilledSets && prefilledSets[index]?.weight
+                      ? String(prefilledSets[index].weight)
+                      : "0"
+                  }
                   placeholderTextColor={placeholderColor}
                   keyboardType="numeric"
                 />
@@ -158,19 +164,41 @@ export default function Workout({
                       complete: item.complete,
                     })
                   }
-                  placeholder="0"
+                  placeholder={
+                    prefilledSets && prefilledSets[index]?.reps
+                      ? String(prefilledSets[index].reps)
+                      : "0"
+                  }
                   placeholderTextColor={placeholderColor}
                   keyboardType="numeric"
                 />
 
                 <Pressable
-                  onPress={() =>
+                  onPress={() => {
+                    const finalWeight =
+                      item.weight !== ""
+                        ? item.weight
+                        : prefilledSets && prefilledSets[index]?.weight
+                          ? String(prefilledSets[index].weight)
+                          : "";
+
+                    const finalReps =
+                      item.reps !== ""
+                        ? item.weight
+                        : prefilledSets && prefilledSets[index]?.reps
+                          ? String(prefilledSets[index].reps)
+                          : "";
+
+                    if (finalReps === "" || finalWeight === "") {
+                      console.log("Show popup, returning");
+                      return;
+                    }
                     updateSet(workoutName, item.id, {
-                      weight: item.weight,
-                      reps: item.reps,
+                      weight: finalWeight,
+                      reps: finalReps,
                       complete: !item.complete,
-                    })
-                  }
+                    });
+                  }}
                 >
                   <IconSymbol
                     name={item.complete ? "checkmark" : "circle"}

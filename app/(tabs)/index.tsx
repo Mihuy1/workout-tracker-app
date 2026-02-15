@@ -12,15 +12,12 @@ export default function HomeScreen() {
 
   const fetchPresets = async () => {
     const presets = await getSavedPresets();
-    console.log("Saved Presets:", presets);
 
     const presetsArray = Object.entries(presets).map(([name, exercises]) => ({
       id: name,
       title: name,
       exercises: exercises as any[],
     }));
-
-    console.log("Saved preset name:", presetsArray[0]?.title);
 
     setPresets(presetsArray);
   };

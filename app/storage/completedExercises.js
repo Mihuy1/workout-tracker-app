@@ -13,6 +13,30 @@ export const getCompletedExercises = async () => {
   }
 };
 
+export const getAllLatestExercisesMap = async (name) => {
+  try {
+    const allWorkouts = await getCompletedExercises();
+
+    const sortedWorkouts = allWorkouts.sort(
+      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
+    );
+
+    const historyMap = {};
+
+    for (const workout of sortedWorkouts) {
+      for (const exercise of workout.exercises) {
+        if (!historyMap[exercise.name])
+          historyMap[exercise.name] = exercise.sets;
+      }
+    }
+
+    return historyMap;
+  } catch (error) {
+    console.error("Error finding latest exercise:", error);
+    return {};
+  }
+};
+
 export const getSavedPresets = async () => {
   try {
     const keys = await AsyncStorage.getAllKeys();

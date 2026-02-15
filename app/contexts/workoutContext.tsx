@@ -1,5 +1,5 @@
 import { createContext, useContext, useState } from "react";
-import { Exercise, SetRow } from "../types/workout";
+import { Exercise, SetRow } from "@/types/workout";
 
 type workoutContextType = {
   exercises: Exercise[];
@@ -12,7 +12,7 @@ type workoutContextType = {
   updateSet: (
     exerciseName: string,
     setId: number,
-    patch: Partial<Pick<SetRow, "weight" | "reps" | "complete">>
+    patch: Partial<Pick<SetRow, "weight" | "reps" | "complete">>,
   ) => void;
   clearWorkout: () => void;
 };
@@ -23,8 +23,6 @@ export const WorkoutProvider: React.FC<React.PropsWithChildren> = ({
   children,
 }) => {
   const [exercises, setExercises] = useState<Exercise[]>([]);
-
-  console.log("WorkoutProvider exercises:", exercises);
 
   const addExercise = (exercise: Exercise) => {
     const exerciseWithSets = {
@@ -40,7 +38,7 @@ export const WorkoutProvider: React.FC<React.PropsWithChildren> = ({
 
   const removeExercise = (exerciseName: string) => {
     setExercises((prevExercises) =>
-      prevExercises.filter((ex) => ex.name !== exerciseName)
+      prevExercises.filter((ex) => ex.name !== exerciseName),
     );
   };
 
@@ -62,7 +60,7 @@ export const WorkoutProvider: React.FC<React.PropsWithChildren> = ({
             { id: nextId, complete: false, weight: "", reps: "" },
           ],
         };
-      })
+      }),
     );
   };
 
@@ -71,14 +69,14 @@ export const WorkoutProvider: React.FC<React.PropsWithChildren> = ({
       prev.map((ex) => {
         if (ex.name !== exerciseName) return ex;
         return { ...ex, sets: ex.sets.filter((s) => s.id !== setId) };
-      })
+      }),
     );
   };
 
   const updateSet = (
     exerciseName: string,
     setId: number,
-    patch: Partial<Pick<SetRow, "weight" | "reps" | "complete">>
+    patch: Partial<Pick<SetRow, "weight" | "reps" | "complete">>,
   ) => {
     setExercises((prev) =>
       prev.map((ex) => {
@@ -87,7 +85,7 @@ export const WorkoutProvider: React.FC<React.PropsWithChildren> = ({
           ...ex,
           sets: ex.sets.map((s) => (s.id === setId ? { ...s, ...patch } : s)),
         };
-      })
+      }),
     );
   };
 
