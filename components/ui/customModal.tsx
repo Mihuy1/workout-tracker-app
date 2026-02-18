@@ -20,6 +20,9 @@ type CustomModalProps = {
   primaryButtonText?: string;
   secondaryButtonText?: string;
 
+  primaryButtonRed?: boolean;
+  secondaryButtonRed?: boolean;
+
   dismissOnBackdropPress?: boolean;
 
   onPrimary: (value?: string) => void;
@@ -36,6 +39,8 @@ export function CustomModal({
   defaultValue = "",
   primaryButtonText = "OK",
   secondaryButtonText = "Cancel",
+  primaryButtonRed,
+  secondaryButtonRed,
   dismissOnBackdropPress = true,
   onPrimary,
   onSecondary,
@@ -79,7 +84,9 @@ export function CustomModal({
           <View style={styles.buttonRow}>
             {!!onSecondary && (
               <Pressable style={styles.button} onPress={onSecondary}>
-                <Text>{secondaryButtonText}</Text>
+                <Text style={secondaryButtonRed ? styles.redText : undefined}>
+                  {secondaryButtonText}
+                </Text>
               </Pressable>
             )}
 
@@ -87,7 +94,9 @@ export function CustomModal({
               style={[styles.button, styles.primaryButton]}
               onPress={() => onPrimary(prompt ? value : undefined)}
             >
-              <Text>{primaryButtonText}</Text>
+              <Text style={primaryButtonRed ? styles.redText : undefined}>
+                {primaryButtonText}
+              </Text>
             </Pressable>
           </View>
         </Pressable>
@@ -149,6 +158,5 @@ const styles = StyleSheet.create({
     backgroundColor: "#f2f2f2",
   },
   primaryButton: { backgroundColor: "#e6e6e6" },
-
-  secondaryText: { color: "red" },
+  redText: { color: "red" },
 });

@@ -153,6 +153,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 16,
     fontWeight: "600",
+    paddingVertical: 4,
   },
   subtitle: {
     opacity: 0.7,

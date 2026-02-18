@@ -202,13 +202,13 @@ export default function Workout({
                 >
                   <IconSymbol
                     name={item.complete ? "checkmark" : "circle"}
-                    size={16}
+                    size={18}
                     color={item.complete ? "green" : iconColor}
                   />
                 </Pressable>
                 <View style={[styles.cell, styles.actionCol]}>
                   <Pressable onPress={() => removeSet(workoutName, item.id)}>
-                    <IconSymbol name="minus.circle" size={16} color="red" />
+                    <IconSymbol name="minus.circle" size={18} color="red" />
                   </Pressable>
                 </View>
               </View>

@@ -148,6 +148,7 @@ export default function NewWorkoutScreen() {
         message="Are you sure you want to discard this workout?"
         primaryButtonText="Yes"
         secondaryButtonText="No"
+        primaryButtonRed={true}
         onRequestClose={() => setDiscardVisible(false)}
         onPrimary={() => {
           setDiscardVisible(false);
