@@ -1,8 +1,10 @@
 import { ThemedText } from "@/components/themed-text";
 import React from "react";
 import {
+  Platform,
   Pressable,
   StyleSheet,
+  type ColorValue,
   type GestureResponderEvent,
   type StyleProp,
   type TextStyle,
@@ -12,8 +14,8 @@ import {
 export type CustomButtonProps = {
   title: string;
   onPress: (event: GestureResponderEvent) => void;
-  backgroundColor?: string;
-  textColor?: string;
+  backgroundColor?: ColorValue;
+  textColor?: ColorValue;
   disabled?: boolean;
   style?: StyleProp<ViewStyle>;
   textStyle?: StyleProp<TextStyle>;
@@ -28,13 +30,18 @@ export function CustomButton({
   style,
   textStyle,
 }: CustomButtonProps) {
+  const pressedOpacity = Platform.OS === "ios" ? 0.5 : 0.85;
+
   return (
     <Pressable
       onPress={onPress}
       disabled={disabled}
       style={({ pressed }) => [
         styles.button,
-        { backgroundColor, opacity: disabled ? 0.5 : pressed ? 0.85 : 1 },
+        {
+          backgroundColor,
+          opacity: disabled ? 0.5 : pressed ? pressedOpacity : 1,
+        },
         style,
       ]}
       accessibilityRole="button"
@@ -56,7 +63,9 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   title: {
-    fontSize: 16,
-    fontWeight: "600",
+    fontSize: Platform.OS === "ios" ? 17 : 16,
+    fontWeight: Platform.OS === "ios" ? "500" : "600",
+    letterSpacing: Platform.OS === "ios" ? -0.41 : 0,
+    textAlign: "center",
   },
 });
