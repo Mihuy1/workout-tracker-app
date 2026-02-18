@@ -1,7 +1,11 @@
 import { CompletedWorkout } from "@/app/(tabs)/history";
 import { useThemeColor } from "@/hooks/use-theme-color";
 import { FlatList, StyleSheet, View } from "react-native";
-import Animated from "react-native-reanimated";
+import Animated, {
+  FadeIn,
+  FadeOut,
+  LinearTransition,
+} from "react-native-reanimated";
 import { ThemedText } from "../themed-text";
 
 type WorkoutHistoryCardProps = {
@@ -24,20 +28,26 @@ export default function WorkoutHistoryCard({
   const rowEven = useThemeColor({}, "surface");
 
   return (
-    <Animated.View>
+    <Animated.View layout={LinearTransition.duration(220)}>
       <FlatList
         data={exercises}
         keyExtractor={(item, index) => index.toString()}
         renderItem={({ item: exercise }) => (
-          <View>
+          <Animated.View layout={LinearTransition.duration(220)}>
             {!isExpanded ? (
-              <View>
+              <Animated.View
+                entering={FadeIn.duration(150)}
+                exiting={FadeOut.duration(120)}
+              >
                 <ThemedText type="default" style={styles.summaryRow}>
                   {exercise.sets.length} sets of {exercise.name}
                 </ThemedText>
-              </View>
+              </Animated.View>
             ) : (
-              <View
+              <Animated.View
+                entering={FadeIn.duration(150)}
+                exiting={FadeOut.duration(120)}
+                layout={LinearTransition.duration(220)}
                 style={[
                   styles.exerciseWrapper,
                   {
@@ -96,9 +106,9 @@ export default function WorkoutHistoryCard({
                     </View>
                   ))}
                 </View>
-              </View>
+              </Animated.View>
             )}
-          </View>
+          </Animated.View>
         )}
       />
     </Animated.View>
@@ -111,8 +121,6 @@ const styles = StyleSheet.create({
   },
   exerciseWrapper: {
     padding: 10,
-    borderWidth: 1,
-    borderRadius: 10,
   },
   exerciseName: {
     fontSize: 16,

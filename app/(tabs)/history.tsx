@@ -6,6 +6,7 @@ import { useThemeColor } from "@/hooks/use-theme-color";
 import { useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
 import { Alert, FlatList, Pressable, StyleSheet, View } from "react-native";
+import Animated, { LinearTransition } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 import {
   getCompletedExercises,
@@ -82,7 +83,8 @@ export default function TabTwoScreen() {
         renderItem={({ item }) => {
           const isExpanded = expandedId === item.id;
           return (
-            <View
+            <Animated.View
+              layout={LinearTransition.duration(220)}
               style={[
                 styles.card,
                 {
@@ -120,7 +122,7 @@ export default function TabTwoScreen() {
                   itemId={item.id}
                 />
               </Pressable>
-            </View>
+            </Animated.View>
           );
         }}
       ></FlatList>
