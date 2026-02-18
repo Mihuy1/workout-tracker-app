@@ -1,6 +1,6 @@
 import { useWorkout } from "@/app/contexts/workoutContext";
-import { Exercise } from "@/types/workout";
 import { useThemeColor } from "@/hooks/use-theme-color";
+import { Exercise } from "@/types/workout";
 import { router } from "expo-router";
 import React, { useState } from "react";
 import {
@@ -184,7 +184,7 @@ export default function Workout({
 
                     const finalReps =
                       item.reps !== ""
-                        ? item.weight
+                        ? item.reps
                         : prefilledSets && prefilledSets[index]?.reps
                           ? String(prefilledSets[index].reps)
                           : "";
