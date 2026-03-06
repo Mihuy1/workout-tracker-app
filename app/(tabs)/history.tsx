@@ -1,11 +1,12 @@
 import { ThemedText } from "@/components/themed-text";
+import { CustomModal } from "@/components/ui/customModal";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import WorkoutHistoryCard from "@/components/ui/workoutHistoryCard";
 import { WorkoutTimer } from "@/components/ui/workoutTimer";
 import { useThemeColor } from "@/hooks/use-theme-color";
 import { useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
-import { Alert, FlatList, Pressable, StyleSheet, View } from "react-native";
+import { FlatList, Pressable, StyleSheet, View } from "react-native";
 import Animated, { LinearTransition } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 import {
@@ -33,7 +34,11 @@ export type CompletedWorkout = {
 export default function TabTwoScreen() {
   const [history, setHistory] = useState<CompletedWorkout[]>([]);
   const [expandedId, setExpandedId] = useState<string | null>(null);
-
+  const [selectedWorkoutId, setSelectedWorkoutId] = useState<string | null>(
+    null,
+  );
+  const openDeleteModal = (id: string) => setSelectedWorkoutId(id);
+  const closeDeleteModal = () => setSelectedWorkoutId(null);
   const screenBg = useThemeColor({}, "background");
   const cardBg = useThemeColor({}, "surface");
   const cardBorder = useThemeColor({}, "border");
@@ -55,74 +60,81 @@ export default function TabTwoScreen() {
   );
 
   const handleRemove = async (id: string) => {
-    Alert.alert(
-      "Delete Workout?",
-      "Are you sure you want to delete the workout?",
-      [
-        { text: "No", style: "cancel" },
-        {
-          text: "Yes",
-          style: "destructive",
-          onPress: async () => {
-            const didRemove = await removeCompletedExercise(id);
-            if (!didRemove) return;
+    const didRemove = await removeCompletedExercise(id);
 
-            setHistory(didRemove);
-            setExpandedId((prev) => (prev === id ? null : prev));
-          },
-        },
-      ],
-    );
+    console.log("DidRemove:", didRemove);
+
+    if (!didRemove) return;
+
+    setSelectedWorkoutId(null);
+    setHistory(didRemove);
+    setExpandedId((prev) => (prev === id ? null : prev));
   };
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: screenBg }}>
+      <CustomModal
+        visible={selectedWorkoutId !== null}
+        title="Delete Workout?"
+        message="Are you sure you want to delete this workout?"
+        onRequestClose={closeDeleteModal}
+        onSecondary={closeDeleteModal}
+        primaryButtonText="Yes"
+        secondaryButtonText="No"
+        primaryButtonRed
+        onPrimary={() => {
+          if (selectedWorkoutId) handleRemove(selectedWorkoutId);
+        }}
+      />
+
       <FlatList
         data={history}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => {
           const isExpanded = expandedId === item.id;
           return (
-            <Animated.View
-              layout={LinearTransition.duration(220)}
-              style={[
-                styles.card,
-                {
-                  backgroundColor: cardBg,
-                  borderColor: cardBorder,
-                  shadowColor,
-                },
-              ]}
-            >
-              <Pressable
-                onPress={() => {
-                  if (isExpanded) setExpandedId(null);
-                  else setExpandedId(item.id);
-                }}
+            <>
+              <Animated.View
+                layout={LinearTransition.duration(220)}
+                style={[
+                  styles.card,
+                  {
+                    backgroundColor: cardBg,
+                    borderColor: cardBorder,
+                    shadowColor,
+                  },
+                ]}
               >
-                <View style={styles.titleContainer}>
-                  <ThemedText type="default" style={styles.title}>
-                    {item.workoutName}
-                  </ThemedText>
-                  <WorkoutTimer elapsedTimeMs={item.workoutDurationMs} />
-                  <View style={styles.removeView}>
-                    <Pressable
-                      onPress={(e) => {
-                        e.stopPropagation?.();
-                        handleRemove(item.id);
-                      }}
-                    >
-                      <IconSymbol name={"x.circle"} size={18} color={"red"} />
-                    </Pressable>
+                <Pressable
+                  onPress={() => {
+                    if (isExpanded) setExpandedId(null);
+                    else setExpandedId(item.id);
+                  }}
+                >
+                  <View style={styles.titleContainer}>
+                    <ThemedText type="default" style={styles.title}>
+                      {item.workoutName}
+                    </ThemedText>
+                    <WorkoutTimer elapsedTimeMs={item.workoutDurationMs} />
+                    <View style={styles.removeView}>
+                      <Pressable
+                        onPress={(e) => {
+                          e.stopPropagation?.();
+                          setSelectedWorkoutId(item.id);
+                        }}
+                      >
+                        <IconSymbol name={"x.circle"} size={18} color={"red"} />
+                      </Pressable>
+                    </View>
                   </View>
-                </View>
-                <WorkoutHistoryCard
-                  exercises={item.exercises}
-                  expandId={expandedId}
-                  itemId={item.id}
-                />
-              </Pressable>
-            </Animated.View>
+                  <WorkoutHistoryCard
+                    exercises={item.exercises}
+                    expandId={expandedId}
+                    itemId={item.id}
+                  />
+                </Pressable>
+              </Animated.View>
+            </>
           );
         }}
       ></FlatList>

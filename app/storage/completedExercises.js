@@ -64,6 +64,15 @@ export const getSavedPresetByTitle = async (presetTitle) => {
   }
 };
 
+export const removePresetById = async (id) => {
+  try {
+    const presetKey = `preset_${id}`;
+    await AsyncStorage.removeItem(presetKey);
+  } catch (error) {
+    console.error("Error removing preset:", error);
+  }
+};
+
 export const saveCompletedExercises = async (exercises) => {
   try {
     await AsyncStorage.setItem(

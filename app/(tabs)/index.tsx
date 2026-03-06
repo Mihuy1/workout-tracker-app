@@ -1,5 +1,7 @@
 import { ThemedText } from "@/components/themed-text";
 import { CustomButton } from "@/components/ui/customButton";
+import { CustomModal } from "@/components/ui/customModal";
+import { IconSymbol } from "@/components/ui/icon-symbol";
 import { useThemeColor } from "@/hooks/use-theme-color";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
@@ -7,11 +9,15 @@ import {
   FlatList,
   Platform,
   PlatformColor,
+  Pressable,
   StyleSheet,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { getSavedPresets } from "../storage/completedExercises";
+import {
+  getSavedPresets,
+  removePresetById,
+} from "../storage/completedExercises";
 
 export default function HomeScreen() {
   const [presets, setPresets] = useState<
@@ -23,6 +29,7 @@ export default function HomeScreen() {
   const tintColor = useThemeColor({}, "tint");
   const buttonTextColor =
     Platform.OS === "ios" ? PlatformColor("systemBlue") : tintColor;
+  const [modalVisible, setModalVisible] = useState(false);
 
   const fetchPresets = async () => {
     const presets = await getSavedPresets();
@@ -40,8 +47,28 @@ export default function HomeScreen() {
     fetchPresets();
   }, []);
 
+  const handleRemovePreset = async (id: string) => {
+    if (id) {
+      await removePresetById(id);
+      setPresets((prev) => prev.filter((preset) => preset.id !== id));
+      await fetchPresets();
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container}>
+      <CustomModal
+        visible={modalVisible}
+        title="Remove Routine?"
+        message="Are you sure you want to remove this routine?"
+        primaryButtonText="Yes"
+        secondaryButtonText="No"
+        onSecondary={() => setModalVisible(false)}
+        primaryButtonRed={true}
+        onRequestClose={() => setModalVisible(false)}
+        onPrimary={() => handleRemovePreset}
+      />
+
       <View style={styles.content}>
         <ThemedText type="title">Home</ThemedText>
         <View
@@ -80,6 +107,11 @@ export default function HomeScreen() {
                   { backgroundColor: cardBackground, borderColor: cardBorder },
                 ]}
               >
+                <View style={styles.removeView}>
+                  <Pressable onPress={() => setModalVisible(true)}>
+                    <IconSymbol name={"x.circle"} size={24} color={"red"} />
+                  </Pressable>
+                </View>
                 <ThemedText type="defaultSemiBold" style={styles.cardTitle}>
                   {item.title}
                 </ThemedText>
@@ -120,6 +152,7 @@ const styles = StyleSheet.create({
     flex: 1,
     gap: 12,
   },
+
   card: {
     borderWidth: 1,
     borderRadius: 10,
@@ -127,6 +160,10 @@ const styles = StyleSheet.create({
   },
   cardTitle: {
     marginBottom: 10,
+  },
+  removeView: {
+    marginLeft: "auto",
+    flexDirection: "column",
   },
   exercisePreviewText: {
     marginBottom: 12,
