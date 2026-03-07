@@ -1,8 +1,9 @@
-import { createContext, useContext, useState } from "react";
 import { Exercise, SetRow } from "@/types/workout";
+import { createContext, useContext, useState } from "react";
 
 type workoutContextType = {
   exercises: Exercise[];
+  getExercises: () => Exercise[];
   addExercise: (exercise: Exercise) => void;
   addExercises: (exercises: Exercise[]) => void;
   removeExercise: (exerciseName: string) => void;
@@ -23,6 +24,10 @@ export const WorkoutProvider: React.FC<React.PropsWithChildren> = ({
   children,
 }) => {
   const [exercises, setExercises] = useState<Exercise[]>([]);
+
+  const getExercises = () => {
+    return exercises;
+  };
 
   const addExercise = (exercise: Exercise) => {
     const exerciseWithSets = {
@@ -97,6 +102,7 @@ export const WorkoutProvider: React.FC<React.PropsWithChildren> = ({
     <workoutContext.Provider
       value={{
         exercises,
+        getExercises,
         addExercise,
         addExercises,
         removeExercise,

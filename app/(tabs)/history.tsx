@@ -88,7 +88,7 @@ export default function TabTwoScreen() {
       />
 
       <FlatList
-        data={history}
+        data={history.reverse()}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => {
           const isExpanded = expandedId === item.id;
