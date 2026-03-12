@@ -16,10 +16,6 @@ export function WorkoutList() {
   const surface = useThemeColor({}, "surface");
   const placeholderColor = useThemeColor({}, "placeholder");
 
-  // const filtered = useMemo(() => {
-  //   return exercises.filter((item) => !checkIfExerciseAlreadyAdded(item.name));
-  // }, [checkIfExerciseAlreadyAdded]);
-
   const filtered = useMemo(() => {
     return exercises.filter((item) => !checkIfExerciseAlreadyAdded(item.name));
   }, [workoutExercises]);
@@ -51,6 +47,7 @@ export function WorkoutList() {
         onChangeText={onChangeText}
         placeholder="Search exercises..."
         placeholderTextColor={placeholderColor}
+        autoFocus
         style={[
           styles.searchInput,
           { color: textColor, borderColor, backgroundColor: surface },

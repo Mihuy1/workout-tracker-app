@@ -1,8 +1,8 @@
 import {
   addCompletedExercise,
-  debugPrintCompletedExercises,
   getSavedPresetByTitle,
   saveCompletedExerciseAsPreset,
+  saveWeightProgressionByExerciseName,
 } from "@/app/storage/completedExercises";
 import { CustomModal } from "@/components/ui/customModal";
 import { NewWorkout } from "@/components/ui/newWorkout";
@@ -73,7 +73,15 @@ export default function NewWorkoutScreen() {
       workoutDurationMs: workoutDurMs,
     });
 
-    await debugPrintCompletedExercises();
+    const weightsPerExercise = exercises.map((exercise) => ({
+      exerciseName: exercise.name,
+      weight: exercise.sets.map((set) => set.weight),
+    }));
+
+    for (const { exerciseName, weight } of weightsPerExercise) {
+      console.log(`Exercise: ${exerciseName}, Weights: ${weight.join(", ")}`);
+      await saveWeightProgressionByExerciseName(exerciseName, weight);
+    }
 
     if (presetName && shouldUpdatePreset) {
       await saveCompletedExerciseAsPreset(exercises, presetName);

@@ -84,6 +84,97 @@ export const saveCompletedExercises = async (exercises) => {
   }
 };
 
+export const saveWeightProgressionByExerciseName = async (
+  exerciseName,
+  weight,
+) => {
+  try {
+    const key = `weightProgression_${exerciseName}`;
+
+    const existingValue = await AsyncStorage.getItem(key);
+    const history = existingValue ? JSON.parse(existingValue) : [];
+
+    const newEntry = {
+      date: new Date().toISOString().split("T")[0],
+      weight: parseInt(weight),
+    };
+
+    history.push(newEntry);
+    await AsyncStorage.setItem(key, JSON.stringify(history));
+  } catch (error) {
+    console.error("Error saving weight progression:", error);
+  }
+};
+
+export const getWeightProgressionByExerciseName = async (exerciseName) => {
+  try {
+    const value = await AsyncStorage.getItem(
+      "weightProgression_" + exerciseName,
+    );
+
+    return value != null ? JSON.parse(value) : null;
+  } catch (error) {
+    console.error("Error getting weight progression:", error);
+    return null;
+  }
+};
+
+export const getBestWeightByExerciseName = async (exerciseName) => {
+  try {
+    const value = await AsyncStorage.getItem(
+      "weightProgression_" + exerciseName,
+    );
+    const progression = value != null ? JSON.parse(value) : [];
+    if (progression.length === 0) return null;
+
+    const weights = progression.map((entry) => entry.weight);
+
+    return Math.max(...weights);
+  } catch (error) {
+    console.error("Error getting best weight:", error);
+    return null;
+  }
+};
+
+export const saveVolumeProgressionByExerciseName = async (
+  exerciseName,
+  volume,
+) => {
+  try {
+    await AsyncStorage.setItem(
+      "volumeProgression_" + exerciseName,
+      JSON.stringify(volume),
+    );
+  } catch (error) {
+    console.error("Error saving volume progression:", error);
+  }
+};
+
+export const getVolumeProgressionByExerciseName = async (exerciseName) => {
+  try {
+    const value = await AsyncStorage.getItem(
+      "volumeProgression_" + exerciseName,
+    );
+    return value != null ? JSON.parse(value) : null;
+  } catch (error) {
+    console.error("Error getting volume progression:", error);
+    return null;
+  }
+};
+
+export const getBestVolumeByExerciseName = async (exerciseName) => {
+  try {
+    const value = await AsyncStorage.getItem(
+      "volumeProgression_" + exerciseName,
+    );
+    const progression = value != null ? JSON.parse(value) : [];
+    if (progression.length === 0) return null;
+    return Math.max(...progression);
+  } catch (error) {
+    console.error("Error getting best volume:", error);
+  }
+};
+
 export const saveCompletedExerciseAsPreset = async (exercises, presetName) => {
   try {
     const presetKey = `preset_${presetName}`;
