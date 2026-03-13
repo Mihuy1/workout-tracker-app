@@ -78,9 +78,13 @@ export default function NewWorkoutScreen() {
       weight: exercise.sets.map((set) => set.weight),
     }));
 
-    for (const { exerciseName, weight } of weightsPerExercise) {
-      console.log(`Exercise: ${exerciseName}, Weights: ${weight.join(", ")}`);
-      await saveWeightProgressionByExerciseName(exerciseName, weight);
+    console.log("weightsPerExercise:", weightsPerExercise);
+
+    for (const exercise of weightsPerExercise) {
+      await saveWeightProgressionByExerciseName(
+        exercise.exerciseName,
+        exercise.weight,
+      );
     }
 
     if (presetName && shouldUpdatePreset) {

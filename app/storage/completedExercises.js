@@ -94,12 +94,20 @@ export const saveWeightProgressionByExerciseName = async (
     const existingValue = await AsyncStorage.getItem(key);
     const history = existingValue ? JSON.parse(existingValue) : [];
 
+    const highestWeight = Math.max(...weight.map(parseFloat));
+
+    console.log("highest weight:", highestWeight);
+
     const newEntry = {
       date: new Date().toISOString().split("T")[0],
-      weight: parseInt(weight),
+      weight: parseFloat(highestWeight),
     };
 
+    console.log(`weight: ${weight} newEntry: ${newEntry}`);
+
     history.push(newEntry);
+
+    console.log("history:", history);
     await AsyncStorage.setItem(key, JSON.stringify(history));
   } catch (error) {
     console.error("Error saving weight progression:", error);
@@ -124,7 +132,9 @@ export const getBestWeightByExerciseName = async (exerciseName) => {
     const value = await AsyncStorage.getItem(
       "weightProgression_" + exerciseName,
     );
+    console.log("value:", value);
     const progression = value != null ? JSON.parse(value) : [];
+    console.log("progression:", progression);
     if (progression.length === 0) return null;
 
     const weights = progression.map((entry) => entry.weight);

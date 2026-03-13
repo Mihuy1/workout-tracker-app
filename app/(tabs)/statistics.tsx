@@ -1,6 +1,7 @@
+import { ThemedText } from "@/components/themed-text";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useEffect, useState } from "react";
-import { Button, Text } from "react-native";
+import { Button, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import {
   getBestWeightByExerciseName,
@@ -23,7 +24,7 @@ export default function Statistics() {
   }, []);
 
   const checkBestWeight = async () => {
-    const res = await getBestWeightByExerciseName("Dumbbell Bicep Curl");
+    const res = await getBestWeightByExerciseName("Leg Press");
 
     console.log("fetched:", res);
   };
@@ -44,10 +45,17 @@ export default function Statistics() {
   };
 
   return (
-    <SafeAreaView>
-      <Text>Hello</Text>
-      <Button title="Check" onPress={checkBestWeight} />
-      <Text> {data} kilos</Text>
+    <SafeAreaView style={styles.container}>
+      <ThemedText type="title">Statistics</ThemedText>
+      <Button title="Check Best Weight" onPress={checkBestWeight} />
+      <Button title="Check Storage" onPress={checkStorage} />
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    paddingHorizontal: 10,
+  },
+});
