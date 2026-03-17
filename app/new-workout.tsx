@@ -7,6 +7,7 @@ import {
 import { CustomModal } from "@/components/ui/customModal";
 import { NewWorkout } from "@/components/ui/newWorkout";
 import { usePreventRemove } from "@react-navigation/native";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   router,
   Stack,
@@ -18,6 +19,7 @@ import { Button } from "react-native";
 import { useWorkout } from "./contexts/workoutContext";
 
 export default function NewWorkoutScreen() {
+  const queryClient = useQueryClient();
   const { presetTitle } = useLocalSearchParams<{ presetTitle?: string }>();
   const { exercises, clearWorkout } = useWorkout();
   const navigation = useNavigation();
@@ -33,12 +35,69 @@ export default function NewWorkoutScreen() {
 
   const [infoVisible, setInfoVisible] = useState(false);
 
+  const [emptySetsVisible, setEmptySetsVisible] = useState(false);
+
   const [saveAsPresetVisible, setSaveAsPresetVisible] = useState(false);
 
   const [updatePresetVisible, setUpdatePresetVisible] = useState(false);
 
   const pendingNavActionRef = useRef<any>(null);
   const originalExercisesRef = useRef<any[]>([]);
+
+  const finishWorkoutMutation = useMutation({
+    mutationFn: async ({
+      presetName,
+      shouldUpdatePreset,
+    }: {
+      presetName: string | null;
+      shouldUpdatePreset: boolean;
+    }) => {
+      const workoutDurMs = Date.now() - startTimeRef.current;
+
+      await addCompletedExercise({
+        id: Date.now().toString(),
+        workoutName: presetName ?? "Workout " + new Date().toLocaleDateString(),
+        date: new Date().toISOString(),
+        exercises: exercises,
+        workoutDurationMs: workoutDurMs,
+      });
+
+      const weightsPerExercise = exercises.map((exercise) => ({
+        exerciseName: exercise.name,
+        weight: exercise.sets
+          .filter((set) => set.complete && set.weight !== "")
+          .map((set) => set.weight),
+      }));
+
+      console.log("weightsPerExercise:", weightsPerExercise);
+
+      for (const exercise of weightsPerExercise) {
+        await saveWeightProgressionByExerciseName(
+          exercise.exerciseName,
+          exercise.weight,
+        );
+      }
+
+      if (presetName && shouldUpdatePreset) {
+        await saveCompletedExerciseAsPreset(exercises, presetName);
+        return true;
+      }
+
+      return false;
+    },
+    onSuccess: (didChangePresets) => {
+      if (didChangePresets)
+        queryClient.invalidateQueries({ queryKey: ["presets"] });
+
+      clearWorkout();
+      router.back();
+    },
+    onError: (error) => {
+      console.error("error finishWorkoutMutation:", error);
+      setIsFinishing(false);
+      isFinishingRef.current = false;
+    },
+  });
 
   useEffect(() => {
     if (presetTitle) {
@@ -63,36 +122,7 @@ export default function NewWorkoutScreen() {
     setIsFinishing(true);
     isFinishingRef.current = true;
 
-    const workoutDurMs = Date.now() - startTimeRef.current;
-
-    await addCompletedExercise({
-      id: Date.now().toString(),
-      workoutName: presetName ?? "Workout " + new Date().toLocaleDateString(),
-      date: new Date().toISOString(),
-      exercises: exercises,
-      workoutDurationMs: workoutDurMs,
-    });
-
-    const weightsPerExercise = exercises.map((exercise) => ({
-      exerciseName: exercise.name,
-      weight: exercise.sets.map((set) => set.weight),
-    }));
-
-    console.log("weightsPerExercise:", weightsPerExercise);
-
-    for (const exercise of weightsPerExercise) {
-      await saveWeightProgressionByExerciseName(
-        exercise.exerciseName,
-        exercise.weight,
-      );
-    }
-
-    if (presetName && shouldUpdatePreset) {
-      await saveCompletedExerciseAsPreset(exercises, presetName);
-    }
-
-    clearWorkout();
-    router.back();
+    finishWorkoutMutation.mutate({ presetName, shouldUpdatePreset });
   };
 
   const shouldPreventRemove = exercises.length > 0 && !isFinishing;
@@ -105,6 +135,17 @@ export default function NewWorkoutScreen() {
   const handleCompletePress = () => {
     if (exercises.length === 0) {
       setInfoVisible(true);
+      return;
+    }
+
+    const hasAnyCompleteSets = exercises.some((ex) =>
+      ex.sets.some(
+        (set) => set.complete && set.weight !== "" && set.reps !== "",
+      ),
+    );
+
+    if (!hasAnyCompleteSets) {
+      setEmptySetsVisible(true);
       return;
     }
 
@@ -180,6 +221,17 @@ export default function NewWorkoutScreen() {
           setDiscardVisible(false);
           pendingNavActionRef.current = null;
         }}
+      />
+
+      <CustomModal
+        visible={emptySetsVisible}
+        title="Cant complete workout with empty exercises / sets"
+        message="You have some sets / workouts that are empty"
+        primaryButtonText="OK"
+        onRequestClose={() => setEmptySetsVisible(false)}
+        onPrimary={() => setEmptySetsVisible(false)}
+        onSecondary={() => setEmptySetsVisible(false)}
+        dismissOnBackdropPress
       />
 
       <CustomModal

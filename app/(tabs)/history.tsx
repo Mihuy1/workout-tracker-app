@@ -4,8 +4,8 @@ import { IconSymbol } from "@/components/ui/icon-symbol";
 import WorkoutHistoryCard from "@/components/ui/workoutHistoryCard";
 import { WorkoutTimer } from "@/components/ui/workoutTimer";
 import { useThemeColor } from "@/hooks/use-theme-color";
-import { useFocusEffect } from "expo-router";
-import { useCallback, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
 import { FlatList, Pressable, StyleSheet, View } from "react-native";
 import Animated, { LinearTransition } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -32,6 +32,7 @@ export type CompletedWorkout = {
 };
 
 export default function TabTwoScreen() {
+  const queryClient = useQueryClient();
   const [history, setHistory] = useState<CompletedWorkout[]>([]);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [selectedWorkoutId, setSelectedWorkoutId] = useState<string | null>(
@@ -44,31 +45,55 @@ export default function TabTwoScreen() {
   const cardBorder = useThemeColor({}, "border");
   const shadowColor = "#000";
 
-  useFocusEffect(
-    useCallback(() => {
-      let cancelled = false;
+  // useFocusEffect(
+  //   useCallback(() => {
+  //     let cancelled = false;
 
-      (async () => {
-        const data = await getCompletedExercises();
-        if (!cancelled) setHistory(data);
-      })();
+  //     (async () => {
+  //       const data = await getCompletedExercises();
+  //       if (!cancelled) setHistory(data);
+  //     })();
 
-      return () => {
-        cancelled = true;
-      };
-    }, []),
-  );
+  //     return () => {
+  //       cancelled = true;
+  //     };
+  //   }, []),
+  // );
+
+  const fetchHistory = async () => {
+    try {
+      const data = await getCompletedExercises();
+
+      return data;
+    } catch (error) {
+      console.error("failed to fetch history:", error);
+    }
+  };
+
+  const { data: historyData = [], isLoading } = useQuery({
+    queryKey: ["history"],
+    queryFn: fetchHistory,
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => removeCompletedExercise(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["history"] });
+      setSelectedWorkoutId(null);
+    },
+  });
 
   const handleRemove = async (id: string) => {
-    const didRemove = await removeCompletedExercise(id);
+    // const didRemove = await removeCompletedExercise(id);
 
-    console.log("DidRemove:", didRemove);
+    // console.log("DidRemove:", didRemove);
 
-    if (!didRemove) return;
+    // if (!didRemove) return;
 
-    setSelectedWorkoutId(null);
-    setHistory(didRemove);
-    setExpandedId((prev) => (prev === id ? null : prev));
+    // setSelectedWorkoutId(null);
+    // setHistory(didRemove);
+    deleteMutation.mutate(id);
+    // setExpandedId((prev) => (prev === id ? null : prev));
   };
 
   return (
@@ -88,7 +113,7 @@ export default function TabTwoScreen() {
       />
 
       <FlatList
-        data={history.reverse()}
+        data={historyData.reverse()}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => {
           const isExpanded = expandedId === item.id;

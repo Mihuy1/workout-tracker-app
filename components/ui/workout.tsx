@@ -36,6 +36,7 @@ export default function Workout({
     addSet,
     removeSet,
     updateSet,
+    handleCompleteSet,
   } = useWorkout();
   const alreadyAdded = checkIfExerciseAlreadyAdded(workoutName);
 
@@ -193,11 +194,18 @@ export default function Workout({
                       console.log("Show popup, returning");
                       return;
                     }
-                    updateSet(workoutName, item.id, {
-                      weight: finalWeight,
-                      reps: finalReps,
-                      complete: !item.complete,
-                    });
+                    // updateSet(workoutName, item.id, {
+                    //   weight: finalWeight,
+                    //   reps: finalReps,
+                    //   complete: !item.complete,
+                    // });
+                    handleCompleteSet(
+                      workoutName,
+                      item.id,
+                      !item.complete,
+                      finalWeight,
+                      finalReps,
+                    );
                   }}
                 >
                   <IconSymbol

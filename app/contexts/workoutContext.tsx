@@ -15,6 +15,13 @@ type workoutContextType = {
     setId: number,
     patch: Partial<Pick<SetRow, "weight" | "reps" | "complete">>,
   ) => void;
+  handleCompleteSet: (
+    exerciseName: string,
+    setId: number,
+    complete: boolean,
+    weight: string,
+    reps: string,
+  ) => void;
   clearWorkout: () => void;
 };
 
@@ -94,6 +101,27 @@ export const WorkoutProvider: React.FC<React.PropsWithChildren> = ({
     );
   };
 
+  const handleCompleteSet = (
+    exerciseName: string,
+    setId: number,
+    complete: boolean,
+    weight: string,
+    reps: string,
+  ) => {
+    setExercises((prev) =>
+      prev.map((ex) => {
+        if (ex.name !== exerciseName) return ex;
+
+        return {
+          ...ex,
+          sets: ex.sets.map((set) =>
+            set.id === setId ? { ...set, complete, weight, reps } : set,
+          ),
+        };
+      }),
+    );
+  };
+
   const clearWorkout = () => {
     setExercises([]);
   };
@@ -110,6 +138,7 @@ export const WorkoutProvider: React.FC<React.PropsWithChildren> = ({
         addSet,
         removeSet,
         updateSet,
+        handleCompleteSet,
         clearWorkout,
       }}
     >

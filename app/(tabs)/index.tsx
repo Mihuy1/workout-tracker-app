@@ -1,15 +1,14 @@
 import { ThemedText } from "@/components/themed-text";
 import { CustomButton } from "@/components/ui/customButton";
 import { CustomModal } from "@/components/ui/customModal";
-import { IconSymbol } from "@/components/ui/icon-symbol";
+import RoutineWorkout from "@/components/ui/routineWorkout";
 import { useThemeColor } from "@/hooks/use-theme-color";
 import { router } from "expo-router";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   FlatList,
   Platform,
   PlatformColor,
-  Pressable,
   StyleSheet,
   View,
 } from "react-native";
@@ -19,10 +18,9 @@ import {
   removePresetById,
 } from "../storage/completedExercises";
 
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 export default function HomeScreen() {
-  const [presets, setPresets] = useState<
-    { id: string; title: string; exercises: any[] }[]
-  >([]);
+  const queryClient = useQueryClient();
   const cardBackground = useThemeColor({}, "surface");
   const cardBorder = useThemeColor({}, "border");
   const buttonBackground = useThemeColor({}, "surfaceMuted");
@@ -30,6 +28,8 @@ export default function HomeScreen() {
   const buttonTextColor =
     Platform.OS === "ios" ? PlatformColor("systemBlue") : tintColor;
   const [modalVisible, setModalVisible] = useState(false);
+  const [deleteRoutineName, setDeleteRoutineName] = useState("");
+  const [deleteRoutineId, setDeleteRoutineId] = useState<string | null>(null);
 
   const fetchPresets = async () => {
     const presets = await getSavedPresets();
@@ -40,33 +40,62 @@ export default function HomeScreen() {
       exercises: exercises as any[],
     }));
 
-    setPresets(presetsArray);
+    return presetsArray;
   };
 
-  useEffect(() => {
-    fetchPresets();
-  }, []);
+  const { data: presets = [], isLoading } = useQuery({
+    queryKey: ["presets"],
+    queryFn: fetchPresets,
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => removePresetById(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["presets"] });
+      setModalVisible(false);
+    },
+  });
 
   const handleRemovePreset = async (id: string) => {
+    // if (id) {
+    //   setModalVisible(false);
+    //   await removePresetById(id);
+    //   setPresets((prev) => prev.filter((preset) => preset.id !== id));
+    //   await fetchPresets();
+    // }
+
     if (id) {
-      await removePresetById(id);
-      setPresets((prev) => prev.filter((preset) => preset.id !== id));
-      await fetchPresets();
+      deleteMutation.mutate(id);
     }
   };
+
+  const handleSetModal = async (routineName: string, routineId: string) => {
+    console.log("handle set modal");
+
+    setDeleteRoutineName(routineName);
+    setDeleteRoutineId(routineId);
+    setModalVisible(true);
+  };
+
+  if (isLoading)
+    return (
+      <View style={styles.container}>
+        <ThemedText type="title">Loading...</ThemedText>
+      </View>
+    );
 
   return (
     <SafeAreaView style={styles.container}>
       <CustomModal
         visible={modalVisible}
-        title="Remove Routine?"
+        title={`Remove ${deleteRoutineName} ?`}
         message="Are you sure you want to remove this routine?"
         primaryButtonText="Yes"
         secondaryButtonText="No"
         onSecondary={() => setModalVisible(false)}
         primaryButtonRed={true}
         onRequestClose={() => setModalVisible(false)}
-        onPrimary={() => handleRemovePreset}
+        onPrimary={() => deleteRoutineId && handleRemovePreset(deleteRoutineId)}
       />
 
       <View style={styles.content}>
@@ -101,41 +130,52 @@ export default function HomeScreen() {
               exerciseNames.length > 3 ? `${previewNames}...` : previewNames;
 
             return (
-              <View
-                style={[
-                  styles.card,
-                  { backgroundColor: cardBackground, borderColor: cardBorder },
-                ]}
-              >
-                <View style={styles.removeView}>
-                  <Pressable onPress={() => setModalVisible(true)}>
-                    <IconSymbol name={"x.circle"} size={24} color={"red"} />
-                  </Pressable>
-                </View>
-                <ThemedText type="defaultSemiBold" style={styles.cardTitle}>
-                  {item.title}
-                </ThemedText>
-
-                <ThemedText
-                  style={styles.exercisePreviewText}
-                  numberOfLines={1}
-                >
-                  {exercisePreviewText}
-                </ThemedText>
-
-                <CustomButton
-                  title="Start Routine"
-                  onPress={() =>
-                    router.push({
-                      pathname: "../new-workout",
-                      params: { presetTitle: item.title },
-                    })
-                  }
-                  backgroundColor={buttonBackground}
-                  textColor={buttonTextColor}
-                />
-              </View>
+              <RoutineWorkout
+                item={item}
+                exercisePreviewText={exercisePreviewText}
+                setModalVisible={handleSetModal}
+              />
             );
+
+            // return (
+            //   <View
+            //     style={[
+            //       styles.card,
+            //       { backgroundColor: cardBackground, borderColor: cardBorder },
+            //     ]}
+            //   >
+            //     <View style={styles.topView}>
+            //       <View style={styles.removeView}>
+            //         <Pressable onPress={() => setModalVisible(true)}>
+            //           <IconSymbol name={"x.circle"} size={24} color={"red"} />
+            //         </Pressable>
+            //       </View>
+
+            //       <ThemedText type="defaultSemiBold" style={styles.cardTitle}>
+            //         {item.title}
+            //       </ThemedText>
+            //     </View>
+
+            //     <ThemedText
+            //       style={styles.exercisePreviewText}
+            //       numberOfLines={1}
+            //     >
+            //       {exercisePreviewText}
+            //     </ThemedText>
+
+            //     <CustomButton
+            //       title="Start Routine"
+            //       onPress={() =>
+            //         router.push({
+            //           pathname: "../new-workout",
+            //           params: { presetTitle: item.title },
+            //         })
+            //       }
+            //       backgroundColor={buttonBackground}
+            //       textColor={buttonTextColor}
+            //     />
+            //   </View>
+            // );
           }}
         />
       </View>
@@ -161,9 +201,11 @@ const styles = StyleSheet.create({
   cardTitle: {
     marginBottom: 10,
   },
+  topView: {
+    flexDirection: "row-reverse",
+  },
   removeView: {
     marginLeft: "auto",
-    flexDirection: "column",
   },
   exercisePreviewText: {
     marginBottom: 12,
