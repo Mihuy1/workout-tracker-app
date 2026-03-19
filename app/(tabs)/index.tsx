@@ -136,46 +136,6 @@ export default function HomeScreen() {
                 setModalVisible={handleSetModal}
               />
             );
-
-            // return (
-            //   <View
-            //     style={[
-            //       styles.card,
-            //       { backgroundColor: cardBackground, borderColor: cardBorder },
-            //     ]}
-            //   >
-            //     <View style={styles.topView}>
-            //       <View style={styles.removeView}>
-            //         <Pressable onPress={() => setModalVisible(true)}>
-            //           <IconSymbol name={"x.circle"} size={24} color={"red"} />
-            //         </Pressable>
-            //       </View>
-
-            //       <ThemedText type="defaultSemiBold" style={styles.cardTitle}>
-            //         {item.title}
-            //       </ThemedText>
-            //     </View>
-
-            //     <ThemedText
-            //       style={styles.exercisePreviewText}
-            //       numberOfLines={1}
-            //     >
-            //       {exercisePreviewText}
-            //     </ThemedText>
-
-            //     <CustomButton
-            //       title="Start Routine"
-            //       onPress={() =>
-            //         router.push({
-            //           pathname: "../new-workout",
-            //           params: { presetTitle: item.title },
-            //         })
-            //       }
-            //       backgroundColor={buttonBackground}
-            //       textColor={buttonTextColor}
-            //     />
-            //   </View>
-            // );
           }}
         />
       </View>
