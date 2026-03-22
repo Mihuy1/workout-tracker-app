@@ -1,8 +1,7 @@
 import { useWorkout } from "@/app/contexts/workoutContext";
 import { useThemeColor } from "@/hooks/use-theme-color";
-import { Exercise } from "@/types/workout";
 import { router } from "expo-router";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Button,
   FlatList,
@@ -14,12 +13,14 @@ import {
 import { ThemedText } from "../themed-text";
 import { CustomModal } from "./customModal";
 import { IconSymbol } from "./icon-symbol";
+import { WorkoutTimer } from "./workoutTimer";
 
 type WorkoutProps = {
   workoutId?: string;
   workoutName: string;
   workoutMechanic?: string | null;
   prefilledSets?: Record<string, any>;
+  workoutRestTime: number;
 };
 
 export default function Workout({
@@ -27,10 +28,12 @@ export default function Workout({
   workoutName,
   workoutMechanic,
   prefilledSets,
+  workoutRestTime,
 }: WorkoutProps) {
   const {
     exercises,
     addExercise,
+    setRestTime,
     checkIfExerciseAlreadyAdded,
     removeExercise,
     addSet,
@@ -51,6 +54,32 @@ export default function Workout({
   const iconColor = useThemeColor({}, "icon");
 
   const [confirmVisible, setConfirmVisible] = useState(false);
+
+  const [showRestTimePicker, setShowRestTimePicker] = useState(false);
+  const [minutes, setMinutes] = useState<string>(
+    Math.floor(workoutRestTime / 60).toString(),
+  );
+  const [seconds, setSeconds] = useState<string>(
+    (workoutRestTime % 60).toString(),
+  );
+
+  const [elapsedTimeMs, setElapsedTimeMs] = useState<number>(0);
+
+  const [startTimer, setStartTimer] = useState(false);
+
+  useEffect(() => {
+    if (!startTimer) return;
+    const endTime = Date.now() + workoutRestTime * 1000;
+
+    const interval = setInterval(() => {
+      const msLeft = Math.max(0, Math.round(endTime - Date.now()));
+      setElapsedTimeMs(msLeft);
+
+      if (msLeft === 0) setStartTimer(false);
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [startTimer]);
 
   return (
     <View style={[styles.container, { borderColor, backgroundColor: surface }]}>
@@ -82,6 +111,45 @@ export default function Workout({
 
       {alreadyAdded && (
         <>
+          <View className="rest-view">
+            <WorkoutTimer elapsedTimeMs={elapsedTimeMs} />
+            <Button title="start timer" onPress={() => setStartTimer(true)} />
+            <Button
+              title={
+                exercise
+                  ? "Rest " + minutes + " m " + seconds + " s"
+                  : "Set Rest"
+              }
+              onPress={() => setShowRestTimePicker(true)}
+            />
+
+            {showRestTimePicker && (
+              <View style={{ flexDirection: "row" }}>
+                <TextInput
+                  style={styles.input}
+                  keyboardType="numeric"
+                  value={minutes?.toString()}
+                  onChangeText={(text) => setMinutes(text)}
+                />
+                <TextInput
+                  style={styles.input}
+                  keyboardType="numeric"
+                  value={seconds?.toString()}
+                  onChangeText={(text) => setSeconds(text)}
+                />
+                <Button
+                  title="Save"
+                  onPress={() => {
+                    if (!exercise) return;
+                    const time = Number(minutes) * 60 + Number(seconds);
+
+                    setRestTime(exercise.name, time);
+                    setShowRestTimePicker(false);
+                  }}
+                />
+              </View>
+            )}
+          </View>
           <View style={[styles.tableHeader, { borderColor }]}>
             <ThemedText
               type="defaultSemiBold"
@@ -110,6 +178,8 @@ export default function Workout({
 
             <View style={[styles.cell, styles.actionCol]} />
           </View>
+
+          <TextInput value={exercise?.restTime.toString()}></TextInput>
 
           <FlatList
             data={sets}
@@ -233,7 +303,9 @@ export default function Workout({
             addExercise({
               name: workoutName,
               mechanic: workoutMechanic,
-            } as Exercise);
+              restTime: 0,
+              sets: [{ id: 1, complete: false, weight: "", reps: "" }],
+            });
             router.back();
           }}
         />

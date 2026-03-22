@@ -25,8 +25,7 @@ export const getAllLatestExercisesMap = async (name) => {
 
     for (const workout of sortedWorkouts) {
       for (const exercise of workout.exercises) {
-        if (!historyMap[exercise.name])
-          historyMap[exercise.name] = exercise.sets;
+        if (!historyMap[exercise.name]) historyMap[exercise.name] = exercise;
       }
     }
 

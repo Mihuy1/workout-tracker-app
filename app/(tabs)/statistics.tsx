@@ -5,6 +5,7 @@ import { Button, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import {
   getBestWeightByExerciseName,
+  getCompletedExercises,
   saveWeightProgressionByExerciseName,
 } from "../storage/completedExercises";
 
@@ -38,6 +39,14 @@ export default function Statistics() {
     console.log("saved:", res);
   };
 
+  const checkCompletedExercises = async () => {
+    const res = await getCompletedExercises();
+
+    console.log("completed exercises:", res);
+
+    console.log("Last completed exercise:", res[res.length - 1].exercises);
+  };
+
   const checkStorage = async () => {
     const allKeys = await AsyncStorage.getAllKeys();
     const allData = await AsyncStorage.multiGet(allKeys);
@@ -49,6 +58,10 @@ export default function Statistics() {
       <ThemedText type="title">Statistics</ThemedText>
       <Button title="Check Best Weight" onPress={checkBestWeight} />
       <Button title="Check Storage" onPress={checkStorage} />
+      <Button
+        title="Check Completed exercises"
+        onPress={checkCompletedExercises}
+      />
     </SafeAreaView>
   );
 }

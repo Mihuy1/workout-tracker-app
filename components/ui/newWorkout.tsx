@@ -71,7 +71,8 @@ export function NewWorkout({ presetTitle, elapsedTimeMs }: NewWorkoutProps) {
             <Workout
               workoutName={item.name}
               workoutMechanic={item.mechanic}
-              prefilledSets={historyMap[item.name] || []}
+              prefilledSets={historyMap[item.name]?.sets || []}
+              workoutRestTime={historyMap[item.name]?.restTime || 1}
             />
           </View>
         )}

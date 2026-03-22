@@ -6,7 +6,7 @@ import { WorkoutTimer } from "@/components/ui/workoutTimer";
 import { useThemeColor } from "@/hooks/use-theme-color";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { FlatList, Pressable, StyleSheet, View } from "react-native";
+import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 import Animated, { LinearTransition } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 import {
@@ -95,6 +95,8 @@ export default function TabTwoScreen() {
     deleteMutation.mutate(id);
     // setExpandedId((prev) => (prev === id ? null : prev));
   };
+
+  if (isLoading) return <Text>Loaidng...</Text>;
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: screenBg }}>

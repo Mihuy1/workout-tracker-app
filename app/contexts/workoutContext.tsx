@@ -4,6 +4,7 @@ import { createContext, useContext, useState } from "react";
 type workoutContextType = {
   exercises: Exercise[];
   getExercises: () => Exercise[];
+  setRestTime: (exerciseName: string, time: number) => void;
   addExercise: (exercise: Exercise) => void;
   addExercises: (exercises: Exercise[]) => void;
   removeExercise: (exerciseName: string) => void;
@@ -36,11 +37,26 @@ export const WorkoutProvider: React.FC<React.PropsWithChildren> = ({
     return exercises;
   };
 
+  const setRestTime = (exerciseName: string, time: number) => {
+    setExercises((prev) =>
+      prev.map((ex) => {
+        if (ex.name !== exerciseName) return ex;
+
+        return {
+          ...ex,
+          restTime: time,
+        };
+      }),
+    );
+  };
+
   const addExercise = (exercise: Exercise) => {
     const exerciseWithSets = {
       ...exercise,
-      sets: exercise.sets ?? [{ id: 1, complete: false, weight: "", reps: "" }],
+      sets: exercise.sets,
+      restTime: exercise.restTime ?? 0,
     };
+
     setExercises((prevExercises) => [...prevExercises, exerciseWithSets]);
   };
 
@@ -131,6 +147,7 @@ export const WorkoutProvider: React.FC<React.PropsWithChildren> = ({
       value={{
         exercises,
         getExercises,
+        setRestTime,
         addExercise,
         addExercises,
         removeExercise,
