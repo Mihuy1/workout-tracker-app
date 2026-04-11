@@ -1,7 +1,7 @@
 import { useWorkout } from "@/app/contexts/workoutContext";
 import { useThemeColor } from "@/hooks/use-theme-color";
 import { router } from "expo-router";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
   Button,
   FlatList,
@@ -13,7 +13,7 @@ import {
 import { ThemedText } from "../themed-text";
 import { CustomModal } from "./customModal";
 import { IconSymbol } from "./icon-symbol";
-import { WorkoutTimer } from "./workoutTimer";
+import { RestTimer } from "./RestTimer";
 
 type WorkoutProps = {
   workoutId?: string;
@@ -67,19 +67,21 @@ export default function Workout({
 
   const [startTimer, setStartTimer] = useState(false);
 
-  useEffect(() => {
-    if (!startTimer) return;
-    const endTime = Date.now() + workoutRestTime * 1000;
+  // useEffect(() => {
+  //   if (!startTimer) return;
+  //   const endTime = Date.now() + workoutRestTime * 1000;
 
-    const interval = setInterval(() => {
-      const msLeft = Math.max(0, Math.round(endTime - Date.now()));
-      setElapsedTimeMs(msLeft);
+  //   console.log("endTime:", endTime);
 
-      if (msLeft === 0) setStartTimer(false);
-    }, 1000);
+  //   const interval = setInterval(() => {
+  //     const msLeft = Math.max(0, Math.round(endTime - Date.now()));
+  //     setElapsedTimeMs(msLeft);
 
-    return () => clearInterval(interval);
-  }, [startTimer]);
+  //     if (msLeft === 0) setStartTimer(false);
+  //   }, 1000);
+
+  //   return () => clearInterval(interval);
+  // }, [startTimer]);
 
   return (
     <View style={[styles.container, { borderColor, backgroundColor: surface }]}>
@@ -111,7 +113,8 @@ export default function Workout({
 
       {alreadyAdded && (
         <>
-          <View className="rest-view">
+          <RestTimer duration={workoutRestTime} />
+          {/* <View className="rest-view">
             <WorkoutTimer elapsedTimeMs={elapsedTimeMs} />
             <Button title="start timer" onPress={() => setStartTimer(true)} />
             <Button
@@ -149,7 +152,7 @@ export default function Workout({
                 />
               </View>
             )}
-          </View>
+          </View> */}
           <View style={[styles.tableHeader, { borderColor }]}>
             <ThemedText
               type="defaultSemiBold"
