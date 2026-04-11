@@ -53,7 +53,6 @@ export default function NewWorkoutScreen() {
       shouldUpdatePreset: boolean;
     }) => {
       const workoutDurMs = Date.now() - startTimeRef.current;
-
       await addCompletedExercise({
         id: Date.now().toString(),
         workoutName: presetName ?? "Workout " + new Date().toLocaleDateString(),
@@ -80,14 +79,16 @@ export default function NewWorkoutScreen() {
 
       if (presetName && shouldUpdatePreset) {
         await saveCompletedExerciseAsPreset(exercises, presetName);
-        return true;
       }
 
-      return false;
+      return true;
     },
     onSuccess: (didChangePresets) => {
-      if (didChangePresets)
+      if (didChangePresets) {
+        console.log("This got called!");
         queryClient.invalidateQueries({ queryKey: ["presets"] });
+        queryClient.invalidateQueries({ queryKey: ["history"] });
+      }
 
       clearWorkout();
       router.back();

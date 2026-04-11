@@ -57,21 +57,12 @@ export default function HomeScreen() {
   });
 
   const handleRemovePreset = async (id: string) => {
-    // if (id) {
-    //   setModalVisible(false);
-    //   await removePresetById(id);
-    //   setPresets((prev) => prev.filter((preset) => preset.id !== id));
-    //   await fetchPresets();
-    // }
-
     if (id) {
       deleteMutation.mutate(id);
     }
   };
 
   const handleSetModal = async (routineName: string, routineId: string) => {
-    console.log("handle set modal");
-
     setDeleteRoutineName(routineName);
     setDeleteRoutineId(routineId);
     setModalVisible(true);
