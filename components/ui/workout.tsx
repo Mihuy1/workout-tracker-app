@@ -33,7 +33,6 @@ export default function Workout({
   const {
     exercises,
     addExercise,
-    setRestTime,
     checkIfExerciseAlreadyAdded,
     removeExercise,
     addSet,
@@ -55,33 +54,7 @@ export default function Workout({
 
   const [confirmVisible, setConfirmVisible] = useState(false);
 
-  const [showRestTimePicker, setShowRestTimePicker] = useState(false);
-  const [minutes, setMinutes] = useState<string>(
-    Math.floor(workoutRestTime / 60).toString(),
-  );
-  const [seconds, setSeconds] = useState<string>(
-    (workoutRestTime % 60).toString(),
-  );
-
-  const [elapsedTimeMs, setElapsedTimeMs] = useState<number>(0);
-
-  const [startTimer, setStartTimer] = useState(false);
-
-  // useEffect(() => {
-  //   if (!startTimer) return;
-  //   const endTime = Date.now() + workoutRestTime * 1000;
-
-  //   console.log("endTime:", endTime);
-
-  //   const interval = setInterval(() => {
-  //     const msLeft = Math.max(0, Math.round(endTime - Date.now()));
-  //     setElapsedTimeMs(msLeft);
-
-  //     if (msLeft === 0) setStartTimer(false);
-  //   }, 1000);
-
-  //   return () => clearInterval(interval);
-  // }, [startTimer]);
+  const [restStartTrigger, setRestStartTrigger] = useState(0);
 
   return (
     <View style={[styles.container, { borderColor, backgroundColor: surface }]}>
@@ -113,46 +86,10 @@ export default function Workout({
 
       {alreadyAdded && (
         <>
-          <RestTimer duration={workoutRestTime} />
-          {/* <View className="rest-view">
-            <WorkoutTimer elapsedTimeMs={elapsedTimeMs} />
-            <Button title="start timer" onPress={() => setStartTimer(true)} />
-            <Button
-              title={
-                exercise
-                  ? "Rest " + minutes + " m " + seconds + " s"
-                  : "Set Rest"
-              }
-              onPress={() => setShowRestTimePicker(true)}
-            />
-
-            {showRestTimePicker && (
-              <View style={{ flexDirection: "row" }}>
-                <TextInput
-                  style={styles.input}
-                  keyboardType="numeric"
-                  value={minutes?.toString()}
-                  onChangeText={(text) => setMinutes(text)}
-                />
-                <TextInput
-                  style={styles.input}
-                  keyboardType="numeric"
-                  value={seconds?.toString()}
-                  onChangeText={(text) => setSeconds(text)}
-                />
-                <Button
-                  title="Save"
-                  onPress={() => {
-                    if (!exercise) return;
-                    const time = Number(minutes) * 60 + Number(seconds);
-
-                    setRestTime(exercise.name, time);
-                    setShowRestTimePicker(false);
-                  }}
-                />
-              </View>
-            )}
-          </View> */}
+          <RestTimer
+            duration={workoutRestTime}
+            restStartTrigger={restStartTrigger}
+          />
           <View style={[styles.tableHeader, { borderColor }]}>
             <ThemedText
               type="defaultSemiBold"
@@ -267,6 +204,9 @@ export default function Workout({
                       console.log("Show popup, returning");
                       return;
                     }
+
+                    const willBeCompleted = !item.complete;
+
                     // updateSet(workoutName, item.id, {
                     //   weight: finalWeight,
                     //   reps: finalReps,
@@ -279,6 +219,9 @@ export default function Workout({
                       finalWeight,
                       finalReps,
                     );
+
+                    if (willBeCompleted)
+                      setRestStartTrigger((prev) => prev + 1);
                   }}
                 >
                   <IconSymbol
