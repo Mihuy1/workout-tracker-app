@@ -1,12 +1,13 @@
-import { useEffect, useRef, useState } from "react";
-import { Animated, Button, StyleSheet, View } from "react-native";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { Animated, Button, Easing, StyleSheet, View } from "react-native";
 import { WorkoutTimer } from "./workoutTimer";
 
 interface RestTimerProps {
   duration: number;
+  restStartTrigger: number;
 }
 
-export const RestTimer = ({ duration }: RestTimerProps) => {
+export const RestTimer = ({ duration, restStartTrigger }: RestTimerProps) => {
   const durationMs = duration * 1000;
 
   const [timeLeft, setTimeLeft] = useState(durationMs);
@@ -15,42 +16,118 @@ export const RestTimer = ({ duration }: RestTimerProps) => {
   const animatedProgress = useRef(new Animated.Value(1)).current;
   const endTimeRef = useRef<number | null>(null);
   const intervalRef = useRef<number | undefined>(undefined);
+  const isActiveRef = useRef<boolean>(false);
+  const timeLeftRef = useRef<number>(timeLeft);
 
-  const start = () => {
-    if (isActive || timeLeft <= 0) return;
-    setIsActive(true);
+  useEffect(() => {
+    isActiveRef.current = isActive;
+    timeLeftRef.current = timeLeft;
+  }, [isActive, timeLeft]);
 
-    endTimeRef.current = Date.now() + timeLeft;
+  const adjustByMs = (deltaMs: number) => {
+    if (!isActiveRef.current || !endTimeRef.current) return;
 
-    Animated.timing(animatedProgress, {
-      toValue: 0,
-      duration: timeLeft,
-      useNativeDriver: false,
-    }).start();
+    const now = Date.now();
 
-    intervalRef.current = setInterval(() => {
-      if (!endTimeRef.current) return;
+    const prevMsLeft = Math.max(0, endTimeRef.current - now);
+    const newMsLeft = Math.max(0, prevMsLeft + deltaMs);
+    const clampedMsLeft = Math.min(durationMs, newMsLeft);
 
-      const msLeft = Math.max(0, endTimeRef.current - Date.now());
-      setTimeLeft(msLeft);
+    endTimeRef.current = now + clampedMsLeft;
+    setTimeLeft(clampedMsLeft);
+    timeLeftRef.current = clampedMsLeft;
 
-      if (msLeft === 0) {
-        clearInterval(intervalRef.current);
-        setIsActive(false);
-      }
-    }, 100);
+    animatedProgress.stopAnimation((currentValue) => {
+      const ratio = prevMsLeft > 0 ? clampedMsLeft / prevMsLeft : 1;
+      const nextValue = Math.max(0, Math.min(1, currentValue * ratio));
+
+      animatedProgress.setValue(nextValue);
+
+      Animated.timing(animatedProgress, {
+        toValue: 0,
+        duration: clampedMsLeft,
+        easing: Easing.linear,
+        useNativeDriver: true,
+      }).start();
+    });
+
+    if (clampedMsLeft === 0) {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+      setIsActive(false);
+      isActiveRef.current = false;
+    }
   };
 
-  const pause = () => {
-    if (!isActive) return;
+  const incraseBy15 = () => adjustByMs(15000);
+  const decreaseBy15 = () => adjustByMs(-15000);
+
+  const start = useCallback(
+    (initialTimeLeft?: number) => {
+      const nextTimeLeft = initialTimeLeft ?? timeLeftRef.current;
+      if (isActiveRef.current || nextTimeLeft <= 0) return;
+
+      setIsActive(true);
+      isActiveRef.current = true;
+      setTimeLeft(nextTimeLeft);
+      timeLeftRef.current = nextTimeLeft;
+
+      endTimeRef.current = Date.now() + nextTimeLeft;
+
+      Animated.timing(animatedProgress, {
+        toValue: 0,
+        duration: nextTimeLeft,
+        easing: Easing.linear,
+        useNativeDriver: true,
+      }).start();
+
+      intervalRef.current = setInterval(() => {
+        if (!endTimeRef.current) return;
+
+        const msLeft = Math.max(0, endTimeRef.current - Date.now());
+        setTimeLeft(msLeft);
+        timeLeftRef.current = msLeft;
+
+        if (msLeft === 0) {
+          clearInterval(intervalRef.current);
+          setIsActive(false);
+          isActiveRef.current = false;
+        }
+      }, 100);
+    },
+    [animatedProgress],
+  );
+
+  useEffect(() => {
+    if (restStartTrigger === 0) return;
+
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = undefined;
+    }
 
     setIsActive(false);
+    isActiveRef.current = false;
+    setTimeLeft(durationMs);
+    timeLeftRef.current = durationMs;
+
+    animatedProgress.setValue(1);
+    endTimeRef.current = null;
+
+    start(durationMs);
+  }, [animatedProgress, durationMs, restStartTrigger, start]);
+
+  const pause = () => {
+    if (!isActiveRef.current) return;
+
+    setIsActive(false);
+    isActiveRef.current = false;
 
     if (intervalRef.current) clearInterval(intervalRef.current);
 
     if (endTimeRef.current) {
       const msLeft = Math.max(0, endTimeRef.current - Date.now());
       setTimeLeft(msLeft);
+      timeLeftRef.current = msLeft;
     }
 
     animatedProgress.stopAnimation();
@@ -58,31 +135,47 @@ export const RestTimer = ({ duration }: RestTimerProps) => {
 
   const restart = () => {
     setIsActive(false);
+    isActiveRef.current = false;
     if (intervalRef.current) clearInterval(intervalRef.current);
 
     setTimeLeft(durationMs);
+    timeLeftRef.current = durationMs;
     animatedProgress.setValue(1);
     endTimeRef.current = null;
   };
 
   useEffect(() => {
     return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current);
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = undefined;
+      }
     };
   }, []);
 
-  const animatedWidth = animatedProgress.interpolate({
-    inputRange: [0, 1],
-    outputRange: ["0%", "100%"],
-  });
-
   return (
     <View style={styles.container}>
-      <Animated.View style={[styles.bar, { width: animatedWidth }]} />
+      <Animated.View
+        style={[
+          styles.bar,
+          {
+            transformOrigin: "left center",
+            transform: [{ scaleX: animatedProgress }],
+          },
+        ]}
+      />
       <WorkoutTimer elapsedTimeMs={timeLeft} />
+      <View style={styles.timeAdjustRow}>
+        <Button title="+15" onPress={incraseBy15} disabled={!isActive} />
+        <Button title="-15" onPress={decreaseBy15} disabled={!isActive} />
+      </View>
 
       <View style={styles.buttonRow}>
-        <Button title="Start/Resume" onPress={start} disabled={isActive} />
+        <Button
+          title="Start/Resume"
+          onPress={() => start()}
+          disabled={isActive}
+        />
         <Button title="Pause" onPress={pause} disabled={!isActive} />
         <Button title="Restart" onPress={restart} />
       </View>
@@ -107,5 +200,9 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-around",
     marginTop: 10,
+  },
+  timeAdjustRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
   },
 });
