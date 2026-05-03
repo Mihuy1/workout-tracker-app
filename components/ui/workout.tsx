@@ -13,6 +13,7 @@ import {
 import { ThemedText } from "../themed-text";
 import { CustomModal } from "./customModal";
 import { IconSymbol } from "./icon-symbol";
+import { RestTimePicker } from "./restTimePicker";
 import { RestTimer } from "./RestTimer";
 
 type WorkoutProps = {
@@ -39,11 +40,13 @@ export default function Workout({
     removeSet,
     updateSet,
     handleCompleteSet,
+    setRestTime,
   } = useWorkout();
   const alreadyAdded = checkIfExerciseAlreadyAdded(workoutName);
 
   const exercise = exercises.find((ex) => ex.name === workoutName);
   const sets = exercise?.sets ?? [];
+  const rest = exercise?.restTime;
 
   const borderColor = useThemeColor({}, "border");
   const surface = useThemeColor({}, "surface");
@@ -86,8 +89,12 @@ export default function Workout({
 
       {alreadyAdded && (
         <>
+          <RestTimePicker
+            restTime={rest ? rest : workoutRestTime}
+            setRestTime={(t) => setRestTime(workoutName, t)}
+          />
           <RestTimer
-            duration={workoutRestTime}
+            duration={rest ? rest : workoutRestTime}
             restStartTrigger={restStartTrigger}
           />
           <View style={[styles.tableHeader, { borderColor }]}>
