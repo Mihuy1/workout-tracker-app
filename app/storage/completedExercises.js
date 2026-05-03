@@ -218,6 +218,14 @@ export const removeCompletedExercise = async (exerciseId) => {
   }
 };
 
+export const saveExerciseRestTime = async (exercise, time) => {
+  try {
+    await AsyncStorage.setItem(COMPLETED_EXERCISES_KEY, JSON.stringify(time));
+  } catch (error) {
+    console.error("Error saving new rest time:", error);
+  }
+};
+
 export const debugPrintCompletedExercises = async () => {
   const raw = await AsyncStorage.getItem(COMPLETED_EXERCISES_KEY);
   console.log("Raw completed exercises data:", raw);

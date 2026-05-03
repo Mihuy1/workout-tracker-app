@@ -12,11 +12,13 @@ export const RestTimer = ({ duration, restStartTrigger }: RestTimerProps) => {
 
   const [timeLeft, setTimeLeft] = useState(durationMs);
   const [isActive, setIsActive] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
 
   const animatedProgress = useRef(new Animated.Value(1)).current;
   const endTimeRef = useRef<number | null>(null);
   const intervalRef = useRef<number | undefined>(undefined);
   const isActiveRef = useRef<boolean>(false);
+  const isPausedRef = useRef<boolean>(false);
   const timeLeftRef = useRef<number>(timeLeft);
 
   useEffect(() => {
@@ -71,6 +73,9 @@ export const RestTimer = ({ duration, restStartTrigger }: RestTimerProps) => {
       setTimeLeft(nextTimeLeft);
       timeLeftRef.current = nextTimeLeft;
 
+      setIsPaused(false);
+      isPausedRef.current = false;
+
       endTimeRef.current = Date.now() + nextTimeLeft;
 
       Animated.timing(animatedProgress, {
@@ -107,6 +112,10 @@ export const RestTimer = ({ duration, restStartTrigger }: RestTimerProps) => {
 
     setIsActive(false);
     isActiveRef.current = false;
+
+    setIsPaused(false);
+    isPausedRef.current = false;
+
     setTimeLeft(durationMs);
     timeLeftRef.current = durationMs;
 
@@ -120,7 +129,9 @@ export const RestTimer = ({ duration, restStartTrigger }: RestTimerProps) => {
     if (!isActiveRef.current) return;
 
     setIsActive(false);
+    setIsPaused(true);
     isActiveRef.current = false;
+    isPausedRef.current = true;
 
     if (intervalRef.current) clearInterval(intervalRef.current);
 
@@ -134,14 +145,24 @@ export const RestTimer = ({ duration, restStartTrigger }: RestTimerProps) => {
   };
 
   const restart = () => {
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = undefined;
+    }
+
     setIsActive(false);
     isActiveRef.current = false;
-    if (intervalRef.current) clearInterval(intervalRef.current);
+
+    setIsPaused(false);
+    isPausedRef.current = false;
 
     setTimeLeft(durationMs);
     timeLeftRef.current = durationMs;
+
     animatedProgress.setValue(1);
     endTimeRef.current = null;
+
+    start(durationMs);
   };
 
   useEffect(() => {
@@ -154,32 +175,36 @@ export const RestTimer = ({ duration, restStartTrigger }: RestTimerProps) => {
   }, []);
 
   return (
-    <View style={styles.container}>
-      <Animated.View
-        style={[
-          styles.bar,
-          {
-            transformOrigin: "left center",
-            transform: [{ scaleX: animatedProgress }],
-          },
-        ]}
-      />
-      <WorkoutTimer elapsedTimeMs={timeLeft} />
-      <View style={styles.timeAdjustRow}>
-        <Button title="+15" onPress={incraseBy15} disabled={!isActive} />
-        <Button title="-15" onPress={decreaseBy15} disabled={!isActive} />
-      </View>
+    <>
+      {(isActiveRef.current || isPausedRef.current) && (
+        <View style={styles.container}>
+          <Animated.View
+            style={[
+              styles.bar,
+              {
+                transformOrigin: "left center",
+                transform: [{ scaleX: animatedProgress }],
+              },
+            ]}
+          />
+          <WorkoutTimer elapsedTimeMs={timeLeft} />
+          <View style={styles.timeAdjustRow}>
+            <Button title="+15" onPress={incraseBy15} disabled={!isActive} />
+            <Button title="-15" onPress={decreaseBy15} disabled={!isActive} />
+          </View>
 
-      <View style={styles.buttonRow}>
-        <Button
-          title="Start/Resume"
-          onPress={() => start()}
-          disabled={isActive}
-        />
-        <Button title="Pause" onPress={pause} disabled={!isActive} />
-        <Button title="Restart" onPress={restart} />
-      </View>
-    </View>
+          <View style={styles.buttonRow}>
+            <Button
+              title="Start/Resume"
+              onPress={() => start()}
+              disabled={isActive}
+            />
+            <Button title="Pause" onPress={pause} disabled={!isActive} />
+            <Button title="Restart" onPress={restart} />
+          </View>
+        </View>
+      )}
+    </>
   );
 };
 
