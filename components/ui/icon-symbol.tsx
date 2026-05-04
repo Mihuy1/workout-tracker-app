@@ -24,6 +24,7 @@ const MAPPING = {
   gear: "settings",
   person: "person",
   checkmark: "check",
+  timer: "timer",
   "plus.circle.fill": "add-circle",
   "minus.circle": "remove-circle",
   "x.circle": "highlight-remove",

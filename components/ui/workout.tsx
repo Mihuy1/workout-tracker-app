@@ -83,16 +83,19 @@ export default function Workout({
           </Pressable>
         )}
       </View>
-      {!!workoutMechanic && (
-        <ThemedText type="default">{workoutMechanic}</ThemedText>
-      )}
+      <View style={styles.subTitleRow}>
+        {!!workoutMechanic && (
+          <ThemedText type="default">{workoutMechanic}</ThemedText>
+        )}
+
+        <RestTimePicker
+          restTime={rest ? rest : workoutRestTime}
+          setRestTime={(t) => setRestTime(workoutName, t)}
+        />
+      </View>
 
       {alreadyAdded && (
         <>
-          <RestTimePicker
-            restTime={rest ? rest : workoutRestTime}
-            setRestTime={(t) => setRestTime(workoutName, t)}
-          />
           <RestTimer
             duration={rest ? rest : workoutRestTime}
             restStartTrigger={restStartTrigger}
@@ -125,8 +128,6 @@ export default function Workout({
 
             <View style={[styles.cell, styles.actionCol]} />
           </View>
-
-          <TextInput value={exercise?.restTime.toString()}></TextInput>
 
           <FlatList
             data={sets}
@@ -280,6 +281,14 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     gap: 12,
+  },
+
+  subTitleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 12,
+    paddingTop: 6,
   },
 
   tableHeader: {
