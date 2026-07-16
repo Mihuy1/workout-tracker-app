@@ -6,6 +6,7 @@ import {
 } from "@/app/storage/completedExercises";
 import { CustomModal } from "@/components/ui/customModal";
 import { NewWorkout } from "@/components/ui/newWorkout";
+import type { SetRow } from "@/types/workout";
 import { usePreventRemove } from "@react-navigation/native";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
@@ -17,6 +18,21 @@ import {
 import { useEffect, useRef, useState } from "react";
 import { Button } from "react-native";
 import { useWorkout } from "./contexts/workoutContext";
+
+const isValidCompletedSet = (set: SetRow): boolean => {
+  const weight = Number(set.weight);
+  const reps = Number(set.reps);
+
+  return (
+    set.complete &&
+    set.weight.trim() !== "" &&
+    set.reps.trim() !== "" &&
+    Number.isFinite(weight) &&
+    weight >= 0 &&
+    Number.isInteger(reps) &&
+    reps > 0
+  );
+};
 
 export default function NewWorkoutScreen() {
   const queryClient = useQueryClient();
@@ -37,6 +53,8 @@ export default function NewWorkoutScreen() {
 
   const [emptySetsVisible, setEmptySetsVisible] = useState(false);
 
+  const [saveErrorVisible, setSaveErrorVisible] = useState(false);
+
   const [saveAsPresetVisible, setSaveAsPresetVisible] = useState(false);
 
   const [updatePresetVisible, setUpdatePresetVisible] = useState(false);
@@ -53,19 +71,24 @@ export default function NewWorkoutScreen() {
       shouldUpdatePreset: boolean;
     }) => {
       const workoutDurMs = Date.now() - startTimeRef.current;
+      const completedExercises = exercises
+        .map((exercise) => ({
+          ...exercise,
+          sets: exercise.sets.filter(isValidCompletedSet),
+        }))
+        .filter((exercise) => exercise.sets.length > 0);
+
       await addCompletedExercise({
         id: Date.now().toString(),
         workoutName: presetName ?? "Workout " + new Date().toLocaleDateString(),
         date: new Date().toISOString(),
-        exercises: exercises,
+        exercises: completedExercises,
         workoutDurationMs: workoutDurMs,
       });
 
-      const weightsPerExercise = exercises.map((exercise) => ({
+      const weightsPerExercise = completedExercises.map((exercise) => ({
         exerciseName: exercise.name,
-        weight: exercise.sets
-          .filter((set) => set.complete && set.weight !== "")
-          .map((set) => set.weight),
+        weight: exercise.sets.map((set) => set.weight),
       }));
 
       console.log("weightsPerExercise:", weightsPerExercise);
@@ -97,6 +120,7 @@ export default function NewWorkoutScreen() {
       console.error("error finishWorkoutMutation:", error);
       setIsFinishing(false);
       isFinishingRef.current = false;
+      setSaveErrorVisible(true);
     },
   });
 
@@ -140,9 +164,7 @@ export default function NewWorkoutScreen() {
     }
 
     const hasAnyCompleteSets = exercises.some((ex) =>
-      ex.sets.some(
-        (set) => set.complete && set.weight !== "" && set.reps !== "",
-      ),
+      ex.sets.some(isValidCompletedSet),
     );
 
     if (!hasAnyCompleteSets) {
@@ -226,12 +248,22 @@ export default function NewWorkoutScreen() {
 
       <CustomModal
         visible={emptySetsVisible}
-        title="Cant complete workout with empty exercises / sets"
-        message="You have some sets / workouts that are empty"
+        title="No completed sets"
+        message="Complete at least one set with a weight and rep count before saving. Incomplete sets will not be added to history."
         primaryButtonText="OK"
         onRequestClose={() => setEmptySetsVisible(false)}
         onPrimary={() => setEmptySetsVisible(false)}
         onSecondary={() => setEmptySetsVisible(false)}
+        dismissOnBackdropPress
+      />
+
+      <CustomModal
+        visible={saveErrorVisible}
+        title="Workout not saved"
+        message="Your workout could not be saved. It is still open, so you can try again."
+        primaryButtonText="OK"
+        onRequestClose={() => setSaveErrorVisible(false)}
+        onPrimary={() => setSaveErrorVisible(false)}
         dismissOnBackdropPress
       />
 

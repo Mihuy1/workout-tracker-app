@@ -5,7 +5,7 @@ import WorkoutHistoryCard from "@/components/ui/workoutHistoryCard";
 import { WorkoutTimer } from "@/components/ui/workoutTimer";
 import { useThemeColor } from "@/hooks/use-theme-color";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 import Animated, { LinearTransition } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -75,6 +75,14 @@ export default function TabTwoScreen() {
     queryFn: fetchHistory,
   });
 
+  const orderedHistory = useMemo(
+    () =>
+      [...historyData].sort(
+        (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
+      ),
+    [historyData],
+  );
+
   const deleteMutation = useMutation({
     mutationFn: (id: string) => removeCompletedExercise(id),
     onSuccess: () => {
@@ -115,7 +123,7 @@ export default function TabTwoScreen() {
       />
 
       <FlatList
-        data={historyData.reverse()}
+        data={orderedHistory}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => {
           const isExpanded = expandedId === item.id;

@@ -9,7 +9,7 @@ export const getCompletedExercises = async () => {
     return value != null ? JSON.parse(value) : [];
   } catch (error) {
     console.error("Error getting completed exercises:", error);
-    return [];
+    throw error;
   }
 };
 
@@ -80,6 +80,7 @@ export const saveCompletedExercises = async (exercises) => {
     );
   } catch (error) {
     console.error("Error saving completed exercises:", error);
+    throw error;
   }
 };
 
@@ -200,6 +201,7 @@ export const addCompletedExercise = async (exercise) => {
     await saveCompletedExercises(updated);
   } catch (error) {
     console.error("Failed to add exercise", error);
+    throw error;
   }
 };
 
