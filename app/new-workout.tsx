@@ -40,7 +40,7 @@ export default function NewWorkoutScreen() {
   const { exercises, clearWorkout } = useWorkout();
   const navigation = useNavigation();
   const [isFinishing, setIsFinishing] = useState(false);
-  const isFinishingRef = useRef(false);
+  const shouldExitRef = useRef(false);
 
   const startTimeRef = useRef<number>(Date.now());
   const [elapsedTimeMs, setElapsedTimeMs] = useState<number>(0);
@@ -119,10 +119,24 @@ export default function NewWorkoutScreen() {
     onError: (error) => {
       console.error("error finishWorkoutMutation:", error);
       setIsFinishing(false);
-      isFinishingRef.current = false;
       setSaveErrorVisible(true);
     },
   });
+
+  useEffect(() => {
+    if (!isFinishing || !shouldExitRef.current) return;
+
+    shouldExitRef.current = false;
+    clearWorkout();
+
+    const action = pendingNavActionRef.current;
+    pendingNavActionRef.current = null;
+    if (action) {
+      navigation.dispatch(action);
+    } else {
+      router.back();
+    }
+  }, [isFinishing, clearWorkout, navigation]);
 
   useEffect(() => {
     if (presetTitle) {
@@ -145,8 +159,6 @@ export default function NewWorkoutScreen() {
     shouldUpdatePreset: boolean = true,
   ) => {
     setIsFinishing(true);
-    isFinishingRef.current = true;
-
     finishWorkoutMutation.mutate({ presetName, shouldUpdatePreset });
   };
 
@@ -207,6 +219,7 @@ export default function NewWorkoutScreen() {
       <Stack.Screen
         options={{
           title: presetTitle ? presetTitle : "New Workout",
+          gestureEnabled: !shouldPreventRemove,
           headerLeft: () => (
             <Button title="Discard" onPress={handleDiscardPress} />
           ),
@@ -229,16 +242,7 @@ export default function NewWorkoutScreen() {
         onPrimary={() => {
           setDiscardVisible(false);
           setIsFinishing(true);
-          isFinishingRef.current = true;
-          clearWorkout();
-
-          const action = pendingNavActionRef.current;
-          pendingNavActionRef.current = null;
-          if (action) {
-            navigation.dispatch(action);
-          } else {
-            router.back();
-          }
+          shouldExitRef.current = true;
         }}
         onSecondary={() => {
           setDiscardVisible(false);
@@ -287,9 +291,9 @@ export default function NewWorkoutScreen() {
         onRequestClose={() => setSaveWorkoutVisible(false)}
         onSecondary={() => {
           setSaveWorkoutVisible(false);
-          isFinishingRef.current = true;
-          clearWorkout();
-          router.back();
+          setIsFinishing(true);
+
+          shouldExitRef.current = true;
         }}
         onPrimary={() => {
           setSaveWorkoutVisible(false);
