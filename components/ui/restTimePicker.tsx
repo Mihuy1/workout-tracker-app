@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Button,
   Modal,
@@ -24,6 +24,11 @@ export const RestTimePicker = ({
     Math.floor(restTime / 60).toString(),
   );
   const [showPicker, setShowPicker] = useState(false);
+
+  useEffect(() => {
+    setSeconds((restTime % 60).toString());
+    setMinutes(Math.floor(restTime / 60).toString());
+  }, [restTime]);
 
   const handleNumberInput = (text: string) => {
     const integersOnly = text.replace(/[^0-9]/g, "");

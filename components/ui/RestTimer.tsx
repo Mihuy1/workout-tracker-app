@@ -189,8 +189,8 @@ export const RestTimer = ({ duration, restStartTrigger }: RestTimerProps) => {
           />
           <WorkoutTimer elapsedTimeMs={timeLeft} />
           <View style={styles.timeAdjustRow}>
-            <Button title="+15" onPress={incraseBy15} disabled={!isActive} />
             <Button title="-15" onPress={decreaseBy15} disabled={!isActive} />
+            <Button title="+15" onPress={incraseBy15} disabled={!isActive} />
           </View>
 
           <View style={styles.buttonRow}>
