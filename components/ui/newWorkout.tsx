@@ -72,7 +72,7 @@ export function NewWorkout({ presetTitle, elapsedTimeMs }: NewWorkoutProps) {
               workoutName={item.name}
               workoutMechanic={item.mechanic}
               prefilledSets={historyMap[item.name]?.sets || []}
-              workoutRestTime={historyMap[item.name]?.restTime || 120}
+              fallbackRestTime={historyMap[item.name]?.restTime || 120}
             />
           </View>
         )}

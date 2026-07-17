@@ -25,6 +25,11 @@ export const RestTimePicker = ({
   );
   const [showPicker, setShowPicker] = useState(false);
 
+  // useEffect(() => {
+  //   setSeconds((restTime % 60).toString());
+  //   setMinutes(Math.floor(restTime / 60).toString());
+  // }, [restTime]);
+
   const handleNumberInput = (text: string) => {
     const integersOnly = text.replace(/[^0-9]/g, "");
 
@@ -37,12 +42,17 @@ export const RestTimePicker = ({
     setSeconds(integersOnly);
   };
 
-  const handleApply = () => {
-    const m = parseInt(minutes) * 60;
-    const s = parseInt(seconds);
-    const sum = m + s;
-    setRestTime(sum);
+  const handleOpen = () => {
+    setMinutes(Math.floor(restTime / 60).toString());
+    setSeconds((restTime % 60).toString());
+    setShowPicker(true);
+  };
 
+  const handleApply = () => {
+    const minutesValue = Number(minutes || 0);
+    const secondsValue = Number(seconds || 0);
+
+    setRestTime(minutesValue * 60 + secondsValue);
     setShowPicker(false);
   };
 
@@ -53,7 +63,7 @@ export const RestTimePicker = ({
         justifyContent: "center",
       }}
     >
-      <Pressable onPress={() => setShowPicker(!showPicker)}>
+      <Pressable onPress={handleOpen}>
         <IconSymbol name="timer" color="black" />
       </Pressable>
       <Modal

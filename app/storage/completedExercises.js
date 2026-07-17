@@ -9,7 +9,7 @@ export const getCompletedExercises = async () => {
     return value != null ? JSON.parse(value) : [];
   } catch (error) {
     console.error("Error getting completed exercises:", error);
-    return [];
+    throw error;
   }
 };
 
@@ -80,6 +80,7 @@ export const saveCompletedExercises = async (exercises) => {
     );
   } catch (error) {
     console.error("Error saving completed exercises:", error);
+    throw error;
   }
 };
 
@@ -93,21 +94,25 @@ export const saveWeightProgressionByExerciseName = async (
     const existingValue = await AsyncStorage.getItem(key);
     const history = existingValue ? JSON.parse(existingValue) : [];
 
-    const highestWeight = Math.max(...weight.map(parseFloat));
+    const weightArray = Array.isArray(weight) ? weight : [weight];
+    const highestWeight = Math.max(...weightArray.map(parseFloat));
 
-    console.log("highest weight:", highestWeight);
+    // Get current PR from history
+    const currentPR = history.length > 0 ? Math.max(...history.map((entry) => entry.weight)) : 0;
 
-    const newEntry = {
-      date: new Date().toISOString().split("T")[0],
-      weight: parseFloat(highestWeight),
-    };
+    // Only save if the current workout's max weight is strictly greater than the current PR
+    if (highestWeight > currentPR) {
+      const newEntry = {
+        date: new Date().toISOString().split("T")[0],
+        weight: parseFloat(highestWeight),
+      };
 
-    console.log(`weight: ${weight} newEntry: ${newEntry}`);
-
-    history.push(newEntry);
-
-    console.log("history:", history);
-    await AsyncStorage.setItem(key, JSON.stringify(history));
+      history.push(newEntry);
+      await AsyncStorage.setItem(key, JSON.stringify(history));
+      console.log(`New PR saved for ${exerciseName}: ${highestWeight}`);
+    } else {
+      console.log(`No new PR for ${exerciseName}. Current PR: ${currentPR}, Workout max: ${highestWeight}`);
+    }
   } catch (error) {
     console.error("Error saving weight progression:", error);
   }
@@ -200,6 +205,7 @@ export const addCompletedExercise = async (exercise) => {
     await saveCompletedExercises(updated);
   } catch (error) {
     console.error("Failed to add exercise", error);
+    throw error;
   }
 };
 
@@ -215,14 +221,6 @@ export const removeCompletedExercise = async (exerciseId) => {
   } catch (error) {
     console.error("Error:", error);
     return null;
-  }
-};
-
-export const saveExerciseRestTime = async (exercise, time) => {
-  try {
-    await AsyncStorage.setItem(COMPLETED_EXERCISES_KEY, JSON.stringify(time));
-  } catch (error) {
-    console.error("Error saving new rest time:", error);
   }
 };
 
