@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   Modal,
   Pressable,
@@ -30,8 +30,20 @@ type CustomModalProps = {
   onRequestClose: () => void;
 };
 
-export function CustomModal({
-  visible = false,
+export function CustomModal(props: CustomModalProps) {
+  return (
+    <Modal
+      visible={props.visible}
+      onRequestClose={props.onRequestClose}
+      animationType="fade"
+      transparent
+    >
+      {props.visible && <CustomModalContent {...props} />}
+    </Modal>
+  );
+}
+
+function CustomModalContent({
   title,
   message,
   prompt = false,
@@ -48,60 +60,50 @@ export function CustomModal({
 }: CustomModalProps) {
   const [value, setValue] = useState(defaultValue);
 
-  useEffect(() => {
-    if (visible) setValue(defaultValue);
-  }, [visible, defaultValue]);
+  // useEffect(() => {
+  //   if (visible) setValue(defaultValue);
+  // }, [visible, defaultValue]);
 
   const handleBackDropOnPress = () => {
     if (dismissOnBackdropPress) onRequestClose();
   };
 
   return (
-    <Modal
-      onRequestClose={onRequestClose}
-      visible={visible}
-      animationType="fade"
-      transparent
-    >
-      <Pressable style={styles.backdrop} onPress={handleBackDropOnPress}>
-        <Pressable
-          style={styles.modalView}
-          onPress={(e) => e.stopPropagation()}
-        >
-          <Text style={styles.title}>{title}</Text>
+    <Pressable style={styles.backdrop} onPress={handleBackDropOnPress}>
+      <Pressable style={styles.modalView} onPress={(e) => e.stopPropagation()}>
+        <Text style={styles.title}>{title}</Text>
 
-          {!!message && <Text style={styles.message}>{message}</Text>}
+        {!!message && <Text style={styles.message}>{message}</Text>}
 
-          {prompt && (
-            <TextInput
-              value={value}
-              onChangeText={setValue}
-              placeholder={placeHolderText}
-              style={styles.input}
-            />
-          )}
+        {prompt && (
+          <TextInput
+            value={value}
+            onChangeText={setValue}
+            placeholder={placeHolderText}
+            style={styles.input}
+          />
+        )}
 
-          <View style={styles.buttonRow}>
-            {!!onSecondary && (
-              <Pressable style={styles.button} onPress={onSecondary}>
-                <Text style={secondaryButtonRed ? styles.redText : undefined}>
-                  {secondaryButtonText}
-                </Text>
-              </Pressable>
-            )}
-
-            <Pressable
-              style={[styles.button, styles.primaryButton]}
-              onPress={() => onPrimary(prompt ? value : undefined)}
-            >
-              <Text style={primaryButtonRed ? styles.redText : undefined}>
-                {primaryButtonText}
+        <View style={styles.buttonRow}>
+          {!!onSecondary && (
+            <Pressable style={styles.button} onPress={onSecondary}>
+              <Text style={secondaryButtonRed ? styles.redText : undefined}>
+                {secondaryButtonText}
               </Text>
             </Pressable>
-          </View>
-        </Pressable>
+          )}
+
+          <Pressable
+            style={[styles.button, styles.primaryButton]}
+            onPress={() => onPrimary(prompt ? value : undefined)}
+          >
+            <Text style={primaryButtonRed ? styles.redText : undefined}>
+              {primaryButtonText}
+            </Text>
+          </Pressable>
+        </View>
       </Pressable>
-    </Modal>
+    </Pressable>
   );
 }
 

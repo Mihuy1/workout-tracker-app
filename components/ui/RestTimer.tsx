@@ -14,7 +14,8 @@ export const RestTimer = ({ duration, restStartTrigger }: RestTimerProps) => {
   const [isActive, setIsActive] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
 
-  const animatedProgress = useRef(new Animated.Value(1)).current;
+  // const animatedProgress = useRef(new Animated.Value(1)).current;
+  const [animatedProgress] = useState<Animated.Value>(new Animated.Value(1));
   const endTimeRef = useRef<number | null>(null);
   const intervalRef = useRef<number | undefined>(undefined);
   const isActiveRef = useRef<boolean>(false);
@@ -110,13 +111,13 @@ export const RestTimer = ({ duration, restStartTrigger }: RestTimerProps) => {
       intervalRef.current = undefined;
     }
 
-    setIsActive(false);
+    // setIsActive(false);
     isActiveRef.current = false;
 
-    setIsPaused(false);
+    // setIsPaused(false);
     isPausedRef.current = false;
 
-    setTimeLeft(durationMs);
+    // setTimeLeft(durationMs);
     timeLeftRef.current = durationMs;
 
     animatedProgress.setValue(1);
@@ -176,7 +177,7 @@ export const RestTimer = ({ duration, restStartTrigger }: RestTimerProps) => {
 
   return (
     <>
-      {(isActiveRef.current || isPausedRef.current) && (
+      {(isActive || isPaused) && (
         <View style={styles.container}>
           <Animated.View
             style={[

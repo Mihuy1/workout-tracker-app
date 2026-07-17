@@ -33,32 +33,17 @@ export type CompletedWorkout = {
 
 export default function TabTwoScreen() {
   const queryClient = useQueryClient();
-  const [history, setHistory] = useState<CompletedWorkout[]>([]);
+  // const [history, setHistory] = useState<CompletedWorkout[]>([]);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [selectedWorkoutId, setSelectedWorkoutId] = useState<string | null>(
     null,
   );
-  const openDeleteModal = (id: string) => setSelectedWorkoutId(id);
+  // const openDeleteModal = (id: string) => setSelectedWorkoutId(id);
   const closeDeleteModal = () => setSelectedWorkoutId(null);
   const screenBg = useThemeColor({}, "background");
   const cardBg = useThemeColor({}, "surface");
   const cardBorder = useThemeColor({}, "border");
   const shadowColor = "#000";
-
-  // useFocusEffect(
-  //   useCallback(() => {
-  //     let cancelled = false;
-
-  //     (async () => {
-  //       const data = await getCompletedExercises();
-  //       if (!cancelled) setHistory(data);
-  //     })();
-
-  //     return () => {
-  //       cancelled = true;
-  //     };
-  //   }, []),
-  // );
 
   const fetchHistory = async () => {
     try {

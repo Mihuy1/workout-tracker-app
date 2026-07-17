@@ -7,7 +7,6 @@ import {
 import { CustomModal } from "@/components/ui/customModal";
 import { NewWorkout } from "@/components/ui/newWorkout";
 import type { SetRow } from "@/types/workout";
-import { usePreventRemove } from "@react-navigation/native";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   router,
@@ -15,6 +14,7 @@ import {
   useLocalSearchParams,
   useNavigation,
 } from "expo-router";
+import { usePreventRemove } from "expo-router/react-navigation";
 import { useEffect, useRef, useState } from "react";
 import { Button } from "react-native";
 import { useWorkout } from "./contexts/workoutContext";
@@ -42,7 +42,7 @@ export default function NewWorkoutScreen() {
   const [isFinishing, setIsFinishing] = useState(false);
   const shouldExitRef = useRef(false);
 
-  const startTimeRef = useRef<number>(Date.now());
+  const startTimeRef = useRef<number | null>(null);
   const [elapsedTimeMs, setElapsedTimeMs] = useState<number>(0);
 
   const [discardVisible, setDiscardVisible] = useState(false);
@@ -70,7 +70,11 @@ export default function NewWorkoutScreen() {
       presetName: string | null;
       shouldUpdatePreset: boolean;
     }) => {
-      const workoutDurMs = Date.now() - startTimeRef.current;
+      const startedAt = startTimeRef.current;
+
+      if (startedAt === null) throw Error("Workout timer has not started");
+
+      const workoutDurMs = Date.now() - startedAt;
       const completedExercises = exercises
         .map((exercise) => ({
           ...exercise,
@@ -147,8 +151,11 @@ export default function NewWorkoutScreen() {
   }, [presetTitle]);
 
   useEffect(() => {
+    const startedAt = Date.now();
+    startTimeRef.current = startedAt;
+
     const id = setInterval(() => {
-      setElapsedTimeMs(Date.now() - startTimeRef.current);
+      setElapsedTimeMs(Date.now() - startedAt);
     }, 1000);
 
     return () => clearInterval(id);

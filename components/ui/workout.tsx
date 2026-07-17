@@ -1,7 +1,7 @@
 import { useWorkout } from "@/app/contexts/workoutContext";
 import { useThemeColor } from "@/hooks/use-theme-color";
 import { router } from "expo-router";
-import React, { useState } from "react";
+import { useState } from "react";
 import { Button, Pressable, StyleSheet, TextInput, View } from "react-native";
 import { ThemedText } from "../themed-text";
 import { CustomModal } from "./customModal";
@@ -14,7 +14,7 @@ type WorkoutProps = {
   workoutName: string;
   workoutMechanic?: string | null;
   prefilledSets?: Record<string, any>;
-  workoutRestTime: number;
+  fallbackRestTime?: number;
 };
 
 export default function Workout({
@@ -22,7 +22,7 @@ export default function Workout({
   workoutName,
   workoutMechanic,
   prefilledSets,
-  workoutRestTime,
+  fallbackRestTime = 120,
 }: WorkoutProps) {
   const {
     exercises,
@@ -39,7 +39,7 @@ export default function Workout({
 
   const exercise = exercises.find((ex) => ex.name === workoutName);
   const sets = exercise?.sets ?? [];
-  const rest = exercise?.restTime;
+  const restTime = exercise?.restTime || fallbackRestTime;
 
   const borderColor = useThemeColor({}, "border");
   const surface = useThemeColor({}, "surface");
@@ -82,17 +82,14 @@ export default function Workout({
         )}
 
         <RestTimePicker
-          restTime={rest ? rest : workoutRestTime}
+          restTime={restTime}
           setRestTime={(t) => setRestTime(workoutName, t)}
         />
       </View>
 
       {alreadyAdded && (
         <>
-          <RestTimer
-            duration={rest ? rest : workoutRestTime}
-            restStartTrigger={restStartTrigger}
-          />
+          <RestTimer duration={restTime} restStartTrigger={restStartTrigger} />
           <View style={[styles.tableHeader, { borderColor }]}>
             <ThemedText
               type="defaultSemiBold"
