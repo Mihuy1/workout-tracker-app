@@ -245,7 +245,10 @@ export default function NewWorkoutScreen() {
         primaryButtonText="Yes"
         secondaryButtonText="No"
         primaryButtonRed={true}
-        onRequestClose={() => setDiscardVisible(false)}
+        onRequestClose={() => {
+          setDiscardVisible(false);
+          pendingNavActionRef.current = null;
+        }}
         onPrimary={() => {
           setDiscardVisible(false);
           setIsFinishing(true);
