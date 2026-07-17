@@ -15,7 +15,7 @@ export const RestTimer = ({ duration, restStartTrigger }: RestTimerProps) => {
   const [isPaused, setIsPaused] = useState(false);
 
   // const animatedProgress = useRef(new Animated.Value(1)).current;
-  const [animatedProgress] = useState<Animated.Value>(new Animated.Value(1));
+  const [animatedProgress] = useState<Animated.Value>(() => new Animated.Value(1));
   const endTimeRef = useRef<number | null>(null);
   const intervalRef = useRef<number | undefined>(undefined);
   const isActiveRef = useRef<boolean>(false);
