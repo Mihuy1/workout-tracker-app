@@ -1,4 +1,5 @@
 import { ThemedText } from "@/components/themed-text";
+import { useThemeColor } from "@/hooks/use-theme-color";
 import React from "react";
 import {
   Platform,
@@ -24,12 +25,16 @@ export type CustomButtonProps = {
 export function CustomButton({
   title,
   onPress,
-  backgroundColor = "#007AFF",
-  textColor = "#FFFFFF",
+  backgroundColor,
+  textColor,
   disabled = false,
   style,
   textStyle,
 }: CustomButtonProps) {
+  const defaultBackgroundColor = useThemeColor({}, "primary");
+  const defaultTextColor = useThemeColor({}, "onPrimary");
+  const resolvedBackgroundColor = backgroundColor ?? defaultBackgroundColor;
+  const resolvedTextColor = textColor ?? defaultTextColor;
   const pressedOpacity = Platform.OS === "ios" ? 0.5 : 0.85;
 
   return (
@@ -39,7 +44,7 @@ export function CustomButton({
       style={({ pressed }) => [
         styles.button,
         {
-          backgroundColor,
+          backgroundColor: resolvedBackgroundColor,
           opacity: disabled ? 0.5 : pressed ? pressedOpacity : 1,
         },
         style,
@@ -47,7 +52,7 @@ export function CustomButton({
       accessibilityRole="button"
       accessibilityState={{ disabled }}
     >
-      <ThemedText style={[styles.title, { color: textColor }, textStyle]}>
+      <ThemedText style={[styles.title, { color: resolvedTextColor }, textStyle]}>
         {title}
       </ThemedText>
     </Pressable>

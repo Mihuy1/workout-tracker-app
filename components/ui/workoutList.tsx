@@ -11,6 +11,7 @@ export function WorkoutList() {
   const [text, onChangeText] = useState("");
   const { checkIfExerciseAlreadyAdded, getExercises } = useWorkout();
   const workoutExercises = getExercises();
+  const screenBg = useThemeColor({}, "background");
   const textColor = useThemeColor({}, "text");
   const borderColor = useThemeColor({}, "border");
   const surface = useThemeColor({}, "surface");
@@ -40,7 +41,7 @@ export function WorkoutList() {
   }, [text, fuse, filtered]);
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: screenBg }]}>
       <ThemedText type="title">Exercises</ThemedText>
       <TextInput
         value={text}

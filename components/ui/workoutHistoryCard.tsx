@@ -24,7 +24,8 @@ export default function WorkoutHistoryCard({
   const surfaceMuted = useThemeColor({}, "surfaceMuted");
   const border = useThemeColor({}, "border");
   const mutedText = useThemeColor({}, "mutedText");
-  const accent = useThemeColor({}, "tint");
+  // primary keeps hierarchy in dark mode (tint is white there)
+  const accent = useThemeColor({}, "primary");
   const rowEven = useThemeColor({}, "surface");
 
   return (

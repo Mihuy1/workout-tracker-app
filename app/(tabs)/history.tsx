@@ -6,7 +6,7 @@ import { WorkoutTimer } from "@/components/ui/workoutTimer";
 import { useThemeColor } from "@/hooks/use-theme-color";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
+import { FlatList, Pressable, StyleSheet, View } from "react-native";
 import Animated, { LinearTransition } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 import {
@@ -43,6 +43,7 @@ export default function TabTwoScreen() {
   const screenBg = useThemeColor({}, "background");
   const cardBg = useThemeColor({}, "surface");
   const cardBorder = useThemeColor({}, "border");
+  const dangerColor = useThemeColor({}, "danger");
   const shadowColor = "#000";
 
   const fetchHistory = async () => {
@@ -89,7 +90,12 @@ export default function TabTwoScreen() {
     // setExpandedId((prev) => (prev === id ? null : prev));
   };
 
-  if (isLoading) return <Text>Loaidng...</Text>;
+  if (isLoading)
+    return (
+      <SafeAreaView style={{ flex: 1, backgroundColor: screenBg }}>
+        <ThemedText type="title">Loading...</ThemedText>
+      </SafeAreaView>
+    );
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: screenBg }}>
@@ -143,7 +149,11 @@ export default function TabTwoScreen() {
                           setSelectedWorkoutId(item.id);
                         }}
                       >
-                        <IconSymbol name={"x.circle"} size={18} color={"red"} />
+                        <IconSymbol
+                          name={"x.circle"}
+                          size={18}
+                          color={dangerColor}
+                        />
                       </Pressable>
                     </View>
                   </View>

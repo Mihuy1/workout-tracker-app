@@ -21,12 +21,14 @@ import {
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 export default function HomeScreen() {
   const queryClient = useQueryClient();
+  const screenBg = useThemeColor({}, "background");
   const cardBackground = useThemeColor({}, "surface");
   const cardBorder = useThemeColor({}, "border");
   const buttonBackground = useThemeColor({}, "surfaceMuted");
-  const tintColor = useThemeColor({}, "tint");
+  const primaryColor = useThemeColor({}, "primary");
+  // primary keeps hierarchy in dark mode (tint is white there)
   const buttonTextColor =
-    Platform.OS === "ios" ? PlatformColor("systemBlue") : tintColor;
+    Platform.OS === "ios" ? PlatformColor("systemBlue") : primaryColor;
   const [modalVisible, setModalVisible] = useState(false);
   const [deleteRoutineName, setDeleteRoutineName] = useState("");
   const [deleteRoutineId, setDeleteRoutineId] = useState<string | null>(null);
@@ -70,13 +72,13 @@ export default function HomeScreen() {
 
   if (isLoading)
     return (
-      <View style={styles.container}>
+      <View style={[styles.container, { backgroundColor: screenBg }]}>
         <ThemedText type="title">Loading...</ThemedText>
       </View>
     );
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: screenBg }]}>
       <CustomModal
         visible={modalVisible}
         title={`Remove ${deleteRoutineName} ?`}

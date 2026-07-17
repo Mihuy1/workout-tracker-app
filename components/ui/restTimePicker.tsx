@@ -1,3 +1,4 @@
+import { useThemeColor } from "@/hooks/use-theme-color";
 import { useState } from "react";
 import {
   Button,
@@ -24,6 +25,14 @@ export const RestTimePicker = ({
     Math.floor(restTime / 60).toString(),
   );
   const [showPicker, setShowPicker] = useState(false);
+
+  const overlay = useThemeColor({}, "overlay");
+  const surface = useThemeColor({}, "surface");
+  const textColor = useThemeColor({}, "text");
+  const inputBackground = useThemeColor({}, "inputBackground");
+  const borderColor = useThemeColor({}, "border");
+  const iconColor = useThemeColor({}, "icon");
+  const primaryColor = useThemeColor({}, "primary");
 
   // useEffect(() => {
   //   setSeconds((restTime % 60).toString());
@@ -64,7 +73,7 @@ export const RestTimePicker = ({
       }}
     >
       <Pressable onPress={handleOpen}>
-        <IconSymbol name="timer" color="black" />
+        <IconSymbol name="timer" color={iconColor} />
       </Pressable>
       <Modal
         onRequestClose={() => setShowPicker(false)}
@@ -72,30 +81,47 @@ export const RestTimePicker = ({
         animationType="fade"
         transparent
       >
-        <Pressable style={styles.backdrop} onPress={() => setShowPicker(false)}>
+        <Pressable
+          style={[styles.backdrop, { backgroundColor: overlay }]}
+          onPress={() => setShowPicker(false)}
+        >
           <Pressable
-            style={styles.modalView}
+            style={[styles.modalView, { backgroundColor: surface }]}
             onPress={(e) => e.stopPropagation()}
           >
             <View style={styles.inputsView}>
               <TextInput
-                style={styles.textInput}
+                style={[
+                  styles.textInput,
+                  {
+                    backgroundColor: inputBackground,
+                    borderColor,
+                    color: textColor,
+                  },
+                ]}
                 keyboardType="numeric"
                 value={minutes}
                 onChangeText={(text) => handleNumberInput(text)}
                 autoFocus
               />
-              <Text style={styles.text}>Min</Text>
+              <Text style={[styles.text, { color: textColor }]}>Min</Text>
 
               <TextInput
-                style={styles.textInput}
+                style={[
+                  styles.textInput,
+                  {
+                    backgroundColor: inputBackground,
+                    borderColor,
+                    color: textColor,
+                  },
+                ]}
                 keyboardType="numeric"
                 value={seconds}
                 onChangeText={(text) => handleSecondsInput(text)}
               />
-              <Text style={styles.text}>Sec</Text>
+              <Text style={[styles.text, { color: textColor }]}>Sec</Text>
             </View>
-            <Button title="Apply" onPress={handleApply} />
+            <Button title="Apply" onPress={handleApply} color={primaryColor} />
           </Pressable>
         </Pressable>
       </Modal>
@@ -106,7 +132,6 @@ export const RestTimePicker = ({
 const styles = StyleSheet.create({
   modalView: {
     margin: 20,
-    backgroundColor: "white",
     borderRadius: 20,
     padding: 24,
     width: "88%",
@@ -129,8 +154,6 @@ const styles = StyleSheet.create({
 
   textInput: {
     borderWidth: 1,
-    // borderColor: "#ccc",
-    backgroundColor: "#f0f0f0",
     paddingVertical: 8,
     paddingHorizontal: 12,
   },
@@ -140,7 +163,6 @@ const styles = StyleSheet.create({
   },
   backdrop: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.35)",
     justifyContent: "center",
     alignItems: "center",
   },

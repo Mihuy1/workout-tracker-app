@@ -1,3 +1,4 @@
+import { useThemeColor } from "@/hooks/use-theme-color";
 import { useState } from "react";
 import {
   Modal,
@@ -60,6 +61,22 @@ function CustomModalContent({
 }: CustomModalProps) {
   const [value, setValue] = useState(defaultValue);
 
+  const overlay = useThemeColor({}, "overlay");
+  const surface = useThemeColor({}, "surface");
+  const textColor = useThemeColor({}, "text");
+  const mutedText = useThemeColor({}, "mutedText");
+  const placeholder = useThemeColor({}, "placeholder");
+  const inputBackground = useThemeColor({}, "inputBackground");
+  const borderColor = useThemeColor({}, "border");
+  const buttonBackground = useThemeColor({}, "surfaceMuted");
+  const primaryColor = useThemeColor({}, "primary");
+  const onPrimaryColor = useThemeColor({}, "onPrimary");
+  const dangerColor = useThemeColor({}, "danger");
+  const dangerText = useThemeColor({}, "dangerText");
+  const primaryButtonBackground = primaryButtonRed
+    ? dangerColor
+    : primaryColor;
+
   // useEffect(() => {
   //   if (visible) setValue(defaultValue);
   // }, [visible, defaultValue]);
@@ -69,37 +86,58 @@ function CustomModalContent({
   };
 
   return (
-    <Pressable style={styles.backdrop} onPress={handleBackDropOnPress}>
-      <Pressable style={styles.modalView} onPress={(e) => e.stopPropagation()}>
-        <Text style={styles.title}>{title}</Text>
+    <Pressable
+      style={[styles.backdrop, { backgroundColor: overlay }]}
+      onPress={handleBackDropOnPress}
+    >
+      <Pressable
+        style={[styles.modalView, { backgroundColor: surface }]}
+        onPress={(e) => e.stopPropagation()}
+      >
+        <Text style={[styles.title, { color: textColor }]}>{title}</Text>
 
-        {!!message && <Text style={styles.message}>{message}</Text>}
+        {!!message && (
+          <Text style={[styles.message, { color: mutedText }]}>{message}</Text>
+        )}
 
         {prompt && (
           <TextInput
             value={value}
             onChangeText={setValue}
             placeholder={placeHolderText}
-            style={styles.input}
+            placeholderTextColor={placeholder}
+            style={[
+              styles.input,
+              {
+                backgroundColor: inputBackground,
+                borderColor,
+                color: textColor,
+              },
+            ]}
           />
         )}
 
         <View style={styles.buttonRow}>
           {!!onSecondary && (
-            <Pressable style={styles.button} onPress={onSecondary}>
-              <Text style={secondaryButtonRed ? styles.redText : undefined}>
+            <Pressable
+              style={[styles.button, { backgroundColor: buttonBackground }]}
+              onPress={onSecondary}
+            >
+              <Text
+                style={{
+                  color: secondaryButtonRed ? dangerText : textColor,
+                }}
+              >
                 {secondaryButtonText}
               </Text>
             </Pressable>
           )}
 
           <Pressable
-            style={[styles.button, styles.primaryButton]}
+            style={[styles.button, { backgroundColor: primaryButtonBackground }]}
             onPress={() => onPrimary(prompt ? value : undefined)}
           >
-            <Text style={primaryButtonRed ? styles.redText : undefined}>
-              {primaryButtonText}
-            </Text>
+            <Text style={{ color: onPrimaryColor }}>{primaryButtonText}</Text>
           </Pressable>
         </View>
       </Pressable>
@@ -110,13 +148,11 @@ function CustomModalContent({
 const styles = StyleSheet.create({
   backdrop: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.35)",
     justifyContent: "center",
     alignItems: "center",
   },
   modalView: {
     margin: 20,
-    backgroundColor: "white",
     borderRadius: 20,
     padding: 24,
     width: "88%",
@@ -144,9 +180,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 10,
     borderRadius: 10,
-    backgroundColor: "#f5f5f5",
     borderWidth: 1,
-    borderColor: "#d9d9d9",
   },
   buttonRow: {
     flexDirection: "row",
@@ -157,8 +191,5 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 10,
     borderRadius: 10,
-    backgroundColor: "#f2f2f2",
   },
-  primaryButton: { backgroundColor: "#e6e6e6" },
-  redText: { color: "red" },
 });

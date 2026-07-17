@@ -3,6 +3,7 @@ import {
   getAllLatestExercisesMap,
   getSavedPresetByTitle,
 } from "@/app/storage/completedExercises";
+import { useThemeColor } from "@/hooks/use-theme-color";
 import { router } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import { Button, FlatList, StyleSheet, View } from "react-native";
@@ -17,6 +18,7 @@ type NewWorkoutProps = {
 export function NewWorkout({ presetTitle, elapsedTimeMs }: NewWorkoutProps) {
   const { exercises, addExercise, checkIfExerciseAlreadyAdded } = useWorkout();
   const [historyMap, setHistoryMap] = useState<Record<string, any>>({});
+  const screenBg = useThemeColor({}, "background");
 
   const loadedPresetRef = useRef<string | null>(null);
 
@@ -60,7 +62,7 @@ export function NewWorkout({ presetTitle, elapsedTimeMs }: NewWorkoutProps) {
   }, [presetTitle, addExercise, checkIfExerciseAlreadyAdded]);
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: screenBg }]}>
       <WorkoutTimer elapsedTimeMs={elapsedTimeMs}></WorkoutTimer>
 
       <FlatList

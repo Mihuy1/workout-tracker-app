@@ -30,9 +30,11 @@ function RoutineWorkout({
   const cardBackground = useThemeColor({}, "surface");
   const cardBorder = useThemeColor({}, "border");
   const buttonBackground = useThemeColor({}, "surfaceMuted");
-  const tintColor = useThemeColor({}, "tint");
+  const primaryColor = useThemeColor({}, "primary");
+  const dangerColor = useThemeColor({}, "danger");
+  // primary keeps hierarchy in dark mode (tint is white there)
   const buttonTextColor =
-    Platform.OS === "ios" ? PlatformColor("systemBlue") : tintColor;
+    Platform.OS === "ios" ? PlatformColor("systemBlue") : primaryColor;
   return (
     <View
       style={[
@@ -43,7 +45,7 @@ function RoutineWorkout({
       <View style={styles.topView}>
         <View style={styles.removeView}>
           <Pressable onPress={() => setModalVisible(item.title, item.id)}>
-            <IconSymbol name={"x.circle"} size={24} color={"red"} />
+            <IconSymbol name={"x.circle"} size={24} color={dangerColor} />
           </Pressable>
         </View>
 

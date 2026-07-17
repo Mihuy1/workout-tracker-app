@@ -1,3 +1,4 @@
+import { useThemeColor } from "@/hooks/use-theme-color";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Animated, Button, Easing, StyleSheet, View } from "react-native";
 import { WorkoutTimer } from "./workoutTimer";
@@ -21,6 +22,9 @@ export const RestTimer = ({ duration, restStartTrigger }: RestTimerProps) => {
   const isActiveRef = useRef<boolean>(false);
   const isPausedRef = useRef<boolean>(false);
   const timeLeftRef = useRef<number>(timeLeft);
+
+  const surfaceMuted = useThemeColor({}, "surfaceMuted");
+  const primaryColor = useThemeColor({}, "primary");
 
   useEffect(() => {
     isActiveRef.current = isActive;
@@ -178,11 +182,12 @@ export const RestTimer = ({ duration, restStartTrigger }: RestTimerProps) => {
   return (
     <>
       {(isActive || isPaused) && (
-        <View style={styles.container}>
+        <View style={[styles.container, { backgroundColor: surfaceMuted }]}>
           <Animated.View
             style={[
               styles.bar,
               {
+                backgroundColor: primaryColor,
                 transformOrigin: "left center",
                 transform: [{ scaleX: animatedProgress }],
               },
@@ -190,8 +195,18 @@ export const RestTimer = ({ duration, restStartTrigger }: RestTimerProps) => {
           />
           <WorkoutTimer elapsedTimeMs={timeLeft} />
           <View style={styles.timeAdjustRow}>
-            <Button title="-15" onPress={decreaseBy15} disabled={!isActive} />
-            <Button title="+15" onPress={incraseBy15} disabled={!isActive} />
+            <Button
+              title="-15"
+              onPress={decreaseBy15}
+              disabled={!isActive}
+              color={primaryColor}
+            />
+            <Button
+              title="+15"
+              onPress={incraseBy15}
+              disabled={!isActive}
+              color={primaryColor}
+            />
           </View>
 
           <View style={styles.buttonRow}>
@@ -199,9 +214,15 @@ export const RestTimer = ({ duration, restStartTrigger }: RestTimerProps) => {
               title="Start/Resume"
               onPress={() => start()}
               disabled={isActive}
+              color={primaryColor}
             />
-            <Button title="Pause" onPress={pause} disabled={!isActive} />
-            <Button title="Restart" onPress={restart} />
+            <Button
+              title="Pause"
+              onPress={pause}
+              disabled={!isActive}
+              color={primaryColor}
+            />
+            <Button title="Restart" onPress={restart} color={primaryColor} />
           </View>
         </View>
       )}
@@ -211,14 +232,12 @@ export const RestTimer = ({ duration, restStartTrigger }: RestTimerProps) => {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: "#ccc",
     borderRadius: 10,
     margin: 10,
     padding: 10,
   },
   bar: {
     height: 20,
-    backgroundColor: "#333",
     borderRadius: 10,
     marginBottom: 10,
   },

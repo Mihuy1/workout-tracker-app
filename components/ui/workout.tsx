@@ -47,6 +47,9 @@ export default function Workout({
   const textColor = useThemeColor({}, "text");
   const placeholderColor = useThemeColor({}, "placeholder");
   const iconColor = useThemeColor({}, "icon");
+  const dangerColor = useThemeColor({}, "danger");
+  const successColor = useThemeColor({}, "success");
+  const successMuted = useThemeColor({}, "successMuted");
 
   const [confirmVisible, setConfirmVisible] = useState(false);
 
@@ -72,7 +75,7 @@ export default function Workout({
 
         {alreadyAdded && (
           <Pressable onPress={() => setConfirmVisible(true)}>
-            <IconSymbol name="x.circle" size={24} color="red" />
+            <IconSymbol name="x.circle" size={24} color={dangerColor} />
           </Pressable>
         )}
       </View>
@@ -126,7 +129,7 @@ export default function Workout({
                 styles.tableRow,
                 { borderColor },
                 item.complete
-                  ? styles.complete
+                  ? { backgroundColor: successMuted }
                   : [styles.notComplete, { backgroundColor: surfaceMuted }],
               ]}
             >
@@ -138,7 +141,11 @@ export default function Workout({
                 style={[
                   styles.input,
                   styles.kgCol,
-                  { borderColor, color: textColor, backgroundColor: surface },
+                  {
+                    borderColor,
+                    color: textColor,
+                    backgroundColor: surface,
+                  },
                 ]}
                 value={item.weight}
                 onChangeText={(text) =>
@@ -217,12 +224,16 @@ export default function Workout({
                 <IconSymbol
                   name={item.complete ? "checkmark" : "circle"}
                   size={18}
-                  color={item.complete ? "green" : iconColor}
+                  color={item.complete ? successColor : iconColor}
                 />
               </Pressable>
               <View style={[styles.cell, styles.actionCol]}>
                 <Pressable onPress={() => removeSet(workoutName, item.id)}>
-                  <IconSymbol name="minus.circle" size={18} color="red" />
+                  <IconSymbol
+                    name="minus.circle"
+                    size={18}
+                    color={dangerColor}
+                  />
                 </Pressable>
               </View>
             </View>
@@ -302,10 +313,6 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     paddingHorizontal: 8,
     marginHorizontal: 6,
-  },
-
-  complete: {
-    backgroundColor: "#42f55d",
   },
 
   notComplete: {

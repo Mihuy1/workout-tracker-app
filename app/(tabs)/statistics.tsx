@@ -1,4 +1,5 @@
 import { ThemedText } from "@/components/themed-text";
+import { useThemeColor } from "@/hooks/use-theme-color";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useEffect } from "react";
 import { Button, StyleSheet } from "react-native";
@@ -9,6 +10,7 @@ import {
 } from "../storage/completedExercises";
 
 export default function Statistics() {
+  const screenBg = useThemeColor({}, "background");
   // const [data, setData] = useState([]);
 
   useEffect(() => {
@@ -53,7 +55,7 @@ export default function Statistics() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: screenBg }]}>
       <ThemedText type="title">Statistics</ThemedText>
       <Button title="Check Best Weight" onPress={checkBestWeight} />
       <Button title="Check Storage" onPress={checkStorage} />
