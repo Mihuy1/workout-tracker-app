@@ -17,6 +17,7 @@ import {
 import { usePreventRemove } from "expo-router/react-navigation";
 import { useEffect, useRef, useState } from "react";
 import { Button } from "react-native";
+import { useRestTimer } from "./contexts/restTimerContext";
 import { useWorkout } from "./contexts/workoutContext";
 
 const isValidCompletedSet = (set: SetRow): boolean => {
@@ -38,6 +39,7 @@ export default function NewWorkoutScreen() {
   const queryClient = useQueryClient();
   const { presetTitle } = useLocalSearchParams<{ presetTitle?: string }>();
   const { exercises, clearWorkout } = useWorkout();
+  const { clearRestTimer } = useRestTimer();
   const navigation = useNavigation();
   const [isFinishing, setIsFinishing] = useState(false);
   const shouldExitRef = useRef(false);
@@ -118,6 +120,7 @@ export default function NewWorkoutScreen() {
       }
 
       clearWorkout();
+      clearRestTimer();
       router.back();
     },
     onError: (error) => {
@@ -132,6 +135,7 @@ export default function NewWorkoutScreen() {
 
     shouldExitRef.current = false;
     clearWorkout();
+    clearRestTimer();
 
     const action = pendingNavActionRef.current;
     pendingNavActionRef.current = null;
@@ -140,7 +144,7 @@ export default function NewWorkoutScreen() {
     } else {
       router.back();
     }
-  }, [isFinishing, clearWorkout, navigation]);
+  }, [isFinishing, clearWorkout, clearRestTimer, navigation]);
 
   useEffect(() => {
     if (presetTitle) {
@@ -244,7 +248,6 @@ export default function NewWorkoutScreen() {
         message="Are you sure you want to discard this workout?"
         primaryButtonText="Yes"
         secondaryButtonText="No"
-        primaryButtonRed={true}
         onRequestClose={() => {
           setDiscardVisible(false);
           pendingNavActionRef.current = null;

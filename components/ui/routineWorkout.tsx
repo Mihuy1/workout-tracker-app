@@ -1,6 +1,5 @@
 import { useThemeColor } from "@/hooks/use-theme-color";
 import { router } from "expo-router";
-import React from "react";
 import {
   Platform,
   PlatformColor,
@@ -90,10 +89,15 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   topView: {
-    flexDirection: "row-reverse",
+    position: "relative",
+    flexDirection: "row",
+    paddingRight: 28,
   },
   removeView: {
-    marginLeft: "auto",
+    position: "absolute",
+    top: -6,
+    right: -6,
+    zIndex: 1,
   },
   exercisePreviewText: {
     marginBottom: 12,

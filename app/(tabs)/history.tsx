@@ -143,7 +143,7 @@ export default function TabTwoScreen() {
                           setSelectedWorkoutId(item.id);
                         }}
                       >
-                        <IconSymbol name={"x.circle"} size={18} color={"red"} />
+                        <IconSymbol name={"x.circle"} size={24} color={"red"} />
                       </Pressable>
                     </View>
                   </View>
@@ -168,8 +168,12 @@ const styles = StyleSheet.create({
     padding: 12,
   },
   removeView: {
-    marginLeft: "auto",
-    flexDirection: "row",
+    // marginLeft: "auto",
+    // flexDirection: "row",
+    position: "absolute",
+    top: -6,
+    right: -6,
+    zIndex: 1,
   },
   card: {
     paddingVertical: 12,
@@ -199,6 +203,7 @@ const styles = StyleSheet.create({
     position: "absolute",
   },
   titleContainer: {
+    position: "relative",
     flexDirection: "row",
     gap: 4,
     alignItems: "center",

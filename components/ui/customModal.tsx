@@ -1,3 +1,5 @@
+import { Colors } from "@/constants/theme";
+import { useColorScheme } from "@/hooks/use-color-scheme";
 import { useState } from "react";
 import {
   Modal,
@@ -59,10 +61,8 @@ function CustomModalContent({
   onRequestClose,
 }: CustomModalProps) {
   const [value, setValue] = useState(defaultValue);
-
-  // useEffect(() => {
-  //   if (visible) setValue(defaultValue);
-  // }, [visible, defaultValue]);
+  const theme = useColorScheme() === "dark" ? "dark" : "light";
+  const colors = Colors[theme];
 
   const handleBackDropOnPress = () => {
     if (dismissOnBackdropPress) onRequestClose();
@@ -70,34 +70,75 @@ function CustomModalContent({
 
   return (
     <Pressable style={styles.backdrop} onPress={handleBackDropOnPress}>
-      <Pressable style={styles.modalView} onPress={(e) => e.stopPropagation()}>
-        <Text style={styles.title}>{title}</Text>
+      <Pressable
+        style={[styles.modalView, { backgroundColor: colors.surface }]}
+        onPress={(e) => e.stopPropagation()}
+      >
+        <Text style={[styles.title, { color: colors.text }]}>{title}</Text>
 
-        {!!message && <Text style={styles.message}>{message}</Text>}
+        {!!message && (
+          <Text style={[styles.message, { color: colors.mutedText }]}>
+            {message}
+          </Text>
+        )}
 
         {prompt && (
           <TextInput
             value={value}
             onChangeText={setValue}
             placeholder={placeHolderText}
-            style={styles.input}
+            placeholderTextColor={colors.placeholder}
+            style={[
+              styles.input,
+              {
+                backgroundColor: colors.surfaceMuted,
+                borderColor: colors.border,
+                color: colors.text,
+              },
+            ]}
           />
         )}
 
         <View style={styles.buttonRow}>
           {!!onSecondary && (
-            <Pressable style={styles.button} onPress={onSecondary}>
-              <Text style={secondaryButtonRed ? styles.redText : undefined}>
+            <Pressable
+              style={({ pressed }) => [
+                styles.button,
+                {
+                  backgroundColor: colors.noButtonBackground,
+                  opacity: pressed ? 0.7 : 1,
+                },
+              ]}
+              onPress={onSecondary}
+            >
+              <Text
+                style={[
+                  { color: colors.noButtonText },
+                  secondaryButtonRed ? styles.redText : undefined,
+                ]}
+              >
                 {secondaryButtonText}
               </Text>
             </Pressable>
           )}
 
           <Pressable
-            style={[styles.button, styles.primaryButton]}
+            style={({ pressed }) => [
+              styles.button,
+              styles.primaryButton,
+              {
+                backgroundColor: colors.border,
+                opacity: pressed ? 0.7 : 1,
+              },
+            ]}
             onPress={() => onPrimary(prompt ? value : undefined)}
           >
-            <Text style={primaryButtonRed ? styles.redText : undefined}>
+            <Text
+              style={[
+                { color: colors.text, fontWeight: "600" },
+                primaryButtonRed ? styles.redText : undefined,
+              ]}
+            >
               {primaryButtonText}
             </Text>
           </Pressable>
@@ -116,7 +157,6 @@ const styles = StyleSheet.create({
   },
   modalView: {
     margin: 20,
-    backgroundColor: "white",
     borderRadius: 20,
     padding: 24,
     width: "88%",
@@ -144,9 +184,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 10,
     borderRadius: 10,
-    backgroundColor: "#f5f5f5",
     borderWidth: 1,
-    borderColor: "#d9d9d9",
   },
   buttonRow: {
     flexDirection: "row",
@@ -157,8 +195,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 10,
     borderRadius: 10,
-    backgroundColor: "#f2f2f2",
   },
-  primaryButton: { backgroundColor: "#e6e6e6" },
+  primaryButton: {},
   redText: { color: "red" },
 });

@@ -1,3 +1,4 @@
+import { useThemeColor } from "@/hooks/use-theme-color";
 import { useState } from "react";
 import {
   Button,
@@ -64,7 +65,7 @@ export const RestTimePicker = ({
       }}
     >
       <Pressable onPress={handleOpen}>
-        <IconSymbol name="timer" color="black" />
+        <IconSymbol name="timer" color={useThemeColor({}, "iconColor")} />
       </Pressable>
       <Modal
         onRequestClose={() => setShowPicker(false)}

@@ -19,8 +19,22 @@ export const Colors = {
     placeholder: "#8E8E93",
     tint: tintColorLight,
     icon: "#687076",
+    iconColor: "black",
     tabIconDefault: "#687076",
     tabIconSelected: tintColorLight,
+    barColor: "#007AFF",
+
+    completedBackground: "#E7F6EC",
+    completedBorder: "#B7DFC4",
+    success: "#257A48",
+
+    restTimeBackground: "#FFFFFF",
+    restTimeBorder: "#D1D5DB",
+    progressTrack: "#E5E7EB",
+    progressFill: "#3B8D62",
+
+    noButtonBackground: "#d80000",
+    noButtonText: "#fff",
   },
   dark: {
     text: "#ECEDEE",
@@ -32,8 +46,22 @@ export const Colors = {
     placeholder: "#8E8E93",
     tint: tintColorDark,
     icon: "#9BA1A6",
+    iconColor: "white",
     tabIconDefault: "#9BA1A6",
     tabIconSelected: tintColorDark,
+    barColor: "#0A84FF",
+
+    completedBackground: "#193B2A",
+    completedBorder: "#2F6748",
+    success: "#68D391",
+
+    restTimeBackground: "#24282F",
+    restTimeBorder: "#3D434D",
+    progressTrack: "#3A4049",
+    progressFill: "#58BE83",
+
+    noButtonBackground: "#d80000",
+    noButtonText: "#fff",
   },
 };
 

@@ -6,6 +6,7 @@ import {
 import { router } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import { Button, FlatList, StyleSheet, View } from "react-native";
+import { RestTimer } from "./RestTimer";
 import Workout from "./workout";
 import { WorkoutTimer } from "./workoutTimer";
 
@@ -61,27 +62,31 @@ export function NewWorkout({ presetTitle, elapsedTimeMs }: NewWorkoutProps) {
 
   return (
     <View style={styles.container}>
-      <WorkoutTimer elapsedTimeMs={elapsedTimeMs}></WorkoutTimer>
+      <View style={styles.content}>
+        <WorkoutTimer elapsedTimeMs={elapsedTimeMs}></WorkoutTimer>
 
-      <FlatList
-        data={exercises}
-        keyExtractor={(_, index) => index.toString()}
-        renderItem={({ item }) => (
-          <View style={{ marginBottom: 5 }}>
-            <Workout
-              workoutName={item.name}
-              workoutMechanic={item.mechanic}
-              prefilledSets={historyMap[item.name]?.sets || []}
-              fallbackRestTime={historyMap[item.name]?.restTime || 120}
-            />
-          </View>
-        )}
-      />
+        <FlatList
+          style={styles.exerciseList}
+          data={exercises}
+          keyExtractor={(_, index) => index.toString()}
+          renderItem={({ item }) => (
+            <View style={{ marginBottom: 5 }}>
+              <Workout
+                workoutName={item.name}
+                workoutMechanic={item.mechanic}
+                prefilledSets={historyMap[item.name]?.sets || []}
+                fallbackRestTime={historyMap[item.name]?.restTime || 120}
+              />
+            </View>
+          )}
+        />
 
-      <Button
-        title="Add an exercise"
-        onPress={() => router.push("/exercise-list")}
-      />
+        <Button
+          title="Add an exercise"
+          onPress={() => router.push("/exercise-list")}
+        />
+      </View>
+      <RestTimer />
     </View>
   );
 }
@@ -89,7 +94,13 @@ export function NewWorkout({ presetTitle, elapsedTimeMs }: NewWorkoutProps) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  content: {
+    flex: 1,
     padding: 10,
+  },
+  exerciseList: {
+    flex: 1,
   },
   headerRow: {
     flexDirection: "row",

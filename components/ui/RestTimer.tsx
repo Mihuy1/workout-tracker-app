@@ -1,21 +1,37 @@
+import { useRestTimer } from "@/app/contexts/restTimerContext";
+import { Colors } from "@/constants/theme";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Animated, Button, Easing, StyleSheet, View } from "react-native";
+import {
+  Animated,
+  Button,
+  Easing,
+  StyleSheet,
+  useColorScheme,
+  View,
+} from "react-native";
 import { WorkoutTimer } from "./workoutTimer";
 
-interface RestTimerProps {
-  duration: number;
-  restStartTrigger: number;
-}
+// interface RestTimerProps {
+//   duration: number;
+//   restStartTrigger: number;
+// }
 
-export const RestTimer = ({ duration, restStartTrigger }: RestTimerProps) => {
-  const durationMs = duration * 1000;
+export const RestTimer = () => {
+  const { restDuration, restStartTrigger } = useRestTimer();
+
+  const durationMs = restDuration * 1000;
+
+  const theme = useColorScheme() === "dark" ? "dark" : "light";
+  const colors = Colors[theme];
 
   const [timeLeft, setTimeLeft] = useState(durationMs);
   const [isActive, setIsActive] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
 
   // const animatedProgress = useRef(new Animated.Value(1)).current;
-  const [animatedProgress] = useState<Animated.Value>(() => new Animated.Value(1));
+  const [animatedProgress] = useState<Animated.Value>(
+    () => new Animated.Value(1),
+  );
   const endTimeRef = useRef<number | null>(null);
   const intervalRef = useRef<number | undefined>(undefined);
   const isActiveRef = useRef<boolean>(false);
@@ -178,21 +194,38 @@ export const RestTimer = ({ duration, restStartTrigger }: RestTimerProps) => {
   return (
     <>
       {(isActive || isPaused) && (
-        <View style={styles.container}>
+        <View
+          style={[
+            styles.container,
+            {
+              backgroundColor: colors.restTimeBackground,
+              borderColor: colors.restTimeBorder,
+            },
+          ]}
+        >
+          <View style={styles.restTimeText}>
+            <WorkoutTimer
+              fontSize={30}
+              fontWeight={600}
+              lineHeight={58}
+              elapsedTimeMs={timeLeft}
+            />
+          </View>
+          <View style={styles.timeAdjustRow}>
+            <Button title="-15" onPress={decreaseBy15} disabled={!isActive} />
+            <Button title="+15" onPress={incraseBy15} disabled={!isActive} />
+          </View>
+
           <Animated.View
             style={[
               styles.bar,
               {
+                backgroundColor: colors.barColor,
                 transformOrigin: "left center",
                 transform: [{ scaleX: animatedProgress }],
               },
             ]}
           />
-          <WorkoutTimer elapsedTimeMs={timeLeft} />
-          <View style={styles.timeAdjustRow}>
-            <Button title="-15" onPress={decreaseBy15} disabled={!isActive} />
-            <Button title="+15" onPress={incraseBy15} disabled={!isActive} />
-          </View>
 
           <View style={styles.buttonRow}>
             <Button
@@ -211,21 +244,31 @@ export const RestTimer = ({ duration, restStartTrigger }: RestTimerProps) => {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: "#ccc",
-    borderRadius: 10,
-    margin: 10,
-    padding: 10,
+    borderWidth: 1,
+    borderTopLeftRadius: 10,
+    borderTopRightRadius: 10,
+    flexShrink: 0,
+
+    // Keep the timer visually separated from the scrollable content.
+    elevation: 5, // Android
+    shadowColor: "#000", // iOS
+    shadowOffset: { width: 0, height: -2 }, // iOS
+    shadowOpacity: 0.1, // iOS
+    shadowRadius: 4, // iOS
+  },
+  restTimeText: {
+    alignItems: "center",
   },
   bar: {
-    height: 20,
-    backgroundColor: "#333",
+    height: 12,
     borderRadius: 10,
-    marginBottom: 10,
+    // marginBottom: 10,
   },
   buttonRow: {
     flexDirection: "row",
     justifyContent: "space-around",
     marginTop: 10,
+    paddingBottom: 30,
   },
   timeAdjustRow: {
     flexDirection: "row",

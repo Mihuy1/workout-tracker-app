@@ -1,3 +1,4 @@
+import { useRestTimer } from "@/app/contexts/restTimerContext";
 import { useWorkout } from "@/app/contexts/workoutContext";
 import { useThemeColor } from "@/hooks/use-theme-color";
 import { router } from "expo-router";
@@ -7,7 +8,6 @@ import { ThemedText } from "../themed-text";
 import { CustomModal } from "./customModal";
 import { IconSymbol } from "./icon-symbol";
 import { RestTimePicker } from "./restTimePicker";
-import { RestTimer } from "./RestTimer";
 
 type WorkoutProps = {
   workoutId?: string;
@@ -35,6 +35,9 @@ export default function Workout({
     handleCompleteSet,
     setRestTime,
   } = useWorkout();
+
+  const { triggerRestTimer } = useRestTimer();
+
   const alreadyAdded = checkIfExerciseAlreadyAdded(workoutName);
 
   const exercise = exercises.find((ex) => ex.name === workoutName);
@@ -48,9 +51,11 @@ export default function Workout({
   const placeholderColor = useThemeColor({}, "placeholder");
   const iconColor = useThemeColor({}, "icon");
 
-  const [confirmVisible, setConfirmVisible] = useState(false);
+  const completedBackground = useThemeColor({}, "completedBackground");
+  const completedBorder = useThemeColor({}, "completedBorder");
+  const successColor = useThemeColor({}, "success");
 
-  const [restStartTrigger, setRestStartTrigger] = useState(0);
+  const [confirmVisible, setConfirmVisible] = useState(false);
 
   return (
     <View style={[styles.container, { borderColor, backgroundColor: surface }]}>
@@ -89,7 +94,7 @@ export default function Workout({
 
       {alreadyAdded && (
         <>
-          <RestTimer duration={restTime} restStartTrigger={restStartTrigger} />
+          {/* <RestTimer duration={restTime} restStartTrigger={restStartTrigger} /> */}
           <View style={[styles.tableHeader, { borderColor }]}>
             <ThemedText
               type="defaultSemiBold"
@@ -126,8 +131,14 @@ export default function Workout({
                 styles.tableRow,
                 { borderColor },
                 item.complete
-                  ? styles.complete
-                  : [styles.notComplete, { backgroundColor: surfaceMuted }],
+                  ? {
+                      backgroundColor: completedBackground,
+                      borderColor: completedBorder,
+                    }
+                  : {
+                      backgroundColor: surfaceMuted,
+                      borderColor: borderColor,
+                    },
               ]}
             >
               <ThemedText type="default" style={[styles.cell, styles.setCol]}>
@@ -211,13 +222,13 @@ export default function Workout({
                     finalReps,
                   );
 
-                  if (willBeCompleted) setRestStartTrigger((prev) => prev + 1);
+                  if (willBeCompleted) triggerRestTimer(restTime);
                 }}
               >
                 <IconSymbol
                   name={item.complete ? "checkmark" : "circle"}
                   size={18}
-                  color={item.complete ? "green" : iconColor}
+                  color={item.complete ? successColor : iconColor}
                 />
               </Pressable>
               <View style={[styles.cell, styles.actionCol]}>
@@ -302,10 +313,6 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     paddingHorizontal: 8,
     marginHorizontal: 6,
-  },
-
-  complete: {
-    backgroundColor: "#42f55d",
   },
 
   notComplete: {
