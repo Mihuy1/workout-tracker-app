@@ -105,17 +105,20 @@ function CustomModalContent({
               style={({ pressed }) => [
                 styles.button,
                 {
-                  backgroundColor: colors.noButtonBackground,
+                  backgroundColor: secondaryButtonRed
+                    ? colors.noButtonBackground
+                    : colors.border,
                   opacity: pressed ? 0.7 : 1,
                 },
               ]}
               onPress={onSecondary}
             >
               <Text
-                style={[
-                  { color: colors.noButtonText },
-                  secondaryButtonRed ? styles.redText : undefined,
-                ]}
+                style={{
+                  color: secondaryButtonRed
+                    ? colors.noButtonText
+                    : colors.text,
+                }}
               >
                 {secondaryButtonText}
               </Text>
@@ -127,17 +130,19 @@ function CustomModalContent({
               styles.button,
               styles.primaryButton,
               {
-                backgroundColor: colors.border,
+                backgroundColor: primaryButtonRed
+                  ? colors.noButtonBackground
+                  : colors.border,
                 opacity: pressed ? 0.7 : 1,
               },
             ]}
             onPress={() => onPrimary(prompt ? value : undefined)}
           >
             <Text
-              style={[
-                { color: colors.text, fontWeight: "600" },
-                primaryButtonRed ? styles.redText : undefined,
-              ]}
+              style={{
+                color: primaryButtonRed ? colors.noButtonText : colors.text,
+                fontWeight: "600",
+              }}
             >
               {primaryButtonText}
             </Text>
@@ -197,5 +202,4 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   primaryButton: {},
-  redText: { color: "red" },
 });

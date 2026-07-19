@@ -234,6 +234,7 @@ export default function NewWorkoutScreen() {
         message="Are you sure you want to discard this workout?"
         primaryButtonText="Yes"
         secondaryButtonText="No"
+        primaryButtonRed
         onRequestClose={() => {
           setDiscardVisible(false);
           pendingNavActionRef.current = null;
@@ -287,6 +288,7 @@ export default function NewWorkoutScreen() {
         message="Would you like to save this workout?"
         primaryButtonText="Yes"
         secondaryButtonText="No"
+        secondaryButtonRed
         onRequestClose={() => setSaveWorkoutVisible(false)}
         onSecondary={() => {
           setSaveWorkoutVisible(false);

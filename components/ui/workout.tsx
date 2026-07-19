@@ -56,6 +56,7 @@ export const Workout = memo(function Workout({
         message={`Are you sure you want to remove "${workoutName}"`}
         primaryButtonText="Yes"
         secondaryButtonText="No"
+        primaryButtonRed
         onRequestClose={() => setConfirmVisible(false)}
         onPrimary={() => {
           setConfirmVisible(false);
