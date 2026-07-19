@@ -1,43 +1,90 @@
 import { useWorkout } from "@/app/contexts/workoutContext";
 import exercises from "@/app/datasets/exercises.json";
 import { useThemeColor } from "@/hooks/use-theme-color";
+import { Exercise } from "@/types/workout";
+import { router } from "expo-router";
 import Fuse from "fuse.js";
 import { useMemo, useState } from "react";
 import { FlatList, StyleSheet, TextInput, View } from "react-native";
 import { ThemedText } from "../themed-text";
-import Workout from "./workout";
+import { ExercisePickerRow, ExercisePickerRowItem } from "./exercisePickerRow";
 
 export function WorkoutList() {
   const [text, onChangeText] = useState("");
-  const { checkIfExerciseAlreadyAdded, getExercises } = useWorkout();
+  const { getExercises, addExercise } = useWorkout();
   const workoutExercises = getExercises();
   const textColor = useThemeColor({}, "text");
   const borderColor = useThemeColor({}, "border");
   const surface = useThemeColor({}, "surface");
   const placeholderColor = useThemeColor({}, "placeholder");
 
-  const filtered = useMemo(() => {
-    return exercises.filter((item) => !checkIfExerciseAlreadyAdded(item.name));
-  }, [workoutExercises]);
+  const selectedExercisesNames = useMemo(
+    () => new Set(workoutExercises.map((exercise) => exercise.name)),
+    [workoutExercises],
+  );
 
-  const fuse = useMemo(() => {
-    return new Fuse(filtered, {
-      keys: [
-        { name: "name", weight: 0.7 },
-        { name: "primaryMuscles", weight: 0.2 },
-        { name: "equipment", weight: 0.1 },
-      ],
-      threshold: 0.35,
-      ignoreLocation: true,
-      minMatchCharLength: 2,
-    });
-  }, [filtered]);
+  const filtered = useMemo(
+    () =>
+      exercises.filter(
+        (exercise) => !selectedExercisesNames.has(exercise.name),
+      ),
+    [selectedExercisesNames],
+  );
+
+  // const filtered = useMemo(() => {
+  //   return exercises.filter((item) => !checkIfExerciseAlreadyAdded(item.name));
+  // }, [workoutExercises]);
+
+  const fuse = useMemo(
+    () =>
+      new Fuse(exercises, {
+        keys: [
+          { name: "name" },
+          { name: "primaryMuscles" },
+          { name: "equipment" },
+        ],
+        threshold: 0.35,
+        ignoreLocation: true,
+        minMatchCharLength: 2,
+      }),
+    [],
+  );
+
+  // const searchResults = useMemo(() => {
+  //   if (!text) return filtered;
+
+  //   return fuse.search(text).map((result) => result.item);
+  // }, [text, fuse, filtered]);
 
   const searchResults = useMemo(() => {
-    if (!text) return filtered;
+    const query = text.trim();
 
-    return fuse.search(text).map((result) => result.item);
-  }, [text, fuse, filtered]);
+    if (!query) return filtered;
+
+    return fuse
+      .search(query)
+      .map((result) => result.item)
+      .filter((exercise) => !selectedExercisesNames.has(exercise.name));
+  }, [text, fuse, filtered, selectedExercisesNames]);
+
+  const onAdd = (item: ExercisePickerRowItem) => {
+    const exercise: Exercise = {
+      name: item.name,
+      mechanic: item.mechanic,
+      restTime: 0,
+      sets: [
+        {
+          id: 1,
+          complete: false,
+          weight: "",
+          reps: "",
+        },
+      ],
+    };
+
+    addExercise(exercise);
+    router.back();
+  };
 
   return (
     <View style={styles.container}>
@@ -57,11 +104,12 @@ export function WorkoutList() {
         data={searchResults}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
-          <Workout
-            workoutId={item.id}
-            workoutName={item.name}
-            workoutMechanic={item.mechanic}
-          />
+          // <Workout
+          //   workoutId={item.id}
+          //   workoutName={item.name}
+          //   workoutMechanic={item.mechanic}
+          // />
+          <ExercisePickerRow item={item} onAdd={onAdd} />
         )}
       />
     </View>

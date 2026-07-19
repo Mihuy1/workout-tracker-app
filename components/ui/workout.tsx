@@ -1,8 +1,8 @@
 import { useRestTimer } from "@/app/contexts/restTimerContext";
 import { useWorkout } from "@/app/contexts/workoutContext";
 import { useThemeColor } from "@/hooks/use-theme-color";
-import { router } from "expo-router";
-import { useState } from "react";
+import { Exercise } from "@/types/workout";
+import { memo, useState } from "react";
 import { Button, Pressable, StyleSheet, TextInput, View } from "react-native";
 import { ThemedText } from "../themed-text";
 import { CustomModal } from "./customModal";
@@ -10,24 +10,17 @@ import { IconSymbol } from "./icon-symbol";
 import { RestTimePicker } from "./restTimePicker";
 
 type WorkoutProps = {
-  workoutId?: string;
-  workoutName: string;
-  workoutMechanic?: string | null;
+  exercise: Exercise;
   prefilledSets?: Record<string, any>;
   fallbackRestTime?: number;
 };
 
-export default function Workout({
-  workoutId,
-  workoutName,
-  workoutMechanic,
+export const Workout = memo(function Workout({
+  exercise,
   prefilledSets,
   fallbackRestTime = 120,
 }: WorkoutProps) {
   const {
-    exercises,
-    addExercise,
-    checkIfExerciseAlreadyAdded,
     removeExercise,
     addSet,
     removeSet,
@@ -38,11 +31,9 @@ export default function Workout({
 
   const { triggerRestTimer } = useRestTimer();
 
-  const alreadyAdded = checkIfExerciseAlreadyAdded(workoutName);
+  const { name: workoutName, mechanic: workoutMechanic } = exercise;
 
-  const exercise = exercises.find((ex) => ex.name === workoutName);
-  const sets = exercise?.sets ?? [];
-  const restTime = exercise?.restTime || fallbackRestTime;
+  const restTime = exercise?.restTime ?? fallbackRestTime;
 
   const borderColor = useThemeColor({}, "border");
   const surface = useThemeColor({}, "surface");
@@ -75,11 +66,9 @@ export default function Workout({
       <View style={styles.titleRow}>
         <ThemedText type="defaultSemiBold">{workoutName}</ThemedText>
 
-        {alreadyAdded && (
-          <Pressable onPress={() => setConfirmVisible(true)}>
-            <IconSymbol name="x.circle" size={24} color="red" />
-          </Pressable>
-        )}
+        <Pressable onPress={() => setConfirmVisible(true)}>
+          <IconSymbol name="x.circle" size={24} color="red" />
+        </Pressable>
       </View>
       <View style={styles.subTitleRow}>
         {!!workoutMechanic && (
@@ -92,173 +81,149 @@ export default function Workout({
         />
       </View>
 
-      {alreadyAdded && (
-        <>
-          {/* <RestTimer duration={restTime} restStartTrigger={restStartTrigger} /> */}
-          <View style={[styles.tableHeader, { borderColor }]}>
-            <ThemedText
-              type="defaultSemiBold"
-              style={[styles.cell, styles.setCol]}
-            >
-              SET
-            </ThemedText>
-            <ThemedText
-              type="defaultSemiBold"
-              style={[styles.cell, styles.kgCol]}
-            >
-              KG
-            </ThemedText>
-            <ThemedText
-              type="defaultSemiBold"
-              style={[styles.cell, styles.repsCol]}
-            >
-              REPS
-            </ThemedText>
-            <IconSymbol
-              name="checkmark"
-              size={16}
-              color={iconColor}
-              style={[styles.cell, styles.actionCol]}
-            />
-
-            <View style={[styles.cell, styles.actionCol]} />
-          </View>
-
-          {sets.map((item, index) => (
-            <View
-              key={item.id}
-              style={[
-                styles.tableRow,
-                { borderColor },
-                item.complete
-                  ? {
-                      backgroundColor: completedBackground,
-                      borderColor: completedBorder,
-                    }
-                  : {
-                      backgroundColor: surfaceMuted,
-                      borderColor: borderColor,
-                    },
-              ]}
-            >
-              <ThemedText type="default" style={[styles.cell, styles.setCol]}>
-                {item.id}
-              </ThemedText>
-
-              <TextInput
-                style={[
-                  styles.input,
-                  styles.kgCol,
-                  { borderColor, color: textColor, backgroundColor: surface },
-                ]}
-                value={item.weight}
-                onChangeText={(text) =>
-                  updateSet(workoutName, item.id, {
-                    weight: text,
-                    reps: item.reps,
-                    complete: item.complete,
-                  })
-                }
-                placeholder={
-                  prefilledSets && prefilledSets[index]?.weight
-                    ? String(prefilledSets[index].weight)
-                    : "0"
-                }
-                placeholderTextColor={placeholderColor}
-                keyboardType="numeric"
-              />
-
-              <TextInput
-                style={[
-                  styles.input,
-                  styles.repsCol,
-                  { borderColor, color: textColor, backgroundColor: surface },
-                ]}
-                value={item.reps}
-                onChangeText={(text) =>
-                  updateSet(workoutName, item.id, {
-                    weight: item.weight,
-                    reps: text,
-                    complete: item.complete,
-                  })
-                }
-                placeholder={
-                  prefilledSets && prefilledSets[index]?.reps
-                    ? String(prefilledSets[index].reps)
-                    : "0"
-                }
-                placeholderTextColor={placeholderColor}
-                keyboardType="numeric"
-              />
-
-              <Pressable
-                onPress={() => {
-                  const finalWeight =
-                    item.weight !== ""
-                      ? item.weight
-                      : prefilledSets && prefilledSets[index]?.weight
-                        ? String(prefilledSets[index].weight)
-                        : "";
-
-                  const finalReps =
-                    item.reps !== ""
-                      ? item.reps
-                      : prefilledSets && prefilledSets[index]?.reps
-                        ? String(prefilledSets[index].reps)
-                        : "";
-
-                  if (finalReps === "" || finalWeight === "") {
-                    console.log("Show popup, returning");
-                    return;
-                  }
-
-                  const willBeCompleted = !item.complete;
-
-                  handleCompleteSet(
-                    workoutName,
-                    item.id,
-                    !item.complete,
-                    finalWeight,
-                    finalReps,
-                  );
-
-                  if (willBeCompleted) triggerRestTimer(restTime);
-                }}
-              >
-                <IconSymbol
-                  name={item.complete ? "checkmark" : "circle"}
-                  size={18}
-                  color={item.complete ? successColor : iconColor}
-                />
-              </Pressable>
-              <View style={[styles.cell, styles.actionCol]}>
-                <Pressable onPress={() => removeSet(workoutName, item.id)}>
-                  <IconSymbol name="minus.circle" size={18} color="red" />
-                </Pressable>
-              </View>
-            </View>
-          ))}
-
-          <Button title="Add Set" onPress={() => addSet(workoutName)} />
-        </>
-      )}
-      {!alreadyAdded && (
-        <Button
-          title="Add Exercise"
-          onPress={() => {
-            addExercise({
-              name: workoutName,
-              mechanic: workoutMechanic,
-              restTime: 0,
-              sets: [{ id: 1, complete: false, weight: "", reps: "" }],
-            });
-            router.back();
-          }}
+      {/* <RestTimer duration={restTime} restStartTrigger={restStartTrigger} /> */}
+      <View style={[styles.tableHeader, { borderColor }]}>
+        <ThemedText type="defaultSemiBold" style={[styles.cell, styles.setCol]}>
+          SET
+        </ThemedText>
+        <ThemedText type="defaultSemiBold" style={[styles.cell, styles.kgCol]}>
+          KG
+        </ThemedText>
+        <ThemedText
+          type="defaultSemiBold"
+          style={[styles.cell, styles.repsCol]}
+        >
+          REPS
+        </ThemedText>
+        <IconSymbol
+          name="checkmark"
+          size={16}
+          color={iconColor}
+          style={[styles.cell, styles.actionCol]}
         />
-      )}
+
+        <View style={[styles.cell, styles.actionCol]} />
+      </View>
+
+      {exercise.sets.map((item, index) => (
+        <View
+          key={item.id}
+          style={[
+            styles.tableRow,
+            { borderColor },
+            item.complete
+              ? {
+                  backgroundColor: completedBackground,
+                  borderColor: completedBorder,
+                }
+              : {
+                  backgroundColor: surfaceMuted,
+                  borderColor: borderColor,
+                },
+          ]}
+        >
+          <ThemedText type="default" style={[styles.cell, styles.setCol]}>
+            {item.id}
+          </ThemedText>
+
+          <TextInput
+            style={[
+              styles.input,
+              styles.kgCol,
+              { borderColor, color: textColor, backgroundColor: surface },
+            ]}
+            value={item.weight}
+            onChangeText={(text) =>
+              updateSet(workoutName, item.id, {
+                weight: text,
+                reps: item.reps,
+                complete: item.complete,
+              })
+            }
+            placeholder={
+              prefilledSets && prefilledSets[index]?.weight
+                ? String(prefilledSets[index].weight)
+                : "0"
+            }
+            placeholderTextColor={placeholderColor}
+            keyboardType="numeric"
+          />
+
+          <TextInput
+            style={[
+              styles.input,
+              styles.repsCol,
+              { borderColor, color: textColor, backgroundColor: surface },
+            ]}
+            value={item.reps}
+            onChangeText={(text) =>
+              updateSet(workoutName, item.id, {
+                weight: item.weight,
+                reps: text,
+                complete: item.complete,
+              })
+            }
+            placeholder={
+              prefilledSets && prefilledSets[index]?.reps
+                ? String(prefilledSets[index].reps)
+                : "0"
+            }
+            placeholderTextColor={placeholderColor}
+            keyboardType="numeric"
+          />
+
+          <Pressable
+            onPress={() => {
+              const finalWeight =
+                item.weight !== ""
+                  ? item.weight
+                  : prefilledSets && prefilledSets[index]?.weight
+                    ? String(prefilledSets[index].weight)
+                    : "";
+
+              const finalReps =
+                item.reps !== ""
+                  ? item.reps
+                  : prefilledSets && prefilledSets[index]?.reps
+                    ? String(prefilledSets[index].reps)
+                    : "";
+
+              if (finalReps === "" || finalWeight === "") {
+                console.log("Show popup, returning");
+                return;
+              }
+
+              const willBeCompleted = !item.complete;
+
+              handleCompleteSet(
+                workoutName,
+                item.id,
+                !item.complete,
+                finalWeight,
+                finalReps,
+              );
+
+              if (willBeCompleted) triggerRestTimer(restTime);
+            }}
+          >
+            <IconSymbol
+              name={item.complete ? "checkmark" : "circle"}
+              size={18}
+              color={item.complete ? successColor : iconColor}
+            />
+          </Pressable>
+          <View style={[styles.cell, styles.actionCol]}>
+            <Pressable onPress={() => removeSet(workoutName, item.id)}>
+              <IconSymbol name="minus.circle" size={18} color="red" />
+            </Pressable>
+          </View>
+        </View>
+      ))}
+
+      <Button title="Add Set" onPress={() => addSet(workoutName)} />
     </View>
   );
-}
+});
 
 const styles = StyleSheet.create({
   container: {

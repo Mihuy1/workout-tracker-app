@@ -7,7 +7,7 @@ import { router } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import { Button, FlatList, StyleSheet, View } from "react-native";
 import { RestTimer } from "./RestTimer";
-import Workout from "./workout";
+import { Workout } from "./workout";
 import { WorkoutTimer } from "./workoutTimer";
 
 type NewWorkoutProps = {
@@ -72,8 +72,7 @@ export function NewWorkout({ presetTitle, elapsedTimeMs }: NewWorkoutProps) {
           renderItem={({ item }) => (
             <View style={{ marginBottom: 5 }}>
               <Workout
-                workoutName={item.name}
-                workoutMechanic={item.mechanic}
+                exercise={item}
                 prefilledSets={historyMap[item.name]?.sets || []}
                 fallbackRestTime={historyMap[item.name]?.restTime || 120}
               />
