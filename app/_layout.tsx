@@ -11,7 +11,7 @@ import "react-native-reanimated";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { useState } from "react";
 import { RestTimerProvider } from "./contexts/restTimerContext";
-import { WorkoutProvider } from "./contexts/workoutContext";
+import { WorkoutProvider } from "./contexts/workoutActionsContext";
 
 export const unstable_settings = {
   anchor: "(tabs)",

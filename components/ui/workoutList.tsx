@@ -1,4 +1,5 @@
-import { useWorkout } from "@/app/contexts/workoutContext";
+import { useWorkoutActions } from "@/app/contexts/workoutActionsContext";
+import { useWorkoutState } from "@/app/contexts/workoutStateContext";
 import exercises from "@/app/datasets/exercises.json";
 import { useThemeColor } from "@/hooks/use-theme-color";
 import { Exercise } from "@/types/workout";
@@ -11,8 +12,8 @@ import { ExercisePickerRow, ExercisePickerRowItem } from "./exercisePickerRow";
 
 export function WorkoutList() {
   const [text, onChangeText] = useState("");
-  const { getExercises, addExercise } = useWorkout();
-  const workoutExercises = getExercises();
+  const { exercises: workoutExercises } = useWorkoutState();
+  const { addExercise } = useWorkoutActions();
   const textColor = useThemeColor({}, "text");
   const borderColor = useThemeColor({}, "border");
   const surface = useThemeColor({}, "surface");

@@ -18,7 +18,8 @@ import { usePreventRemove } from "expo-router/react-navigation";
 import { useEffect, useRef, useState } from "react";
 import { Button } from "react-native";
 import { useRestTimer } from "./contexts/restTimerContext";
-import { useWorkout } from "./contexts/workoutContext";
+import { useWorkoutActions } from "./contexts/workoutActionsContext";
+import { useWorkoutState } from "./contexts/workoutStateContext";
 
 const isValidCompletedSet = (set: SetRow): boolean => {
   const weight = Number(set.weight);
@@ -38,14 +39,14 @@ const isValidCompletedSet = (set: SetRow): boolean => {
 export default function NewWorkoutScreen() {
   const queryClient = useQueryClient();
   const { presetTitle } = useLocalSearchParams<{ presetTitle?: string }>();
-  const { exercises, clearWorkout } = useWorkout();
+  const { exercises } = useWorkoutState();
+  const { clearWorkout } = useWorkoutActions();
   const { clearRestTimer } = useRestTimer();
   const navigation = useNavigation();
   const [isFinishing, setIsFinishing] = useState(false);
   const shouldExitRef = useRef(false);
 
-  const startTimeRef = useRef<number | null>(null);
-  const [elapsedTimeMs, setElapsedTimeMs] = useState<number>(0);
+  const [startedAt] = useState(() => Date.now());
 
   const [discardVisible, setDiscardVisible] = useState(false);
 
@@ -72,10 +73,6 @@ export default function NewWorkoutScreen() {
       presetName: string | null;
       shouldUpdatePreset: boolean;
     }) => {
-      const startedAt = startTimeRef.current;
-
-      if (startedAt === null) throw Error("Workout timer has not started");
-
       const workoutDurMs = Date.now() - startedAt;
       const completedExercises = exercises
         .map((exercise) => ({
@@ -154,17 +151,6 @@ export default function NewWorkoutScreen() {
     }
   }, [presetTitle]);
 
-  useEffect(() => {
-    const startedAt = Date.now();
-    startTimeRef.current = startedAt;
-
-    const id = setInterval(() => {
-      setElapsedTimeMs(Date.now() - startedAt);
-    }, 1000);
-
-    return () => clearInterval(id);
-  }, []);
-
   const finishWorkout = async (
     presetName: string | null,
     shouldUpdatePreset: boolean = true,
@@ -240,7 +226,7 @@ export default function NewWorkoutScreen() {
           ),
         }}
       />
-      <NewWorkout presetTitle={presetTitle} elapsedTimeMs={elapsedTimeMs} />
+      <NewWorkout presetTitle={presetTitle} startedAt={startedAt} />
 
       <CustomModal
         visible={discardVisible}

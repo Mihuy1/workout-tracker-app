@@ -1,5 +1,5 @@
 import { useRestTimer } from "@/app/contexts/restTimerContext";
-import { useWorkout } from "@/app/contexts/workoutContext";
+import { useWorkoutActions } from "@/app/contexts/workoutActionsContext";
 import { useThemeColor } from "@/hooks/use-theme-color";
 import { Exercise } from "@/types/workout";
 import { memo, useState } from "react";
@@ -27,7 +27,7 @@ export const Workout = memo(function Workout({
     updateSet,
     handleCompleteSet,
     setRestTime,
-  } = useWorkout();
+  } = useWorkoutActions();
 
   const { triggerRestTimer } = useRestTimer();
 
