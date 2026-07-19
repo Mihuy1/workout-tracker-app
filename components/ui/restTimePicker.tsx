@@ -1,3 +1,4 @@
+import { Colors } from "@/constants/theme";
 import { useThemeColor } from "@/hooks/use-theme-color";
 import { useState } from "react";
 import {
@@ -7,6 +8,7 @@ import {
   StyleSheet,
   Text,
   TextInput,
+  useColorScheme,
   View,
 } from "react-native";
 import { IconSymbol } from "./icon-symbol";
@@ -20,16 +22,14 @@ export const RestTimePicker = ({
   restTime,
   setRestTime,
 }: RestTimePickerProps) => {
+  const theme = useColorScheme() === "dark" ? "dark" : "light";
+  const colors = Colors[theme];
+
   const [seconds, setSeconds] = useState(() => (restTime % 60).toString());
   const [minutes, setMinutes] = useState(() =>
     Math.floor(restTime / 60).toString(),
   );
   const [showPicker, setShowPicker] = useState(false);
-
-  // useEffect(() => {
-  //   setSeconds((restTime % 60).toString());
-  //   setMinutes(Math.floor(restTime / 60).toString());
-  // }, [restTime]);
 
   const handleNumberInput = (text: string) => {
     const integersOnly = text.replace(/[^0-9]/g, "");
@@ -73,28 +73,45 @@ export const RestTimePicker = ({
         animationType="fade"
         transparent
       >
-        <Pressable style={styles.backdrop} onPress={() => setShowPicker(false)}>
+        <Pressable
+          style={[styles.backdrop]}
+          onPress={() => setShowPicker(false)}
+        >
           <Pressable
-            style={styles.modalView}
+            style={[styles.modalView, { backgroundColor: colors.background }]}
             onPress={(e) => e.stopPropagation()}
           >
             <View style={styles.inputsView}>
               <TextInput
-                style={styles.textInput}
+                style={[
+                  styles.textInput,
+                  {
+                    color: colors.text,
+                    borderColor: colors.border,
+                    backgroundColor: colors.background,
+                  },
+                ]}
                 keyboardType="numeric"
                 value={minutes}
                 onChangeText={(text) => handleNumberInput(text)}
                 autoFocus
               />
-              <Text style={styles.text}>Min</Text>
+              <Text style={[styles.text, { color: colors.text }]}>Min</Text>
 
               <TextInput
-                style={styles.textInput}
+                style={[
+                  styles.textInput,
+                  {
+                    color: colors.text,
+                    borderColor: colors.border,
+                    backgroundColor: colors.background,
+                  },
+                ]}
                 keyboardType="numeric"
                 value={seconds}
                 onChangeText={(text) => handleSecondsInput(text)}
               />
-              <Text style={styles.text}>Sec</Text>
+              <Text style={[styles.text, { color: colors.text }]}>Sec</Text>
             </View>
             <Button title="Apply" onPress={handleApply} />
           </Pressable>
@@ -107,7 +124,7 @@ export const RestTimePicker = ({
 const styles = StyleSheet.create({
   modalView: {
     margin: 20,
-    backgroundColor: "white",
+    // backgroundColor: "white",
     borderRadius: 20,
     padding: 24,
     width: "88%",
@@ -131,7 +148,7 @@ const styles = StyleSheet.create({
   textInput: {
     borderWidth: 1,
     // borderColor: "#ccc",
-    backgroundColor: "#f0f0f0",
+    // backgroundColor: "#f0f0f0",
     paddingVertical: 8,
     paddingHorizontal: 12,
   },
