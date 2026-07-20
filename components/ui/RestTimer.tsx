@@ -11,11 +11,6 @@ import {
 } from "react-native";
 import { WorkoutTimer } from "./workoutTimer";
 
-// interface RestTimerProps {
-//   duration: number;
-//   restStartTrigger: number;
-// }
-
 export const RestTimer = () => {
   const { restDuration, restStartTrigger } = useRestTimer();
 
@@ -28,7 +23,6 @@ export const RestTimer = () => {
   const [isActive, setIsActive] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
 
-  // const animatedProgress = useRef(new Animated.Value(1)).current;
   const [animatedProgress] = useState<Animated.Value>(
     () => new Animated.Value(1),
   );
@@ -127,13 +121,8 @@ export const RestTimer = () => {
       intervalRef.current = undefined;
     }
 
-    // setIsActive(false);
     isActiveRef.current = false;
-
-    // setIsPaused(false);
     isPausedRef.current = false;
-
-    // setTimeLeft(durationMs);
     timeLeftRef.current = durationMs;
 
     animatedProgress.setValue(1);
@@ -262,7 +251,6 @@ const styles = StyleSheet.create({
   bar: {
     height: 12,
     borderRadius: 10,
-    // marginBottom: 10,
   },
   buttonRow: {
     flexDirection: "row",

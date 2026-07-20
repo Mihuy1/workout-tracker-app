@@ -63,11 +63,14 @@ export function NewWorkout({ presetTitle, startedAt }: NewWorkoutProps) {
 
         existingExerciseNames.add(exercise.name);
 
+        // Clear weight/reps so history values appear as placeholders, not filled inputs.
         exercisesToAdd.push({
           ...exercise,
           sets: exercise.sets.map((set) => ({
             ...set,
             complete: false,
+            weight: "",
+            reps: "",
           })),
         });
       }

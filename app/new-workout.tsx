@@ -191,7 +191,17 @@ export default function NewWorkoutScreen() {
         (name) => !presetExerciseNames.has(name),
       );
 
-      if (hasNewExercise) {
+      const hasSetChange = exercises.some((ex) => {
+        const original = originalExercisesRef.current.find(
+          (o) => ex.name === o.name,
+        );
+
+        if (!original) return false;
+
+        return original.sets.length !== ex.sets.length;
+      });
+
+      if (hasNewExercise || hasSetChange) {
         setUpdatePresetVisible(true);
         return;
       } else {
@@ -329,6 +339,7 @@ export default function NewWorkoutScreen() {
         message="Would you like to update the preset with your current workout?"
         primaryButtonText="Yes"
         secondaryButtonText="No"
+        secondaryButtonRed
         onRequestClose={() => setUpdatePresetVisible(false)}
         onPrimary={() => {
           setUpdatePresetVisible(false);
