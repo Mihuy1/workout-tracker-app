@@ -1,21 +1,27 @@
-import { useWorkout } from "@/app/contexts/workoutContext";
+import { useWorkoutActions } from "@/app/contexts/workoutActionsContext";
+import { useWorkoutState } from "@/app/contexts/workoutStateContext";
 import {
   getAllLatestExercisesMap,
   getSavedPresetByTitle,
 } from "@/app/storage/completedExercises";
+import { Exercise, SetRow } from "@/types/workout";
 import { router } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import { Button, FlatList, StyleSheet, View } from "react-native";
-import Workout from "./workout";
-import { WorkoutTimer } from "./workoutTimer";
+import LiveWorkoutTimer from "../liveWorkoutTImer";
+import { RestTimer } from "./RestTimer";
+import { Workout } from "./workout";
+
+const EMPTY_PREFILLED_SETS: SetRow[] = [];
 
 type NewWorkoutProps = {
   presetTitle?: string | null;
-  elapsedTimeMs: number;
+  startedAt: number;
 };
 
-export function NewWorkout({ presetTitle, elapsedTimeMs }: NewWorkoutProps) {
-  const { exercises, addExercise, checkIfExerciseAlreadyAdded } = useWorkout();
+export function NewWorkout({ presetTitle, startedAt }: NewWorkoutProps) {
+  const { exercises } = useWorkoutState();
+  const { addExercises } = useWorkoutActions();
   const [historyMap, setHistoryMap] = useState<Record<string, any>>({});
 
   const loadedPresetRef = useRef<string | null>(null);
@@ -36,20 +42,41 @@ export function NewWorkout({ presetTitle, elapsedTimeMs }: NewWorkoutProps) {
     let cancelled = false;
 
     const loadPreset = async () => {
-      const presetExercises = await getSavedPresetByTitle(presetTitle);
+      const presetExercises = (await getSavedPresetByTitle(presetTitle)) as
+        | Exercise[]
+        | null;
       if (cancelled) return;
       if (!presetExercises || presetExercises.length === 0) return;
 
       loadedPresetRef.current = presetTitle;
 
-      for (const ex of presetExercises) {
-        for (const set of ex.sets) {
-          set.complete = false;
+      const existingExerciseNames = new Set(
+        exercises.map((exercise) => exercise.name),
+      );
+
+      const exercisesToAdd: Exercise[] = [];
+
+      for (const exercise of presetExercises) {
+        if (existingExerciseNames.has(exercise.name)) {
+          continue;
         }
 
-        if (!checkIfExerciseAlreadyAdded(ex.name)) {
-          addExercise(ex);
-        }
+        existingExerciseNames.add(exercise.name);
+
+        // Clear weight/reps so history values appear as placeholders, not filled inputs.
+        exercisesToAdd.push({
+          ...exercise,
+          sets: exercise.sets.map((set) => ({
+            ...set,
+            complete: false,
+            weight: "",
+            reps: "",
+          })),
+        });
+      }
+
+      if (exercisesToAdd.length > 0) {
+        addExercises(exercisesToAdd);
       }
     };
     loadPreset();
@@ -57,31 +84,36 @@ export function NewWorkout({ presetTitle, elapsedTimeMs }: NewWorkoutProps) {
     return () => {
       cancelled = true;
     };
-  }, [presetTitle, addExercise, checkIfExerciseAlreadyAdded]);
+  }, [presetTitle, exercises, addExercises]);
 
   return (
     <View style={styles.container}>
-      <WorkoutTimer elapsedTimeMs={elapsedTimeMs}></WorkoutTimer>
+      <View style={styles.content}>
+        <LiveWorkoutTimer startedAt={startedAt} />
 
-      <FlatList
-        data={exercises}
-        keyExtractor={(_, index) => index.toString()}
-        renderItem={({ item }) => (
-          <View style={{ marginBottom: 5 }}>
-            <Workout
-              workoutName={item.name}
-              workoutMechanic={item.mechanic}
-              prefilledSets={historyMap[item.name]?.sets || []}
-              workoutRestTime={historyMap[item.name]?.restTime || 120}
-            />
-          </View>
-        )}
-      />
+        <FlatList
+          style={styles.exerciseList}
+          data={exercises}
+          keyExtractor={(item) => item.name}
+          renderItem={({ item }) => (
+            <View style={{ marginBottom: 5 }}>
+              <Workout
+                exercise={item}
+                prefilledSets={
+                  historyMap[item.name]?.sets ?? EMPTY_PREFILLED_SETS
+                }
+                fallbackRestTime={historyMap[item.name]?.restTime || 120}
+              />
+            </View>
+          )}
+        />
 
-      <Button
-        title="Add an exercise"
-        onPress={() => router.push("/exercise-list")}
-      />
+        <Button
+          title="Add an exercise"
+          onPress={() => router.push("/exercise-list")}
+        />
+      </View>
+      <RestTimer />
     </View>
   );
 }
@@ -89,7 +121,13 @@ export function NewWorkout({ presetTitle, elapsedTimeMs }: NewWorkoutProps) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  content: {
+    flex: 1,
     padding: 10,
+  },
+  exerciseList: {
+    flex: 1,
   },
   headerRow: {
     flexDirection: "row",

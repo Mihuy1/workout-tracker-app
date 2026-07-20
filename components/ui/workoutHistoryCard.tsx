@@ -1,6 +1,6 @@
 import { CompletedWorkout } from "@/app/(tabs)/history";
 import { useThemeColor } from "@/hooks/use-theme-color";
-import { FlatList, StyleSheet, View } from "react-native";
+import { StyleSheet, View } from "react-native";
 import Animated, {
   FadeIn,
   FadeOut,
@@ -29,88 +29,85 @@ export default function WorkoutHistoryCard({
 
   return (
     <Animated.View layout={LinearTransition.duration(220)}>
-      <FlatList
-        data={exercises}
-        keyExtractor={(item, index) => index.toString()}
-        renderItem={({ item: exercise }) => (
-          <Animated.View layout={LinearTransition.duration(220)}>
-            {!isExpanded ? (
-              <Animated.View
-                entering={FadeIn.duration(150)}
-                exiting={FadeOut.duration(120)}
+      {exercises.map((exercise, index) => (
+        <Animated.View
+          key={`${exercise.name}-${index}`}
+          layout={LinearTransition.duration(220)}
+        >
+          {!isExpanded ? (
+            <Animated.View
+              entering={FadeIn.duration(150)}
+              exiting={FadeOut.duration(120)}
+            >
+              <ThemedText type="default" style={styles.summaryRow}>
+                {exercise.sets.length} sets of {exercise.name}
+              </ThemedText>
+            </Animated.View>
+          ) : (
+            <Animated.View
+              entering={FadeIn.duration(150)}
+              exiting={FadeOut.duration(120)}
+              layout={LinearTransition.duration(220)}
+              style={[
+                styles.exerciseWrapper,
+                {
+                  backgroundColor: surfaceMuted,
+                  borderColor: border,
+                },
+              ]}
+            >
+              <ThemedText
+                type="defaultSemiBold"
+                style={[styles.exerciseName, { color: accent }]}
               >
-                <ThemedText type="default" style={styles.summaryRow}>
-                  {exercise.sets.length} sets of {exercise.name}
-                </ThemedText>
-              </Animated.View>
-            ) : (
-              <Animated.View
-                entering={FadeIn.duration(150)}
-                exiting={FadeOut.duration(120)}
-                layout={LinearTransition.duration(220)}
-                style={[
-                  styles.exerciseWrapper,
-                  {
-                    backgroundColor: surfaceMuted,
-                    borderColor: border,
-                  },
-                ]}
-              >
+                {exercise.name}
+              </ThemedText>
+              <View style={[styles.tableHeader, { borderBottomColor: border }]}>
                 <ThemedText
                   type="defaultSemiBold"
-                  style={[styles.exerciseName, { color: accent }]}
+                  style={[styles.cell, styles.setCol, { color: mutedText }]}
                 >
-                  {exercise.name}
+                  SET
                 </ThemedText>
-                <View
-                  style={[styles.tableHeader, { borderBottomColor: border }]}
+                <ThemedText
+                  type="defaultSemiBold"
+                  style={[styles.cell, styles.kgCol, { color: mutedText }]}
                 >
-                  <ThemedText
-                    type="defaultSemiBold"
-                    style={[styles.cell, styles.setCol, { color: mutedText }]}
-                  >
-                    SET
-                  </ThemedText>
-                  <ThemedText
-                    type="defaultSemiBold"
-                    style={[styles.cell, styles.kgCol, { color: mutedText }]}
-                  >
-                    WEIGHT & REPS
-                  </ThemedText>
-                </View>
+                  WEIGHT & REPS
+                </ThemedText>
+              </View>
 
-                <View>
-                  {exercise.sets.map((set, index) => (
-                    <View
-                      key={set.id}
-                      style={[
-                        styles.tableRow,
-                        { borderColor: border },
-                        index % 2 === 0
-                          ? { backgroundColor: rowEven }
-                          : { backgroundColor: surfaceMuted },
-                      ]}
+              <View>
+                {exercise.sets.map((set, index) => (
+                  <View
+                    key={set.id}
+                    style={[
+                      styles.tableRow,
+                      { borderColor: border },
+                      index % 2 === 0
+                        ? { backgroundColor: rowEven }
+                        : { backgroundColor: surfaceMuted },
+                    ]}
+                  >
+                    <ThemedText
+                      type="default"
+                      style={[styles.cell, styles.setCol]}
                     >
-                      <ThemedText
-                        type="default"
-                        style={[styles.cell, styles.setCol]}
-                      >
-                        {index + 1}
-                      </ThemedText>
-                      <ThemedText
-                        type="default"
-                        style={[styles.cell, styles.kgCol]}
-                      >
-                        {set.weight} kg x {set.reps} reps
-                      </ThemedText>
-                    </View>
-                  ))}
-                </View>
-              </Animated.View>
-            )}
-          </Animated.View>
-        )}
-      />
+                      {index + 1}
+                    </ThemedText>
+                    <ThemedText
+                      type="default"
+                      style={[styles.cell, styles.kgCol]}
+                    >
+                      {set.weight} kg x {set.reps} reps
+                    </ThemedText>
+                  </View>
+                ))}
+              </View>
+            </Animated.View>
+          )}
+        </Animated.View>
+      ))}
     </Animated.View>
   );
 }

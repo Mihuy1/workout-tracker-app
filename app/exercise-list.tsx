@@ -4,7 +4,11 @@ export default function ExerciseListScreen() {
   return (
     <>
       <Stack.Screen
-        options={{ title: "Exercise List", headerBackTitle: "Back" }}
+        options={{
+          title: "Add Exercise",
+          headerBackTitle: "Back",
+          headerRight: () => null,
+        }}
       />
       <WorkoutList />
     </>

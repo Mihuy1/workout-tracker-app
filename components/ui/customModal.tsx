@@ -1,4 +1,6 @@
-import { useEffect, useState } from "react";
+import { Colors } from "@/constants/theme";
+import { useColorScheme } from "@/hooks/use-color-scheme";
+import { useState } from "react";
 import {
   Modal,
   Pressable,
@@ -30,8 +32,20 @@ type CustomModalProps = {
   onRequestClose: () => void;
 };
 
-export function CustomModal({
-  visible = false,
+export function CustomModal(props: CustomModalProps) {
+  return (
+    <Modal
+      visible={props.visible}
+      onRequestClose={props.onRequestClose}
+      animationType="fade"
+      transparent
+    >
+      {props.visible && <CustomModalContent {...props} />}
+    </Modal>
+  );
+}
+
+function CustomModalContent({
   title,
   message,
   prompt = false,
@@ -47,61 +61,95 @@ export function CustomModal({
   onRequestClose,
 }: CustomModalProps) {
   const [value, setValue] = useState(defaultValue);
-
-  useEffect(() => {
-    if (visible) setValue(defaultValue);
-  }, [visible, defaultValue]);
+  const theme = useColorScheme() === "dark" ? "dark" : "light";
+  const colors = Colors[theme];
 
   const handleBackDropOnPress = () => {
     if (dismissOnBackdropPress) onRequestClose();
   };
 
   return (
-    <Modal
-      onRequestClose={onRequestClose}
-      visible={visible}
-      animationType="fade"
-      transparent
-    >
-      <Pressable style={styles.backdrop} onPress={handleBackDropOnPress}>
-        <Pressable
-          style={styles.modalView}
-          onPress={(e) => e.stopPropagation()}
-        >
-          <Text style={styles.title}>{title}</Text>
+    <Pressable style={styles.backdrop} onPress={handleBackDropOnPress}>
+      <Pressable
+        style={[styles.modalView, { backgroundColor: colors.surface }]}
+        onPress={(e) => e.stopPropagation()}
+      >
+        <Text style={[styles.title, { color: colors.text }]}>{title}</Text>
 
-          {!!message && <Text style={styles.message}>{message}</Text>}
+        {!!message && (
+          <Text style={[styles.message, { color: colors.mutedText }]}>
+            {message}
+          </Text>
+        )}
 
-          {prompt && (
-            <TextInput
-              value={value}
-              onChangeText={setValue}
-              placeholder={placeHolderText}
-              style={styles.input}
-            />
-          )}
+        {prompt && (
+          <TextInput
+            value={value}
+            onChangeText={setValue}
+            placeholder={placeHolderText}
+            placeholderTextColor={colors.placeholder}
+            style={[
+              styles.input,
+              {
+                backgroundColor: colors.surfaceMuted,
+                borderColor: colors.border,
+                color: colors.text,
+              },
+            ]}
+          />
+        )}
 
-          <View style={styles.buttonRow}>
-            {!!onSecondary && (
-              <Pressable style={styles.button} onPress={onSecondary}>
-                <Text style={secondaryButtonRed ? styles.redText : undefined}>
-                  {secondaryButtonText}
-                </Text>
-              </Pressable>
-            )}
-
+        <View style={styles.buttonRow}>
+          {!!onSecondary && (
             <Pressable
-              style={[styles.button, styles.primaryButton]}
-              onPress={() => onPrimary(prompt ? value : undefined)}
+              style={({ pressed }) => [
+                styles.button,
+                {
+                  backgroundColor: secondaryButtonRed
+                    ? colors.noButtonBackground
+                    : colors.border,
+                  opacity: pressed ? 0.7 : 1,
+                },
+              ]}
+              onPress={onSecondary}
             >
-              <Text style={primaryButtonRed ? styles.redText : undefined}>
-                {primaryButtonText}
+              <Text
+                style={{
+                  color: secondaryButtonRed
+                    ? colors.noButtonText
+                    : colors.text,
+                }}
+              >
+                {secondaryButtonText}
               </Text>
             </Pressable>
-          </View>
-        </Pressable>
+          )}
+
+          <Pressable
+            style={({ pressed }) => [
+              styles.button,
+              styles.primaryButton,
+              {
+                backgroundColor: primaryButtonRed
+                  ? colors.noButtonBackground
+                  : colors.border,
+                opacity: pressed ? 0.7 : 1,
+              },
+            ]}
+            onPress={() => onPrimary(prompt ? value : undefined)}
+          >
+            <Text
+              style={{
+                color: primaryButtonRed ? colors.noButtonText : colors.text,
+                fontWeight: "600",
+              }}
+            >
+              {primaryButtonText}
+            </Text>
+          </Pressable>
+        </View>
       </Pressable>
-    </Modal>
+    </Pressable>
   );
 }
 
@@ -114,7 +162,6 @@ const styles = StyleSheet.create({
   },
   modalView: {
     margin: 20,
-    backgroundColor: "white",
     borderRadius: 20,
     padding: 24,
     width: "88%",
@@ -142,9 +189,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 10,
     borderRadius: 10,
-    backgroundColor: "#f5f5f5",
     borderWidth: 1,
-    borderColor: "#d9d9d9",
   },
   buttonRow: {
     flexDirection: "row",
@@ -155,8 +200,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 10,
     borderRadius: 10,
-    backgroundColor: "#f2f2f2",
   },
-  primaryButton: { backgroundColor: "#e6e6e6" },
-  redText: { color: "red" },
+  primaryButton: {},
 });

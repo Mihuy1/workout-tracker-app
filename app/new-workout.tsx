@@ -6,7 +6,7 @@ import {
 } from "@/app/storage/completedExercises";
 import { CustomModal } from "@/components/ui/customModal";
 import { NewWorkout } from "@/components/ui/newWorkout";
-import { usePreventRemove } from "@react-navigation/native";
+import type { SetRow } from "@/types/workout";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   router,
@@ -14,20 +14,39 @@ import {
   useLocalSearchParams,
   useNavigation,
 } from "expo-router";
+import { usePreventRemove } from "expo-router/react-navigation";
 import { useEffect, useRef, useState } from "react";
 import { Button } from "react-native";
-import { useWorkout } from "./contexts/workoutContext";
+import { useRestTimer } from "./contexts/restTimerContext";
+import { useWorkoutActions } from "./contexts/workoutActionsContext";
+import { useWorkoutState } from "./contexts/workoutStateContext";
+
+const isValidCompletedSet = (set: SetRow): boolean => {
+  const weight = Number(set.weight);
+  const reps = Number(set.reps);
+
+  return (
+    set.complete &&
+    set.weight.trim() !== "" &&
+    set.reps.trim() !== "" &&
+    Number.isFinite(weight) &&
+    weight >= 0 &&
+    Number.isInteger(reps) &&
+    reps > 0
+  );
+};
 
 export default function NewWorkoutScreen() {
   const queryClient = useQueryClient();
   const { presetTitle } = useLocalSearchParams<{ presetTitle?: string }>();
-  const { exercises, clearWorkout } = useWorkout();
+  const { exercises } = useWorkoutState();
+  const { clearWorkout } = useWorkoutActions();
+  const { clearRestTimer } = useRestTimer();
   const navigation = useNavigation();
   const [isFinishing, setIsFinishing] = useState(false);
-  const isFinishingRef = useRef(false);
+  const shouldExitRef = useRef(false);
 
-  const startTimeRef = useRef<number>(Date.now());
-  const [elapsedTimeMs, setElapsedTimeMs] = useState<number>(0);
+  const [startedAt] = useState(() => Date.now());
 
   const [discardVisible, setDiscardVisible] = useState(false);
 
@@ -36,6 +55,8 @@ export default function NewWorkoutScreen() {
   const [infoVisible, setInfoVisible] = useState(false);
 
   const [emptySetsVisible, setEmptySetsVisible] = useState(false);
+
+  const [saveErrorVisible, setSaveErrorVisible] = useState(false);
 
   const [saveAsPresetVisible, setSaveAsPresetVisible] = useState(false);
 
@@ -52,20 +73,25 @@ export default function NewWorkoutScreen() {
       presetName: string | null;
       shouldUpdatePreset: boolean;
     }) => {
-      const workoutDurMs = Date.now() - startTimeRef.current;
+      const workoutDurMs = Date.now() - startedAt;
+      const completedExercises = exercises
+        .map((exercise) => ({
+          ...exercise,
+          sets: exercise.sets.filter(isValidCompletedSet),
+        }))
+        .filter((exercise) => exercise.sets.length > 0);
+
       await addCompletedExercise({
         id: Date.now().toString(),
         workoutName: presetName ?? "Workout " + new Date().toLocaleDateString(),
         date: new Date().toISOString(),
-        exercises: exercises,
+        exercises: completedExercises,
         workoutDurationMs: workoutDurMs,
       });
 
-      const weightsPerExercise = exercises.map((exercise) => ({
+      const weightsPerExercise = completedExercises.map((exercise) => ({
         exerciseName: exercise.name,
-        weight: exercise.sets
-          .filter((set) => set.complete && set.weight !== "")
-          .map((set) => set.weight),
+        weight: exercise.sets.map((set) => set.weight),
       }));
 
       console.log("weightsPerExercise:", weightsPerExercise);
@@ -91,14 +117,31 @@ export default function NewWorkoutScreen() {
       }
 
       clearWorkout();
+      clearRestTimer();
       router.back();
     },
     onError: (error) => {
       console.error("error finishWorkoutMutation:", error);
       setIsFinishing(false);
-      isFinishingRef.current = false;
+      setSaveErrorVisible(true);
     },
   });
+
+  useEffect(() => {
+    if (!isFinishing || !shouldExitRef.current) return;
+
+    shouldExitRef.current = false;
+    clearWorkout();
+    clearRestTimer();
+
+    const action = pendingNavActionRef.current;
+    pendingNavActionRef.current = null;
+    if (action) {
+      navigation.dispatch(action);
+    } else {
+      router.back();
+    }
+  }, [isFinishing, clearWorkout, clearRestTimer, navigation]);
 
   useEffect(() => {
     if (presetTitle) {
@@ -108,21 +151,11 @@ export default function NewWorkoutScreen() {
     }
   }, [presetTitle]);
 
-  useEffect(() => {
-    const id = setInterval(() => {
-      setElapsedTimeMs(Date.now() - startTimeRef.current);
-    }, 1000);
-
-    return () => clearInterval(id);
-  }, []);
-
   const finishWorkout = async (
     presetName: string | null,
     shouldUpdatePreset: boolean = true,
   ) => {
     setIsFinishing(true);
-    isFinishingRef.current = true;
-
     finishWorkoutMutation.mutate({ presetName, shouldUpdatePreset });
   };
 
@@ -140,9 +173,7 @@ export default function NewWorkoutScreen() {
     }
 
     const hasAnyCompleteSets = exercises.some((ex) =>
-      ex.sets.some(
-        (set) => set.complete && set.weight !== "" && set.reps !== "",
-      ),
+      ex.sets.some(isValidCompletedSet),
     );
 
     if (!hasAnyCompleteSets) {
@@ -160,7 +191,17 @@ export default function NewWorkoutScreen() {
         (name) => !presetExerciseNames.has(name),
       );
 
-      if (hasNewExercise) {
+      const hasSetChange = exercises.some((ex) => {
+        const original = originalExercisesRef.current.find(
+          (o) => ex.name === o.name,
+        );
+
+        if (!original) return false;
+
+        return original.sets.length !== ex.sets.length;
+      });
+
+      if (hasNewExercise || hasSetChange) {
         setUpdatePresetVisible(true);
         return;
       } else {
@@ -185,6 +226,7 @@ export default function NewWorkoutScreen() {
       <Stack.Screen
         options={{
           title: presetTitle ? presetTitle : "New Workout",
+          gestureEnabled: !shouldPreventRemove,
           headerLeft: () => (
             <Button title="Discard" onPress={handleDiscardPress} />
           ),
@@ -194,7 +236,7 @@ export default function NewWorkoutScreen() {
           ),
         }}
       />
-      <NewWorkout presetTitle={presetTitle} elapsedTimeMs={elapsedTimeMs} />
+      <NewWorkout presetTitle={presetTitle} startedAt={startedAt} />
 
       <CustomModal
         visible={discardVisible}
@@ -202,21 +244,15 @@ export default function NewWorkoutScreen() {
         message="Are you sure you want to discard this workout?"
         primaryButtonText="Yes"
         secondaryButtonText="No"
-        primaryButtonRed={true}
-        onRequestClose={() => setDiscardVisible(false)}
+        primaryButtonRed
+        onRequestClose={() => {
+          setDiscardVisible(false);
+          pendingNavActionRef.current = null;
+        }}
         onPrimary={() => {
           setDiscardVisible(false);
           setIsFinishing(true);
-          isFinishingRef.current = true;
-          clearWorkout();
-
-          const action = pendingNavActionRef.current;
-          pendingNavActionRef.current = null;
-          if (action) {
-            navigation.dispatch(action);
-          } else {
-            router.back();
-          }
+          shouldExitRef.current = true;
         }}
         onSecondary={() => {
           setDiscardVisible(false);
@@ -226,12 +262,22 @@ export default function NewWorkoutScreen() {
 
       <CustomModal
         visible={emptySetsVisible}
-        title="Cant complete workout with empty exercises / sets"
-        message="You have some sets / workouts that are empty"
+        title="No completed sets"
+        message="Complete at least one set with a weight and rep count before saving. Incomplete sets will not be added to history."
         primaryButtonText="OK"
         onRequestClose={() => setEmptySetsVisible(false)}
         onPrimary={() => setEmptySetsVisible(false)}
         onSecondary={() => setEmptySetsVisible(false)}
+        dismissOnBackdropPress
+      />
+
+      <CustomModal
+        visible={saveErrorVisible}
+        title="Workout not saved"
+        message="Your workout could not be saved. It is still open, so you can try again."
+        primaryButtonText="OK"
+        onRequestClose={() => setSaveErrorVisible(false)}
+        onPrimary={() => setSaveErrorVisible(false)}
         dismissOnBackdropPress
       />
 
@@ -252,12 +298,13 @@ export default function NewWorkoutScreen() {
         message="Would you like to save this workout?"
         primaryButtonText="Yes"
         secondaryButtonText="No"
+        secondaryButtonRed
         onRequestClose={() => setSaveWorkoutVisible(false)}
         onSecondary={() => {
           setSaveWorkoutVisible(false);
-          isFinishingRef.current = true;
-          clearWorkout();
-          router.back();
+          setIsFinishing(true);
+
+          shouldExitRef.current = true;
         }}
         onPrimary={() => {
           setSaveWorkoutVisible(false);
@@ -292,6 +339,7 @@ export default function NewWorkoutScreen() {
         message="Would you like to update the preset with your current workout?"
         primaryButtonText="Yes"
         secondaryButtonText="No"
+        secondaryButtonRed
         onRequestClose={() => setUpdatePresetVisible(false)}
         onPrimary={() => {
           setUpdatePresetVisible(false);

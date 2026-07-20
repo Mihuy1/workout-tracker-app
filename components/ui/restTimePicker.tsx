@@ -1,12 +1,17 @@
+import { Colors } from "@/constants/theme";
+import { useThemeColor } from "@/hooks/use-theme-color";
 import { useState } from "react";
 import {
   Button,
+  Modal,
   Pressable,
   StyleSheet,
   Text,
   TextInput,
+  useColorScheme,
   View,
 } from "react-native";
+import { IconSymbol } from "./icon-symbol";
 
 interface RestTimePickerProps {
   restTime: number;
@@ -17,6 +22,9 @@ export const RestTimePicker = ({
   restTime,
   setRestTime,
 }: RestTimePickerProps) => {
+  const theme = useColorScheme() === "dark" ? "dark" : "light";
+  const colors = Colors[theme];
+
   const [seconds, setSeconds] = useState(() => (restTime % 60).toString());
   const [minutes, setMinutes] = useState(() =>
     Math.floor(restTime / 60).toString(),
@@ -35,61 +43,123 @@ export const RestTimePicker = ({
     setSeconds(integersOnly);
   };
 
-  const handleApply = () => {
-    const m = parseInt(minutes) * 60;
-    const s = parseInt(seconds);
-    const sum = m + s;
-    setRestTime(sum);
+  const handleOpen = () => {
+    setMinutes(Math.floor(restTime / 60).toString());
+    setSeconds((restTime % 60).toString());
+    setShowPicker(true);
+  };
 
+  const handleApply = () => {
+    const minutesValue = Number(minutes || 0);
+    const secondsValue = Number(seconds || 0);
+
+    setRestTime(minutesValue * 60 + secondsValue);
     setShowPicker(false);
   };
 
   return (
     <View
       style={{
-        backgroundColor: "#F1F1F1",
         alignItems: "center",
         justifyContent: "center",
       }}
     >
-      <Pressable onPress={() => setShowPicker(!showPicker)}>
-        <Text style={{ color: "blue" }}>Set Rest Time:</Text>
+      <Pressable onPress={handleOpen}>
+        <IconSymbol name="timer" color={useThemeColor({}, "iconColor")} />
       </Pressable>
-      {showPicker && (
-        <>
-          <View style={styles.inputsView}>
-            <TextInput
-              style={styles.textInput}
-              keyboardType="numeric"
-              value={minutes}
-              onChangeText={(text) => handleNumberInput(text)}
-            />
-            <TextInput
-              style={styles.textInput}
-              keyboardType="numeric"
-              value={seconds}
-              onChangeText={(text) => handleSecondsInput(text)}
-            />
-          </View>
-          <Button title="Apply" onPress={handleApply} />
-        </>
-      )}
+      <Modal
+        onRequestClose={() => setShowPicker(false)}
+        visible={showPicker}
+        animationType="fade"
+        transparent
+      >
+        <Pressable
+          style={[styles.backdrop]}
+          onPress={() => setShowPicker(false)}
+        >
+          <Pressable
+            style={[styles.modalView, { backgroundColor: colors.background }]}
+            onPress={(e) => e.stopPropagation()}
+          >
+            <View style={styles.inputsView}>
+              <TextInput
+                style={[
+                  styles.textInput,
+                  {
+                    color: colors.text,
+                    borderColor: colors.border,
+                    backgroundColor: colors.background,
+                  },
+                ]}
+                keyboardType="numeric"
+                value={minutes}
+                onChangeText={(text) => handleNumberInput(text)}
+                autoFocus
+              />
+              <Text style={[styles.text, { color: colors.text }]}>Min</Text>
+
+              <TextInput
+                style={[
+                  styles.textInput,
+                  {
+                    color: colors.text,
+                    borderColor: colors.border,
+                    backgroundColor: colors.background,
+                  },
+                ]}
+                keyboardType="numeric"
+                value={seconds}
+                onChangeText={(text) => handleSecondsInput(text)}
+              />
+              <Text style={[styles.text, { color: colors.text }]}>Sec</Text>
+            </View>
+            <Button title="Apply" onPress={handleApply} />
+          </Pressable>
+        </Pressable>
+      </Modal>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
+  modalView: {
+    margin: 20,
+    // backgroundColor: "white",
+    borderRadius: 20,
+    padding: 24,
+    width: "88%",
+    maxWidth: 420,
+    alignItems: "stretch",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+    gap: 12,
+  },
   inputsView: {
     display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
     flexDirection: "row",
-    justifyContent: "space-between",
     gap: 10,
-    paddingTop: 6,
   },
+
   textInput: {
     borderWidth: 1,
-    borderColor: "#ccc",
-    paddingVertical: 3,
-    paddingHorizontal: 8,
+    // borderColor: "#ccc",
+    // backgroundColor: "#f0f0f0",
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+  },
+  text: {
+    margin: 0,
+    padding: 0,
+  },
+  backdrop: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.35)",
+    justifyContent: "center",
+    alignItems: "center",
   },
 });

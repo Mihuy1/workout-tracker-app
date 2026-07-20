@@ -1,16 +1,15 @@
 import { ThemedText } from "@/components/themed-text";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { Button, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import {
   getBestWeightByExerciseName,
   getCompletedExercises,
-  saveWeightProgressionByExerciseName,
 } from "../storage/completedExercises";
 
 export default function Statistics() {
-  const [data, setData] = useState([]);
+  // const [data, setData] = useState([]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -30,14 +29,14 @@ export default function Statistics() {
     console.log("fetched:", res);
   };
 
-  const saveWeightProgression = async () => {
-    const res = await saveWeightProgressionByExerciseName(
-      "Dumbbell Bicep Curls",
-      "25",
-    );
+  // const saveWeightProgression = async () => {
+  //   const res = await saveWeightProgressionByExerciseName(
+  //     "Dumbbell Bicep Curls",
+  //     "25",
+  //   );
 
-    console.log("saved:", res);
-  };
+  //   console.log("saved:", res);
+  // };
 
   const checkCompletedExercises = async () => {
     const res = await getCompletedExercises();
