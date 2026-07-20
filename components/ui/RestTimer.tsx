@@ -229,7 +229,7 @@ export const RestTimer = () => {
 
           <View style={styles.buttonRow}>
             <Button
-              title="Start/Resume"
+              title="Resume"
               onPress={() => start()}
               disabled={isActive}
             />

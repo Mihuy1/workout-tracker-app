@@ -25,6 +25,7 @@ const MAPPING = {
   person: "person",
   checkmark: "check",
   timer: "timer",
+  magnifyingglass: "search",
   "plus.circle.fill": "add-circle",
   "minus.circle": "remove-circle",
   "x.circle": "highlight-remove",

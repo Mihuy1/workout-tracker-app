@@ -6,18 +6,26 @@ import { Exercise } from "@/types/workout";
 import { router } from "expo-router";
 import Fuse from "fuse.js";
 import { useMemo, useState } from "react";
-import { FlatList, StyleSheet, TextInput, View } from "react-native";
+import { FlatList, Pressable, StyleSheet, TextInput, View } from "react-native";
 import { ThemedText } from "../themed-text";
 import { ExercisePickerRow, ExercisePickerRowItem } from "./exercisePickerRow";
+import { IconSymbol } from "./icon-symbol";
+
+const FILTERS = ["All", "Strength", "Stretch", "Cardio"] as const;
+type ExerciseFilter = (typeof FILTERS)[number];
 
 export function WorkoutList() {
   const [text, onChangeText] = useState("");
+  const [activeFilter, setActiveFilter] = useState<ExerciseFilter>("All");
   const { exercises: workoutExercises } = useWorkoutState();
   const { addExercise } = useWorkoutActions();
   const textColor = useThemeColor({}, "text");
   const borderColor = useThemeColor({}, "border");
   const surface = useThemeColor({}, "surface");
   const placeholderColor = useThemeColor({}, "placeholder");
+  const mutedText = useThemeColor({}, "mutedText");
+  const surfaceMuted = useThemeColor({}, "surfaceMuted");
+  const accent = useThemeColor({}, "barColor");
 
   const selectedExercisesNames = useMemo(
     () => new Set(workoutExercises.map((exercise) => exercise.name)),
@@ -32,17 +40,16 @@ export function WorkoutList() {
     [selectedExercisesNames],
   );
 
-  // const filtered = useMemo(() => {
-  //   return exercises.filter((item) => !checkIfExerciseAlreadyAdded(item.name));
-  // }, [workoutExercises]);
-
   const fuse = useMemo(
     () =>
       new Fuse(exercises, {
         keys: [
           { name: "name" },
           { name: "primaryMuscles" },
+          { name: "secondaryMuscles" },
           { name: "equipment" },
+          { name: "mechanic" },
+          { name: "category" },
         ],
         threshold: 0.35,
         ignoreLocation: true,
@@ -51,22 +58,27 @@ export function WorkoutList() {
     [],
   );
 
-  // const searchResults = useMemo(() => {
-  //   if (!text) return filtered;
-
-  //   return fuse.search(text).map((result) => result.item);
-  // }, [text, fuse, filtered]);
-
   const searchResults = useMemo(() => {
     const query = text.trim();
 
-    if (!query) return filtered;
+    const matches = query
+      ? fuse
+          .search(query)
+          .map((result) => result.item)
+          .filter((exercise) => !selectedExercisesNames.has(exercise.name))
+      : filtered;
 
-    return fuse
-      .search(query)
-      .map((result) => result.item)
-      .filter((exercise) => !selectedExercisesNames.has(exercise.name));
-  }, [text, fuse, filtered, selectedExercisesNames]);
+    if (activeFilter === "All") return matches;
+    if (activeFilter === "Stretch")
+      return matches.filter(
+        (exercise) => exercise.category.toLowerCase() === "stretching",
+      );
+
+    return matches.filter(
+      (exercise) =>
+        exercise.category.toLowerCase() === activeFilter.toLowerCase(),
+    );
+  }, [text, fuse, filtered, selectedExercisesNames, activeFilter]);
 
   const onAdd = (item: ExercisePickerRowItem) => {
     const exercise: Exercise = {
@@ -89,29 +101,80 @@ export function WorkoutList() {
 
   return (
     <View style={styles.container}>
-      <ThemedText type="title">Exercises</ThemedText>
-      <TextInput
-        value={text}
-        onChangeText={onChangeText}
-        placeholder="Search exercises..."
-        placeholderTextColor={placeholderColor}
-        autoFocus
-        style={[
-          styles.searchInput,
-          { color: textColor, borderColor, backgroundColor: surface },
-        ]}
-      />
+      <View
+        style={[styles.searchBar, { backgroundColor: surface, borderColor }]}
+      >
+        <IconSymbol name="magnifyingglass" size={20} color={mutedText} />
+        <TextInput
+          value={text}
+          onChangeText={onChangeText}
+          placeholder="Search exercises"
+          placeholderTextColor={placeholderColor}
+          autoFocus
+          returnKeyType="search"
+          clearButtonMode="while-editing"
+          accessibilityLabel="Search exercises"
+          style={[styles.searchInput, { color: textColor }]}
+        />
+      </View>
+
+      <View style={styles.filters}>
+        {FILTERS.map((filter) => {
+          const selected = filter === activeFilter;
+
+          return (
+            <Pressable
+              key={filter}
+              onPress={() => setActiveFilter(filter)}
+              accessibilityRole="button"
+              accessibilityState={{ selected }}
+              style={({ pressed }) => [
+                styles.filterChip,
+                {
+                  backgroundColor: selected ? accent : surfaceMuted,
+                  opacity: pressed ? 0.7 : 1,
+                },
+              ]}
+            >
+              <ThemedText
+                style={[
+                  styles.filterLabel,
+                  { color: selected ? "#FFFFFF" : textColor },
+                ]}
+              >
+                {filter}
+              </ThemedText>
+            </Pressable>
+          );
+        })}
+      </View>
+
+      <ThemedText style={[styles.resultCount, { color: mutedText }]}>
+        {searchResults.length}{" "}
+        {searchResults.length === 1 ? "exercise" : "exercises"}
+      </ThemedText>
+
       <FlatList
         data={searchResults}
         keyExtractor={(item) => item.id}
+        contentContainerStyle={[
+          styles.listContent,
+          searchResults.length === 0 && styles.emptyListContent,
+        ]}
+        ItemSeparatorComponent={() => <View style={styles.separator} />}
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="on-drag"
         renderItem={({ item }) => (
-          // <Workout
-          //   workoutId={item.id}
-          //   workoutName={item.name}
-          //   workoutMechanic={item.mechanic}
-          // />
           <ExercisePickerRow item={item} onAdd={onAdd} />
         )}
+        ListEmptyComponent={
+          <View style={styles.emptyState}>
+            <ThemedText type="defaultSemiBold">No exercises found</ThemedText>
+            <ThemedText style={[styles.emptyCopy, { color: mutedText }]}>
+              Try another search or choose a different filter.
+            </ThemedText>
+          </View>
+        }
       />
     </View>
   );
@@ -120,13 +183,70 @@ export function WorkoutList() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 10,
+    paddingHorizontal: 16,
+    paddingTop: 12,
+  },
+  searchBar: {
+    minHeight: 48,
+    borderRadius: 14,
+    borderWidth: 1,
+    paddingHorizontal: 14,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
   },
   searchInput: {
-    padding: 8,
-    borderRadius: 8,
-    borderWidth: 1,
+    flex: 1,
+    height: 46,
+    fontSize: 16,
+    paddingVertical: 0,
+  },
+  filters: {
+    height: 60,
+    flexShrink: 0,
+    flexDirection: "row",
+    gap: 8,
+    paddingVertical: 12,
+  },
+  filterChip: {
+    flex: 1,
+    minHeight: 36,
+    paddingHorizontal: 8,
+    borderRadius: 18,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  filterLabel: {
+    fontSize: 14,
+    lineHeight: 18,
+    fontWeight: "600",
+  },
+  resultCount: {
+    fontSize: 13,
+    lineHeight: 18,
     marginBottom: 8,
-    marginTop: 8,
+    marginLeft: 2,
+  },
+  listContent: {
+    paddingBottom: 24,
+  },
+  emptyListContent: {
+    flexGrow: 1,
+  },
+  separator: {
+    height: 8,
+  },
+  emptyState: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 32,
+    paddingBottom: 80,
+  },
+  emptyCopy: {
+    marginTop: 4,
+    textAlign: "center",
+    fontSize: 14,
+    lineHeight: 20,
   },
 });
