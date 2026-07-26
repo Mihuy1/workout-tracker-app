@@ -87,34 +87,93 @@ export const saveCompletedExercises = async (exercises) => {
 export const saveWeightProgressionByExerciseName = async (
   exerciseName,
   weight,
+  reps,
 ) => {
   try {
-    const key = `weightProgression_${exerciseName}`;
+    const weightProgressionKey = `weightProgression_${exerciseName}`;
+    const repProgressionKey = `repProgression_${exerciseName}`;
 
-    const existingValue = await AsyncStorage.getItem(key);
-    const history = existingValue ? JSON.parse(existingValue) : [];
+    const existingWeightValue =
+      await AsyncStorage.getItem(weightProgressionKey);
+    const weightHistory = existingWeightValue
+      ? JSON.parse(existingWeightValue)
+      : [];
+
+    const existingRepValue = await AsyncStorage.getItem(repProgressionKey);
+    const repsHistory = existingRepValue ? JSON.parse(existingRepValue) : [];
 
     const weightArray = Array.isArray(weight) ? weight : [weight];
     const highestWeight = Math.max(...weightArray.map(parseFloat));
 
+    const repsArray = Array.isArray(reps) ? reps : [reps];
+
+    const bestRepsByWeight = new Map();
+
+    for (let i = 0; i < weightArray.length; i++) {
+      const currentWeight = Number(weightArray[i]);
+      const currentReps = Number(repsArray[i]);
+
+      const currentBest = bestRepsByWeight.get(currentWeight);
+
+      if (currentBest === undefined || currentReps > currentBest)
+        bestRepsByWeight.set(currentWeight, currentReps);
+    }
+
+    for (const [currentWeight, highestRep] of bestRepsByWeight) {
+      const historyAtCurrentWeight = repsHistory.filter(
+        (entry) => entry.weight === currentWeight,
+      );
+
+      const highestHistoryReps =
+        historyAtCurrentWeight.length > 0
+          ? Math.max(...historyAtCurrentWeight.map((entry) => entry.reps))
+          : null;
+
+      const isBaseline = highestHistoryReps === null;
+      const isImprovement =
+        highestHistoryReps !== null && highestRep > highestHistoryReps;
+
+      if (isBaseline || isImprovement) {
+        const newEntry = {
+          date: new Date().toISOString().split("T")[0],
+          weight: currentWeight,
+          reps: highestRep,
+        };
+
+        repsHistory.push(newEntry);
+      }
+    }
+
+    // Save best reps
+    await AsyncStorage.setItem(repProgressionKey, JSON.stringify(repsHistory));
+
     // Get current PR from history
-    const currentPR = history.length > 0 ? Math.max(...history.map((entry) => entry.weight)) : 0;
+    const currentPR =
+      weightHistory.length > 0
+        ? Math.max(...weightHistory.map((entry) => entry.weight))
+        : 0;
 
     // Only save if the current workout's max weight is strictly greater than the current PR
     if (highestWeight > currentPR) {
+      console.log("will save new weight pr");
       const newEntry = {
         date: new Date().toISOString().split("T")[0],
         weight: parseFloat(highestWeight),
       };
 
-      history.push(newEntry);
-      await AsyncStorage.setItem(key, JSON.stringify(history));
-      console.log(`New PR saved for ${exerciseName}: ${highestWeight}`);
+      weightHistory.push(newEntry);
+      await AsyncStorage.setItem(
+        weightProgressionKey,
+        JSON.stringify(weightHistory),
+      );
+      console.log(`New Weight PR saved for ${exerciseName}: ${highestWeight}`);
     } else {
-      console.log(`No new PR for ${exerciseName}. Current PR: ${currentPR}, Workout max: ${highestWeight}`);
+      console.log(
+        `No new Weight PR for ${exerciseName}. Current PR: ${currentPR}, Workout max: ${highestWeight}`,
+      );
     }
   } catch (error) {
-    console.error("Error saving weight progression:", error);
+    console.error("Error saving progression:", error);
   }
 };
 

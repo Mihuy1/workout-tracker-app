@@ -92,14 +92,17 @@ export default function NewWorkoutScreen() {
       const weightsPerExercise = completedExercises.map((exercise) => ({
         exerciseName: exercise.name,
         weight: exercise.sets.map((set) => set.weight),
+        reps: exercise.sets.map((set) => set.reps),
       }));
 
-      console.log("weightsPerExercise:", weightsPerExercise);
+      // console.log("weightsPerExercise:", weightsPerExercise);
+      // console.log("exercise:", completedExercises);
 
       for (const exercise of weightsPerExercise) {
         await saveWeightProgressionByExerciseName(
           exercise.exerciseName,
           exercise.weight,
+          exercise.reps,
         );
       }
 

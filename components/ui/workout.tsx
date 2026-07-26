@@ -204,7 +204,9 @@ export const Workout = memo(function Workout({
                 finalReps,
               );
 
-              if (willBeCompleted) triggerRestTimer(restTime);
+              if (willBeCompleted) {
+                triggerRestTimer(restTime);
+              }
             }}
           >
             <IconSymbol
