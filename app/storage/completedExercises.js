@@ -139,7 +139,6 @@ export const saveWeightProgressionByExerciseName = async (
           weight: currentWeight,
           reps: highestRep,
         };
-
         repsHistory.push(newEntry);
       }
     }

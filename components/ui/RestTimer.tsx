@@ -108,7 +108,7 @@ export const RestTimer = () => {
           setIsActive(false);
           isActiveRef.current = false;
         }
-      }, 100);
+      }, 1000);
     },
     [animatedProgress],
   );
