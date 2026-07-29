@@ -15,11 +15,13 @@ import {
   useNavigation,
 } from "expo-router";
 import { usePreventRemove } from "expo-router/react-navigation";
+import { useSQLiteContext } from "expo-sqlite";
 import { useEffect, useRef, useState } from "react";
 import { Button } from "react-native";
 import { useRestTimer } from "./contexts/restTimerContext";
 import { useWorkoutActions } from "./contexts/workoutActionsContext";
 import { useWorkoutState } from "./contexts/workoutStateContext";
+import { saveWorkout } from "./storage/workoutRepository";
 
 const isValidCompletedSet = (set: SetRow): boolean => {
   const weight = Number(set.weight);
@@ -37,6 +39,7 @@ const isValidCompletedSet = (set: SetRow): boolean => {
 };
 
 export default function NewWorkoutScreen() {
+  const db = useSQLiteContext();
   const queryClient = useQueryClient();
   const { presetTitle } = useLocalSearchParams<{ presetTitle?: string }>();
   const { exercises } = useWorkoutState();
@@ -89,14 +92,20 @@ export default function NewWorkoutScreen() {
         workoutDurationMs: workoutDurMs,
       });
 
+      await saveWorkout(
+        db,
+        Date.now().toString(),
+        presetName ?? "Workout " + new Date().toLocaleDateString(),
+        new Date().toISOString(),
+        completedExercises,
+        workoutDurMs,
+      );
+
       const weightsPerExercise = completedExercises.map((exercise) => ({
         exerciseName: exercise.name,
         weight: exercise.sets.map((set) => set.weight),
         reps: exercise.sets.map((set) => set.reps),
       }));
-
-      // console.log("weightsPerExercise:", weightsPerExercise);
-      // console.log("exercise:", completedExercises);
 
       for (const exercise of weightsPerExercise) {
         await saveWeightProgressionByExerciseName(

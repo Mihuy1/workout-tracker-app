@@ -6,6 +6,7 @@ export type SetRow = {
 };
 
 export type Exercise = {
+  exerciseId: string;
   name: string;
   mechanic: string | null | undefined;
   restTime: number;

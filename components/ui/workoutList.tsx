@@ -82,6 +82,7 @@ export function WorkoutList() {
 
   const onAdd = (item: ExercisePickerRowItem) => {
     const exercise: Exercise = {
+      exerciseId: item.id,
       name: item.name,
       mechanic: item.mechanic,
       restTime: 0,

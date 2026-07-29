@@ -141,8 +141,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 6,
     textAlign: "center",
   },
-  setCol: { width: 50 },
-  kgCol: { width: 140 },
+  setCol: { width: 50, textAlign: "center" },
+  kgCol: { width: 140, textAlign: "left", paddingLeft: 12 },
   repsCol: { width: 70 },
   actionCol: { flex: 1, alignItems: "flex-end", paddingRight: 4 },
   staticText: {
