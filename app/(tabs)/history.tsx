@@ -10,7 +10,7 @@ import { useMemo, useState } from "react";
 import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 import Animated, { LinearTransition } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { deleteWorkout, getWorkoutHistory } from "../storage/workoutRepository";
+import { deleteWorkout, getWorkoutHistory } from "@/storage/workoutRepository";
 
 export type CompletedWorkout = {
   id: string;

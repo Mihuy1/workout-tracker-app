@@ -1,13 +1,19 @@
+import { CustomModal } from "@/components/ui/customModal";
+import { NewWorkout } from "@/components/ui/newWorkout";
+import { useRestTimer } from "@/contexts/restTimerContext";
+import { useWorkoutActions } from "@/contexts/workoutActionsContext";
+import { useWorkoutState } from "@/contexts/workoutStateContext";
 import {
   addCompletedExercise,
   getSavedPresetByTitle,
   saveCompletedExerciseAsPreset,
   saveWeightProgressionByExerciseName,
-} from "@/app/storage/completedExercises";
-import { CustomModal } from "@/components/ui/customModal";
-import { NewWorkout } from "@/components/ui/newWorkout";
+} from "@/storage/completedExercises";
+import { saveRoutine, updateRoutine } from "@/storage/routineRepository";
+import { saveWorkout } from "@/storage/workoutRepository";
 import type { SetRow } from "@/types/workout";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import * as Crypto from "expo-crypto";
 import {
   router,
   Stack,
@@ -18,10 +24,6 @@ import { usePreventRemove } from "expo-router/react-navigation";
 import { useSQLiteContext } from "expo-sqlite";
 import { useEffect, useRef, useState } from "react";
 import { Button } from "react-native";
-import { useRestTimer } from "./contexts/restTimerContext";
-import { useWorkoutActions } from "./contexts/workoutActionsContext";
-import { useWorkoutState } from "./contexts/workoutStateContext";
-import { saveWorkout } from "./storage/workoutRepository";
 
 const isValidCompletedSet = (set: SetRow): boolean => {
   const weight = Number(set.weight);
@@ -41,7 +43,12 @@ const isValidCompletedSet = (set: SetRow): boolean => {
 export default function NewWorkoutScreen() {
   const db = useSQLiteContext();
   const queryClient = useQueryClient();
-  const { presetTitle } = useLocalSearchParams<{ presetTitle?: string }>();
+  const { presetTitle, routineId } = useLocalSearchParams<{
+    presetTitle?: string;
+    routineId?: string;
+  }>();
+
+  const isExistingRoutine = Boolean(routineId);
   const { exercises } = useWorkoutState();
   const { clearWorkout } = useWorkoutActions();
   const { clearRestTimer } = useRestTimer();
@@ -116,7 +123,23 @@ export default function NewWorkoutScreen() {
       }
 
       if (presetName && shouldUpdatePreset) {
-        await saveCompletedExerciseAsPreset(exercises, presetName);
+        if (routineId) {
+          await updateRoutine(db, {
+            id: routineId,
+            name: presetName,
+            updatedAt: Date.now(),
+            exercises: exercises,
+          });
+        } else {
+          await saveCompletedExerciseAsPreset(exercises, presetName);
+          await saveRoutine(db, {
+            id: Crypto.randomUUID(),
+            name: presetName,
+            createdAt: Date.now(),
+            updatedAt: Date.now(),
+            exercises: exercises,
+          });
+        }
       }
 
       return true;

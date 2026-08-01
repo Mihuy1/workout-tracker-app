@@ -11,10 +11,10 @@ import "react-native-reanimated";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { SQLiteProvider } from "expo-sqlite";
 import { useState } from "react";
-import { RestTimerProvider } from "./contexts/restTimerContext";
-import { WorkoutProvider } from "./contexts/workoutActionsContext";
-import { DATABASE_NAME } from "./storage/database";
-import { migrateDatabase } from "./storage/migrations";
+import { RestTimerProvider } from "@/contexts/restTimerContext";
+import { WorkoutProvider } from "@/contexts/workoutActionsContext";
+import { DATABASE_NAME } from "@/storage/database";
+import { migrateDatabase } from "@/storage/migrations";
 
 export const unstable_settings = {
   anchor: "(tabs)",

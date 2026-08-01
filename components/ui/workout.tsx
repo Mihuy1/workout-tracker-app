@@ -1,5 +1,5 @@
-import { useRestTimer } from "@/app/contexts/restTimerContext";
-import { useWorkoutActions } from "@/app/contexts/workoutActionsContext";
+import { useRestTimer } from "@/contexts/restTimerContext";
+import { useWorkoutActions } from "@/contexts/workoutActionsContext";
 import { useThemeColor } from "@/hooks/use-theme-color";
 import { Exercise } from "@/types/workout";
 import { memo, useState } from "react";

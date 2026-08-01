@@ -1,5 +1,5 @@
-import { useWorkoutActions } from "@/app/contexts/workoutActionsContext";
-import { useWorkoutState } from "@/app/contexts/workoutStateContext";
+import { useWorkoutActions } from "@/contexts/workoutActionsContext";
+import { useWorkoutState } from "@/contexts/workoutStateContext";
 import exercises from "@/app/datasets/exercises.json";
 import { useThemeColor } from "@/hooks/use-theme-color";
 import { Exercise } from "@/types/workout";

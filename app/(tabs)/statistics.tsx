@@ -6,7 +6,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import {
   getBestWeightByExerciseName,
   getCompletedExercises,
-} from "../storage/completedExercises";
+} from "@/storage/completedExercises";
 
 export default function Statistics() {
   // const [data, setData] = useState([]);

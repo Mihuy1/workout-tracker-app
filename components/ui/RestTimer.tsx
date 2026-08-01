@@ -1,4 +1,4 @@
-import { useRestTimer } from "@/app/contexts/restTimerContext";
+import { useRestTimer } from "@/contexts/restTimerContext";
 import { Colors } from "@/constants/theme";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {

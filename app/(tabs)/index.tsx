@@ -3,6 +3,7 @@ import { CustomButton } from "@/components/ui/customButton";
 import { CustomModal } from "@/components/ui/customModal";
 import RoutineWorkout from "@/components/ui/routineWorkout";
 import { useThemeColor } from "@/hooks/use-theme-color";
+import { getSavedPresets } from "@/storage/completedExercises";
 import { router } from "expo-router";
 import { useState } from "react";
 import {
@@ -13,14 +14,13 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import {
-  getSavedPresets,
-  removePresetById,
-} from "../storage/completedExercises";
 
+import { deleteRoutine, getAllRoutines } from "@/storage/routineRepository";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useSQLiteContext } from "expo-sqlite";
 export default function HomeScreen() {
   const queryClient = useQueryClient();
+  const db = useSQLiteContext();
   const cardBackground = useThemeColor({}, "surface");
   const cardBorder = useThemeColor({}, "border");
   const buttonBackground = useThemeColor({}, "surfaceMuted");
@@ -33,26 +33,32 @@ export default function HomeScreen() {
 
   const fetchPresets = async () => {
     const presets = await getSavedPresets();
+    const sqlitePresets = await getAllRoutines(db);
 
+    console.log("Presets SQLite:", sqlitePresets);
     const presetsArray = Object.entries(presets).map(([name, exercises]) => ({
       id: name,
       title: name,
       exercises: exercises as any[],
     }));
 
-    return presetsArray;
+    return sqlitePresets;
   };
 
-  const { data: presets = [], isLoading } = useQuery({
+  const { data: sqlitePresets = [], isLoading } = useQuery({
     queryKey: ["presets"],
     queryFn: fetchPresets,
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id: string) => removePresetById(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["presets"] });
+    mutationFn: (id: string) => deleteRoutine(db, id),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["presets"] });
       setModalVisible(false);
+    },
+    onError: (error) => {
+      console.error("Failed to delete routine:", error);
+      // TODO: Either update currently open modal to show that something went wrong or create new modal and show
     },
   });
 
@@ -106,14 +112,14 @@ export default function HomeScreen() {
         </View>
         <ThemedText type="title">Your Routines</ThemedText>
         <FlatList
-          data={presets}
+          data={sqlitePresets}
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.listContent}
           renderItem={({ item }) => {
             const exerciseNames = item.exercises.map((exercise) =>
               typeof exercise === "string"
                 ? exercise
-                : exercise?.name || exercise?.title || "Unnamed exercise",
+                : exercise?.name || exercise?.name || "Unnamed exercise",
             );
 
             const previewNames = exerciseNames.slice(0, 3).join(", ");

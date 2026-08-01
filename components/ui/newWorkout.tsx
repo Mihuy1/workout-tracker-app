@@ -1,9 +1,9 @@
-import { useWorkoutActions } from "@/app/contexts/workoutActionsContext";
-import { useWorkoutState } from "@/app/contexts/workoutStateContext";
+import { useWorkoutActions } from "@/contexts/workoutActionsContext";
+import { useWorkoutState } from "@/contexts/workoutStateContext";
 import {
   getAllLatestExercisesMap,
   getSavedPresetByTitle,
-} from "@/app/storage/completedExercises";
+} from "@/storage/completedExercises";
 import { Exercise, SetRow } from "@/types/workout";
 import { router } from "expo-router";
 import { useEffect, useRef, useState } from "react";
