@@ -3,7 +3,6 @@ import { CustomButton } from "@/components/ui/customButton";
 import { CustomModal } from "@/components/ui/customModal";
 import RoutineWorkout from "@/components/ui/routineWorkout";
 import { useThemeColor } from "@/hooks/use-theme-color";
-import { getSavedPresets } from "@/storage/completedExercises";
 import { router } from "expo-router";
 import { useState } from "react";
 import {
@@ -32,15 +31,7 @@ export default function HomeScreen() {
   const [deleteRoutineId, setDeleteRoutineId] = useState<string | null>(null);
 
   const fetchPresets = async () => {
-    const presets = await getSavedPresets();
     const sqlitePresets = await getAllRoutines(db);
-
-    console.log("Presets SQLite:", sqlitePresets);
-    const presetsArray = Object.entries(presets).map(([name, exercises]) => ({
-      id: name,
-      title: name,
-      exercises: exercises as any[],
-    }));
 
     return sqlitePresets;
   };

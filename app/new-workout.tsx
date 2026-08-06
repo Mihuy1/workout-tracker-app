@@ -3,15 +3,14 @@ import { NewWorkout } from "@/components/ui/newWorkout";
 import { useRestTimer } from "@/contexts/restTimerContext";
 import { useWorkoutActions } from "@/contexts/workoutActionsContext";
 import { useWorkoutState } from "@/contexts/workoutStateContext";
+import { saveWeightProgressionByExerciseName } from "@/storage/completedExercises";
 import {
-  addCompletedExercise,
-  getSavedPresetByTitle,
-  saveCompletedExerciseAsPreset,
-  saveWeightProgressionByExerciseName,
-} from "@/storage/completedExercises";
-import { saveRoutine, updateRoutine } from "@/storage/routineRepository";
+  getRoutine,
+  saveRoutine,
+  updateRoutine,
+} from "@/storage/routineRepository";
 import { saveWorkout } from "@/storage/workoutRepository";
-import type { SetRow } from "@/types/workout";
+import type { Exercise, SetRow } from "@/types/workout";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import * as Crypto from "expo-crypto";
 import {
@@ -48,7 +47,6 @@ export default function NewWorkoutScreen() {
     routineId?: string;
   }>();
 
-  const isExistingRoutine = Boolean(routineId);
   const { exercises } = useWorkoutState();
   const { clearWorkout } = useWorkoutActions();
   const { clearRestTimer } = useRestTimer();
@@ -73,7 +71,7 @@ export default function NewWorkoutScreen() {
   const [updatePresetVisible, setUpdatePresetVisible] = useState(false);
 
   const pendingNavActionRef = useRef<any>(null);
-  const originalExercisesRef = useRef<any[]>([]);
+  const originalExercisesRef = useRef<Exercise[]>([]);
 
   const finishWorkoutMutation = useMutation({
     mutationFn: async ({
@@ -91,13 +89,13 @@ export default function NewWorkoutScreen() {
         }))
         .filter((exercise) => exercise.sets.length > 0);
 
-      await addCompletedExercise({
-        id: Date.now().toString(),
-        workoutName: presetName ?? "Workout " + new Date().toLocaleDateString(),
-        date: new Date().toISOString(),
-        exercises: completedExercises,
-        workoutDurationMs: workoutDurMs,
-      });
+      // await addCompletedExercise({
+      //   id: Date.now().toString(),
+      //   workoutName: presetName ?? "Workout " + new Date().toLocaleDateString(),
+      //   date: new Date().toISOString(),
+      //   exercises: completedExercises,
+      //   workoutDurationMs: workoutDurMs,
+      // });
 
       await saveWorkout(
         db,
@@ -131,7 +129,7 @@ export default function NewWorkoutScreen() {
             exercises: exercises,
           });
         } else {
-          await saveCompletedExerciseAsPreset(exercises, presetName);
+          // await saveCompletedExerciseAsPreset(exercises, presetName);
           await saveRoutine(db, {
             id: Crypto.randomUUID(),
             name: presetName,
@@ -179,12 +177,25 @@ export default function NewWorkoutScreen() {
   }, [isFinishing, clearWorkout, clearRestTimer, navigation]);
 
   useEffect(() => {
-    if (presetTitle) {
-      getSavedPresetByTitle(presetTitle).then((exercises) => {
-        originalExercisesRef.current = exercises || [];
-      });
+    if (!routineId) {
+      originalExercisesRef.current = [];
+      return;
     }
-  }, [presetTitle]);
+
+    let cancelled = false;
+
+    const loadOriginalRoutine = async () => {
+      const routine = await getRoutine(db, routineId);
+
+      if (!cancelled) originalExercisesRef.current = routine?.exercises ?? [];
+    };
+
+    loadOriginalRoutine();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [db, routineId]);
 
   const finishWorkout = async (
     presetName: string | null,
@@ -216,31 +227,28 @@ export default function NewWorkoutScreen() {
       return;
     }
 
-    if (presetTitle) {
-      const presetExerciseNames = new Set(
-        originalExercisesRef.current.map((ex: any) => ex.name),
-      );
-      const currentExerciseNames = exercises.map((ex) => ex.name);
+    if (routineId) {
+      const originalExercises = originalExercisesRef.current;
 
-      const hasNewExercise = currentExerciseNames.some(
-        (name) => !presetExerciseNames.has(name),
-      );
+      const hasRoutineChanged =
+        exercises.length !== originalExercises.length ||
+        exercises.some((exercise, index) => {
+          const original: Exercise | undefined = originalExercises[index];
 
-      const hasSetChange = exercises.some((ex) => {
-        const original = originalExercisesRef.current.find(
-          (o) => ex.name === o.name,
-        );
+          if (!original) return true;
 
-        if (!original) return false;
+          return (
+            exercise.exerciseId !== original.exerciseId ||
+            exercise.sets.length !== original.sets.length ||
+            exercise.restTime !== original.restTime
+          );
+        });
 
-        return original.sets.length !== ex.sets.length;
-      });
-
-      if (hasNewExercise || hasSetChange) {
+      if (hasRoutineChanged) {
         setUpdatePresetVisible(true);
         return;
       } else {
-        finishWorkout(presetTitle, false);
+        finishWorkout(presetTitle ?? null, false);
         return;
       }
     }
@@ -271,11 +279,7 @@ export default function NewWorkoutScreen() {
           ),
         }}
       />
-      <NewWorkout
-        presetTitle={presetTitle}
-        routineId={routineId}
-        startedAt={startedAt}
-      />
+      <NewWorkout routineId={routineId} startedAt={startedAt} />
 
       <CustomModal
         visible={discardVisible}

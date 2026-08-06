@@ -17,16 +17,11 @@ import { Workout } from "./workout";
 const EMPTY_PREFILLED_SETS: SetRow[] = [];
 
 type NewWorkoutProps = {
-  presetTitle?: string | null;
   routineId?: string | null;
   startedAt: number;
 };
 
-export function NewWorkout({
-  presetTitle,
-  routineId,
-  startedAt,
-}: NewWorkoutProps) {
+export function NewWorkout({ routineId, startedAt }: NewWorkoutProps) {
   const db = useSQLiteContext();
   const { exercises } = useWorkoutState();
   const { addExercises } = useWorkoutActions();
