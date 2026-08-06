@@ -271,7 +271,11 @@ export default function NewWorkoutScreen() {
           ),
         }}
       />
-      <NewWorkout presetTitle={presetTitle} startedAt={startedAt} />
+      <NewWorkout
+        presetTitle={presetTitle}
+        routineId={routineId}
+        startedAt={startedAt}
+      />
 
       <CustomModal
         visible={discardVisible}

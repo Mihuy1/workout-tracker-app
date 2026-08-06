@@ -1,4 +1,4 @@
-import { Exercise } from "@/types/workout";
+import { Exercise, SetRow } from "@/types/workout";
 import type { SQLiteDatabase } from "expo-sqlite";
 
 type HistoryRow = {
@@ -17,6 +17,20 @@ type HistoryRow = {
   set_number: number | null;
   weight_grams: number | null;
   reps: number | null;
+};
+
+export type LatestExercisePerformance = {
+  exerciseId: string;
+  restTime: number;
+  sets: SetRow[];
+};
+
+type LatestPerformanceRow = {
+  exercise_id: string;
+  rest_seconds: number;
+  set_number: number;
+  weight_grams: number;
+  reps: number;
 };
 
 export async function getWorkoutHistory(db: SQLiteDatabase) {
@@ -177,6 +191,69 @@ export async function saveWorkout(
       }
     }
   });
+}
+
+export async function getLatestExercisePerformances(
+  db: SQLiteDatabase,
+  exerciseIds: string[],
+): Promise<Partial<Record<string, LatestExercisePerformance>>> {
+  const uniqueExerciseIds = [...new Set(exerciseIds)];
+
+  if (uniqueExerciseIds.length === 0) return {};
+
+  const placeholders = uniqueExerciseIds.map(() => "?").join(", ");
+
+  const rows = await db.getAllAsync<LatestPerformanceRow>(
+    `
+    WITH ranked_exercises AS (
+      SELECT
+        we.id AS workout_exercise_id,
+        we.exercise_id,
+        we.rest_seconds,
+        ROW_NUMBER() OVER (
+          PARTITION BY we.exercise_id
+          ORDER BY w.completed_at DESC, we.id DESC
+        ) AS occurrence_rank
+      FROM workout_exercises we
+      JOIN workouts w
+        ON w.id = we.workout_id
+      WHERE we.exercise_id IN (${placeholders})
+    )
+    SELECT
+      ranked.exercise_id,
+      ranked.rest_seconds,
+      ws.set_number,
+      ws.weight_grams,
+      ws.reps
+    FROM ranked_exercises ranked
+    JOIN workout_sets ws
+      ON ws.workout_exercise_id = ranked.workout_exercise_id
+    WHERE ranked.occurrence_rank = 1
+    ORDER BY ranked.exercise_id, ws.set_number
+    `,
+    uniqueExerciseIds,
+  );
+
+  const result: Record<string, LatestExercisePerformance> = {};
+
+  for (const row of rows) {
+    if (!result[row.exercise_id]) {
+      result[row.exercise_id] = {
+        exerciseId: row.exercise_id,
+        restTime: row.rest_seconds,
+        sets: [],
+      };
+    }
+
+    result[row.exercise_id].sets.push({
+      id: row.set_number,
+      complete: false,
+      weight: String(row.weight_grams / 1000),
+      reps: String(row.reps),
+    });
+  }
+
+  return result;
 }
 
 export async function deleteWorkout(db: SQLiteDatabase, id: string) {

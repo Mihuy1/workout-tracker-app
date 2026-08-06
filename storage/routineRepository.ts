@@ -10,7 +10,7 @@ export type Routine = {
   exercises: Exercise[];
 };
 
-export type RoutineUpdate = {
+type RoutineUpdate = {
   id: string;
   name: string;
   updatedAt: number;
@@ -27,6 +27,14 @@ type RoutineRow = {
   rest_seconds: number | null;
   set_count: number | null;
   position: number | null;
+};
+
+type RoutineExerciseRow = {
+  routine_id: string;
+  exercise_id: string;
+  rest_seconds: number;
+  set_count: number;
+  position: number;
 };
 
 const exercisesById = new Map(
@@ -213,4 +221,16 @@ export async function getRoutine(db: SQLiteDatabase, routineId: string) {
     updatedAt: rows[0].updated_at,
     exercises,
   };
+}
+
+export async function getRoutineExercises(
+  db: SQLiteDatabase,
+  routienId: string,
+) {
+  const rows = await db.getAllAsync<RoutineExerciseRow>(
+    `SELECT routine_id, exercise_id, rest_seconds, set_count, position FROM routine_exercises WHERE routine_id = ?`,
+    [routienId],
+  );
+
+  return rows;
 }

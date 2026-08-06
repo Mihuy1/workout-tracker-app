@@ -1,11 +1,13 @@
 import { useWorkoutActions } from "@/contexts/workoutActionsContext";
 import { useWorkoutState } from "@/contexts/workoutStateContext";
+import { getRoutine } from "@/storage/routineRepository";
 import {
-  getAllLatestExercisesMap,
-  getSavedPresetByTitle,
-} from "@/storage/completedExercises";
-import { Exercise, SetRow } from "@/types/workout";
+  getLatestExercisePerformances,
+  LatestExercisePerformance,
+} from "@/storage/workoutRepository";
+import { SetRow } from "@/types/workout";
 import { router } from "expo-router";
+import { useSQLiteContext } from "expo-sqlite";
 import { useEffect, useRef, useState } from "react";
 import { Button, FlatList, StyleSheet, View } from "react-native";
 import LiveWorkoutTimer from "../liveWorkoutTImer";
@@ -16,64 +18,65 @@ const EMPTY_PREFILLED_SETS: SetRow[] = [];
 
 type NewWorkoutProps = {
   presetTitle?: string | null;
+  routineId?: string | null;
   startedAt: number;
 };
 
-export function NewWorkout({ presetTitle, startedAt }: NewWorkoutProps) {
+export function NewWorkout({
+  presetTitle,
+  routineId,
+  startedAt,
+}: NewWorkoutProps) {
+  const db = useSQLiteContext();
   const { exercises } = useWorkoutState();
   const { addExercises } = useWorkoutActions();
-  const [historyMap, setHistoryMap] = useState<Record<string, any>>({});
+  const [historyMap, setHistoryMap] = useState<
+    Partial<Record<string, LatestExercisePerformance>>
+  >({});
+
+  const exerciseIdKeys = JSON.stringify(
+    exercises.map((ex) => ex.exerciseId).sort(),
+  );
 
   const loadedPresetRef = useRef<string | null>(null);
 
   useEffect(() => {
-    const loadHistory = async () => {
-      const map = await getAllLatestExercisesMap();
-      setHistoryMap(map);
-    };
-    loadHistory();
-  }, []);
-
-  useEffect(() => {
-    if (!presetTitle) return;
-
-    if (loadedPresetRef.current === presetTitle) return;
-
     let cancelled = false;
 
+    const loadHistory = async () => {
+      const exerciseIds = JSON.parse(exerciseIdKeys) as string[];
+
+      const history = await getLatestExercisePerformances(db, exerciseIds);
+
+      if (!cancelled) setHistoryMap(history);
+    };
+
+    loadHistory();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [db, exerciseIdKeys]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    if (!routineId) return;
+    if (loadedPresetRef.current === routineId) return;
+
     const loadPreset = async () => {
-      const presetExercises = (await getSavedPresetByTitle(presetTitle)) as
-        | Exercise[]
-        | null;
+      const routine = await getRoutine(db, routineId);
+
       if (cancelled) return;
-      if (!presetExercises || presetExercises.length === 0) return;
+      if (!routine) return;
 
-      loadedPresetRef.current = presetTitle;
+      loadedPresetRef.current = routineId;
 
-      const existingExerciseNames = new Set(
-        exercises.map((exercise) => exercise.name),
+      const existingExerciseIds = new Set(exercises.map((ex) => ex.exerciseId));
+
+      const exercisesToAdd = routine.exercises.filter(
+        (exercise) => !existingExerciseIds.has(exercise.exerciseId),
       );
-
-      const exercisesToAdd: Exercise[] = [];
-
-      for (const exercise of presetExercises) {
-        if (existingExerciseNames.has(exercise.name)) {
-          continue;
-        }
-
-        existingExerciseNames.add(exercise.name);
-
-        // Clear weight/reps so history values appear as placeholders, not filled inputs.
-        exercisesToAdd.push({
-          ...exercise,
-          sets: exercise.sets.map((set) => ({
-            ...set,
-            complete: false,
-            weight: "",
-            reps: "",
-          })),
-        });
-      }
 
       if (exercisesToAdd.length > 0) {
         addExercises(exercisesToAdd);
@@ -84,7 +87,7 @@ export function NewWorkout({ presetTitle, startedAt }: NewWorkoutProps) {
     return () => {
       cancelled = true;
     };
-  }, [presetTitle, exercises, addExercises]);
+  }, [db, routineId, exercises, addExercises]);
 
   return (
     <View style={styles.container}>
@@ -94,15 +97,15 @@ export function NewWorkout({ presetTitle, startedAt }: NewWorkoutProps) {
         <FlatList
           style={styles.exerciseList}
           data={exercises}
-          keyExtractor={(item) => item.name}
+          keyExtractor={(item) => item.exerciseId}
           renderItem={({ item }) => (
             <View style={{ marginBottom: 5 }}>
               <Workout
                 exercise={item}
                 prefilledSets={
-                  historyMap[item.name]?.sets ?? EMPTY_PREFILLED_SETS
+                  historyMap[item.exerciseId]?.sets ?? EMPTY_PREFILLED_SETS
                 }
-                fallbackRestTime={historyMap[item.name]?.restTime || 120}
+                fallbackRestTime={historyMap[item.exerciseId]?.restTime ?? 120}
               />
             </View>
           )}
