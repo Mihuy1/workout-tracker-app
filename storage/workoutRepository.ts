@@ -1,4 +1,4 @@
-import { Exercise, SetRow } from "@/types/workout";
+import { Exercise, ExercisePrBaseline, SetRow } from "@/types/workout";
 import type { SQLiteDatabase } from "expo-sqlite";
 
 type HistoryRow = {
@@ -17,6 +17,12 @@ type HistoryRow = {
   set_number: number | null;
   weight_grams: number | null;
   reps: number | null;
+
+  workout_set_achievement_id: number | null;
+  workout_set_id: number | null;
+  achievement_type: string | null;
+  previous_best: number | null;
+  new_best_value: number | null;
 };
 
 export type LatestExercisePerformance = {
@@ -33,26 +39,39 @@ type LatestPerformanceRow = {
   reps: number;
 };
 
+type ExercisePrBaselineRow = {
+  best_reps: number;
+  weight_grams: number;
+};
+
+export type ExercisePrBaselines = Partial<Record<string, ExercisePrBaseline>>;
+
 export async function getWorkoutHistory(db: SQLiteDatabase) {
   const rows = await db.getAllAsync<HistoryRow>(
     `
 
     SELECT
-      w.id as workout_id,
-      w.name as workout_name,
+      w.id AS workout_id,
+      w.name AS workout_name,
       w.completed_at,
       w.duration_ms,
 
-      we.id as workout_exercise_id,
+      we.id AS workout_exercise_id,
       we.exercise_id,
       we.exercise_name,
       we.mechanic,
       we.position as exercise_position,
 
-      ws.id as set_id,
+      ws.id AS set_id,
       ws.set_number,
       ws.weight_grams,
-      ws.reps
+      ws.reps,
+
+      wsa.id AS workout_set_achievement_id,
+      wsa.workout_set_id,
+      wsa.achievement_type,
+      wsa.previous_best,
+      wsa.new_best_value
 
     FROM workouts w
 
@@ -61,6 +80,9 @@ export async function getWorkoutHistory(db: SQLiteDatabase) {
 
     LEFT JOIN workout_sets ws
       ON ws.workout_exercise_id = we.id
+
+    LEFT JOIN workout_set_achievements wsa
+      ON wsa.workout_set_id = ws.id
 
     ORDER BY
       w.completed_at DESC,
@@ -72,6 +94,7 @@ export async function getWorkoutHistory(db: SQLiteDatabase) {
 
   const workouts = new Map<string, any>();
   const exerciseRows = new Map<number, any>();
+  const setRows = new Map<number, SetRow>();
 
   for (const row of rows) {
     let workout = workouts.get(row.workout_id);
@@ -110,16 +133,39 @@ export async function getWorkoutHistory(db: SQLiteDatabase) {
     }
 
     if (
-      row.set_id !== null &&
-      row.set_number !== null &&
-      row.weight_grams !== null &&
-      row.reps !== null
+      row.set_id === null ||
+      row.set_number === null ||
+      row.weight_grams === null ||
+      row.reps === null
     ) {
-      exercise.sets.push({
-        id: row.set_id,
+      continue;
+    }
+
+    let set = setRows.get(row.set_id);
+
+    if (!set) {
+      set = {
+        id: row.set_number,
         complete: true,
         weight: String(row.weight_grams / 1000),
         reps: String(row.reps),
+        achievements: [],
+      };
+
+      setRows.set(row.set_id, set);
+      exercise.sets.push(set);
+    }
+
+    if (
+      row.workout_set_achievement_id !== null &&
+      row.achievement_type !== null &&
+      row.previous_best !== null &&
+      row.new_best_value !== null
+    ) {
+      set.achievements.push({
+        type: row.achievement_type,
+        previousBestValue: row.previous_best,
+        newBestValue: row.new_best_value,
       });
     }
   }
@@ -176,7 +222,7 @@ export async function saveWorkout(
       for (const [setPosition, set] of exercise.sets.entries()) {
         const weightGrams = Math.round(Number(set.weight) * 1000);
 
-        await db.runAsync(
+        const setResult = await db.runAsync(
           `
             INSERT INTO workout_sets (
               workout_exercise_id,
@@ -188,6 +234,30 @@ export async function saveWorkout(
             `,
           [workoutExerciseId, setPosition + 1, weightGrams, Number(set.reps)],
         );
+
+        const workoutSetId = setResult.lastInsertRowId;
+
+        for (const achievement of set.achievements) {
+          await db.runAsync(
+            `
+              INSERT INTO workout_set_achievements (
+                workout_set_id,
+                achievement_type,
+                previous_best,
+                new_best_value,
+                created_at
+              )
+              VALUES (?, ?, ?, ?, ?)
+              `,
+            [
+              workoutSetId,
+              achievement.type,
+              achievement.previousBestValue,
+              achievement.newBestValue,
+              completedAt,
+            ],
+          );
+        }
       }
     }
   });
@@ -250,7 +320,47 @@ export async function getLatestExercisePerformances(
       complete: false,
       weight: String(row.weight_grams / 1000),
       reps: String(row.reps),
+      achievements: [],
     });
+  }
+
+  return result;
+}
+
+export async function getBestWeightAndRepsBaseline(
+  db: SQLiteDatabase,
+  exerciseId: string,
+): Promise<ExercisePrBaseline> {
+  const rows: ExercisePrBaselineRow[] = await db.getAllAsync(
+    `
+    SELECT
+      ws.weight_grams,
+      MAX(ws.reps) AS best_reps
+    FROM workout_sets ws
+    JOIN workout_exercises we
+      ON we.id = ws.workout_exercise_id
+    WHERE we.exercise_id = ?
+    GROUP BY ws.weight_grams;
+    `,
+    exerciseId,
+  );
+
+  console.log("Baseline:", rows);
+
+  const result: ExercisePrBaseline = {
+    bestWeightGrams: null,
+    bestRepsByWeight: {},
+  };
+
+  for (const row of rows) {
+    result.bestRepsByWeight[String(row.weight_grams)] = row.best_reps;
+
+    if (
+      result.bestWeightGrams === null ||
+      row.weight_grams > result.bestWeightGrams
+    ) {
+      result.bestWeightGrams = row.weight_grams;
+    }
   }
 
   return result;

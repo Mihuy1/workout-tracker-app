@@ -1,6 +1,6 @@
 import type { SQLiteDatabase } from "expo-sqlite";
 
-const DATABASE_VERSION = 2;
+const DATABASE_VERSION = 3;
 
 export async function migrateDatabase(db: SQLiteDatabase) {
   // These settings are applied whenever the database is opened.
@@ -101,6 +101,32 @@ export async function migrateDatabase(db: SQLiteDatabase) {
     `);
 
       await db.execAsync("PRAGMA user_version = 2");
+    });
+  }
+
+  if (currentVersion < 3) {
+    await db.withTransactionAsync(async () => {
+      await db.execAsync(`
+      CREATE TABLE workout_set_achievements (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        workout_set_id INTEGER NOT NULL,
+        achievement_type TEXT NOT NULL,
+        previous_best INTEGER,
+        new_best_value INTEGER NOT NULL,
+        created_at INTEGER NOT NULL,
+
+        UNIQUE (workout_set_id, achievement_type),
+
+        FOREIGN KEY (workout_set_id)
+          REFERENCES workout_sets(id)
+          ON DELETE CASCADE
+      );
+
+      CREATE INDEX idx_workout_set_achievements_set
+        ON workout_set_achievements(workout_set_id);
+    `);
+
+      await db.execAsync("PRAGMA user_version = 3");
     });
   }
 }

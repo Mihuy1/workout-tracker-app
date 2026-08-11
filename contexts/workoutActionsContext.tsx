@@ -1,4 +1,10 @@
-import { Exercise, SetRow } from "@/types/workout";
+import { ExercisePrBaselines } from "@/storage/workoutRepository";
+import {
+  Exercise,
+  ExercisePrBaseline,
+  SetAchievement,
+  SetRow,
+} from "@/types/workout";
 import {
   createContext,
   useCallback,
@@ -26,6 +32,11 @@ type WorkoutActionsContextType = {
     complete: boolean,
     weight: string,
     reps: string,
+    achievements: SetAchievement[],
+  ) => void;
+  setExerciseBaseline: (
+    exerciseId: string,
+    baseline: ExercisePrBaseline,
   ) => void;
   clearWorkout: () => void;
 };
@@ -38,6 +49,7 @@ export const WorkoutProvider: React.FC<React.PropsWithChildren> = ({
   children,
 }) => {
   const [exercises, setExercises] = useState<Exercise[]>([]);
+  const [prBaselines, setPrBaselines] = useState<ExercisePrBaselines>({});
 
   const setRestTime = useCallback((exerciseName: string, time: number) => {
     setExercises((prev) =>
@@ -83,7 +95,13 @@ export const WorkoutProvider: React.FC<React.PropsWithChildren> = ({
           ...ex,
           sets: [
             ...ex.sets,
-            { id: nextId, complete: false, weight: "", reps: "" },
+            {
+              id: nextId,
+              complete: false,
+              weight: "",
+              reps: "",
+              achievements: [],
+            },
           ],
         };
       }),
@@ -125,6 +143,7 @@ export const WorkoutProvider: React.FC<React.PropsWithChildren> = ({
       complete: boolean,
       weight: string,
       reps: string,
+      achievements: SetAchievement[],
     ) => {
       setExercises((prev) =>
         prev.map((ex) => {
@@ -133,7 +152,9 @@ export const WorkoutProvider: React.FC<React.PropsWithChildren> = ({
           return {
             ...ex,
             sets: ex.sets.map((set) =>
-              set.id === setId ? { ...set, complete, weight, reps } : set,
+              set.id === setId
+                ? { ...set, complete, weight, reps, achievements }
+                : set,
             ),
           };
         }),
@@ -142,8 +163,16 @@ export const WorkoutProvider: React.FC<React.PropsWithChildren> = ({
     [],
   );
 
+  const setExerciseBaseline = useCallback(
+    (exerciseId: string, baseline: ExercisePrBaseline) => {
+      setPrBaselines((prev) => ({ ...prev, [exerciseId]: baseline }));
+    },
+    [],
+  );
+
   const clearWorkout = useCallback(() => {
     setExercises([]);
+    setPrBaselines({});
   }, []);
 
   const workoutActions = useMemo(
@@ -156,6 +185,7 @@ export const WorkoutProvider: React.FC<React.PropsWithChildren> = ({
       removeSet,
       updateSet,
       handleCompleteSet,
+      setExerciseBaseline,
       clearWorkout,
     }),
     [
@@ -167,12 +197,13 @@ export const WorkoutProvider: React.FC<React.PropsWithChildren> = ({
       removeSet,
       updateSet,
       handleCompleteSet,
+      setExerciseBaseline,
       clearWorkout,
     ],
   );
 
   return (
-    <WorkoutStateContext.Provider value={{ exercises }}>
+    <WorkoutStateContext.Provider value={{ exercises, prBaselines }}>
       <workoutActionsContext.Provider value={workoutActions}>
         {children}
       </workoutActionsContext.Provider>

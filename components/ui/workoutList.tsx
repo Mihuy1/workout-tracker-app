@@ -1,9 +1,11 @@
+import exercises from "@/app/datasets/exercises.json";
 import { useWorkoutActions } from "@/contexts/workoutActionsContext";
 import { useWorkoutState } from "@/contexts/workoutStateContext";
-import exercises from "@/app/datasets/exercises.json";
 import { useThemeColor } from "@/hooks/use-theme-color";
+import { getBestWeightAndRepsBaseline } from "@/storage/workoutRepository";
 import { Exercise } from "@/types/workout";
 import { router } from "expo-router";
+import { useSQLiteContext } from "expo-sqlite";
 import Fuse from "fuse.js";
 import { useMemo, useState } from "react";
 import { FlatList, Pressable, StyleSheet, TextInput, View } from "react-native";
@@ -15,6 +17,7 @@ const FILTERS = ["All", "Strength", "Stretch", "Cardio"] as const;
 type ExerciseFilter = (typeof FILTERS)[number];
 
 export function WorkoutList() {
+  const db = useSQLiteContext();
   const [text, onChangeText] = useState("");
   const [activeFilter, setActiveFilter] = useState<ExerciseFilter>("All");
   const { exercises: workoutExercises } = useWorkoutState();
@@ -80,7 +83,11 @@ export function WorkoutList() {
     );
   }, [text, fuse, filtered, selectedExercisesNames, activeFilter]);
 
-  const onAdd = (item: ExercisePickerRowItem) => {
+  const onAdd = async (item: ExercisePickerRowItem) => {
+    const t = await getBestWeightAndRepsBaseline(db, item.id);
+
+    console.log("T:", t);
+
     const exercise: Exercise = {
       exerciseId: item.id,
       name: item.name,
@@ -92,6 +99,7 @@ export function WorkoutList() {
           complete: false,
           weight: "",
           reps: "",
+          achievements: [],
         },
       ],
     };

@@ -4,13 +4,14 @@ import { IconSymbol } from "@/components/ui/icon-symbol";
 import WorkoutHistoryCard from "@/components/ui/workoutHistoryCard";
 import { WorkoutTimer } from "@/components/ui/workoutTimer";
 import { useThemeColor } from "@/hooks/use-theme-color";
+import { deleteWorkout, getWorkoutHistory } from "@/storage/workoutRepository";
+import { SetRow } from "@/types/workout";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSQLiteContext } from "expo-sqlite";
 import { useMemo, useState } from "react";
 import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 import Animated, { LinearTransition } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { deleteWorkout, getWorkoutHistory } from "@/storage/workoutRepository";
 
 export type CompletedWorkout = {
   id: string;
@@ -20,12 +21,7 @@ export type CompletedWorkout = {
   exercises: {
     name: string;
     mechanic: string | null;
-    sets: {
-      id: number;
-      complete: boolean;
-      weight: string;
-      reps: string;
-    }[];
+    sets: SetRow[];
   }[];
 };
 
@@ -44,10 +40,7 @@ export default function TabTwoScreen() {
 
   const fetchHistory = async () => {
     try {
-      // const data = await getCompletedExercises();
       const data = await getWorkoutHistory(db);
-
-      console.log("data:", data);
 
       return data;
     } catch (error) {
@@ -159,9 +152,8 @@ const styles = StyleSheet.create({
     gap: 12,
     padding: 12,
   },
+
   removeView: {
-    // marginLeft: "auto",
-    // flexDirection: "row",
     position: "absolute",
     top: -6,
     right: -6,

@@ -1,8 +1,15 @@
+export type SetAchievement = {
+  type: string;
+  previousBestValue: number;
+  newBestValue: number;
+};
+
 export type SetRow = {
   id: number;
   complete: boolean;
   weight: string;
   reps: string;
+  achievements: SetAchievement[];
 };
 
 export type Exercise = {
@@ -19,4 +26,9 @@ export type Workout = {
   date: string;
   exercises: Exercise[];
   workoutDuration: number;
+};
+
+export type ExercisePrBaseline = {
+  bestWeightGrams: number | null;
+  bestRepsByWeight: Record<string, number>;
 };

@@ -7,6 +7,7 @@ import Animated, {
   LinearTransition,
 } from "react-native-reanimated";
 import { ThemedText } from "../themed-text";
+import { IconSymbol } from "./icon-symbol";
 
 type WorkoutHistoryCardProps = {
   exercises: CompletedWorkout["exercises"];
@@ -75,6 +76,14 @@ export default function WorkoutHistoryCard({
                 >
                   WEIGHT & REPS
                 </ThemedText>
+                <View style={styles.prCol}>
+                  <ThemedText
+                    type="defaultSemiBold"
+                    style={{ color: mutedText }}
+                  >
+                    PR
+                  </ThemedText>
+                </View>
               </View>
 
               <View>
@@ -101,6 +110,15 @@ export default function WorkoutHistoryCard({
                     >
                       {set.weight} kg x {set.reps} reps
                     </ThemedText>
+                    <View style={styles.prCol}>
+                      {set.achievements.length > 0 && (
+                        <IconSymbol
+                          name="trophy.fill"
+                          size={18}
+                          color="#D4AF37"
+                        />
+                      )}
+                    </View>
                   </View>
                 ))}
               </View>
@@ -142,10 +160,15 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   setCol: { width: 50, textAlign: "center" },
-  kgCol: { width: 140, textAlign: "left", paddingLeft: 12 },
+  kgCol: { flex: 1, textAlign: "left", paddingLeft: 12 },
   repsCol: { width: 70 },
   actionCol: { flex: 1, alignItems: "flex-end", paddingRight: 4 },
   staticText: {
     fontSize: 14,
+  },
+  prCol: {
+    width: 44,
+    alignItems: "center",
+    justifyContent: "center",
   },
 });

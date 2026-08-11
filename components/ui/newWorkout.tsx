@@ -2,6 +2,7 @@ import { useWorkoutActions } from "@/contexts/workoutActionsContext";
 import { useWorkoutState } from "@/contexts/workoutStateContext";
 import { getRoutine } from "@/storage/routineRepository";
 import {
+  getBestWeightAndRepsBaseline,
   getLatestExercisePerformances,
   LatestExercisePerformance,
 } from "@/storage/workoutRepository";
@@ -23,8 +24,8 @@ type NewWorkoutProps = {
 
 export function NewWorkout({ routineId, startedAt }: NewWorkoutProps) {
   const db = useSQLiteContext();
-  const { exercises } = useWorkoutState();
-  const { addExercises } = useWorkoutActions();
+  const { exercises, prBaselines } = useWorkoutState();
+  const { addExercises, setExerciseBaseline } = useWorkoutActions();
   const [historyMap, setHistoryMap] = useState<
     Partial<Record<string, LatestExercisePerformance>>
   >({});
@@ -34,6 +35,34 @@ export function NewWorkout({ routineId, startedAt }: NewWorkoutProps) {
   );
 
   const loadedPresetRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const exerciseIds = JSON.parse(exerciseIdKeys) as string[];
+
+    const loadBaselines = async () => {
+      const entries = await Promise.all(
+        exerciseIds.map(async (exId) => {
+          const baseline = await getBestWeightAndRepsBaseline(db, exId);
+
+          return [exId, baseline] as const;
+        }),
+      );
+
+      if (cancelled) return;
+
+      for (const [exId, baseline] of entries) {
+        setExerciseBaseline(exId, baseline);
+      }
+    };
+
+    loadBaselines();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [db, exerciseIdKeys, setExerciseBaseline]);
 
   useEffect(() => {
     let cancelled = false;
@@ -101,6 +130,7 @@ export function NewWorkout({ routineId, startedAt }: NewWorkoutProps) {
                   historyMap[item.exerciseId]?.sets ?? EMPTY_PREFILLED_SETS
                 }
                 fallbackRestTime={historyMap[item.exerciseId]?.restTime ?? 120}
+                prBaseline={prBaselines[item.exerciseId]}
               />
             </View>
           )}

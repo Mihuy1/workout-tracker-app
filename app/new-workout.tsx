@@ -89,14 +89,6 @@ export default function NewWorkoutScreen() {
         }))
         .filter((exercise) => exercise.sets.length > 0);
 
-      // await addCompletedExercise({
-      //   id: Date.now().toString(),
-      //   workoutName: presetName ?? "Workout " + new Date().toLocaleDateString(),
-      //   date: new Date().toISOString(),
-      //   exercises: completedExercises,
-      //   workoutDurationMs: workoutDurMs,
-      // });
-
       await saveWorkout(
         db,
         Date.now().toString(),
@@ -129,7 +121,6 @@ export default function NewWorkoutScreen() {
             exercises: exercises,
           });
         } else {
-          // await saveCompletedExerciseAsPreset(exercises, presetName);
           await saveRoutine(db, {
             id: Crypto.randomUUID(),
             name: presetName,

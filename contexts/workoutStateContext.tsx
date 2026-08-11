@@ -1,8 +1,10 @@
+import { ExercisePrBaselines } from "@/storage/workoutRepository";
 import { Exercise } from "@/types/workout";
 import { createContext, useContext } from "react";
 
 type WorkoutStateContextType = {
   exercises: Exercise[];
+  prBaselines: ExercisePrBaselines;
 };
 
 export const WorkoutStateContext = createContext<

@@ -79,6 +79,7 @@ export async function getAllRoutines(db: SQLiteDatabase) {
             complete: false,
             weight: "",
             reps: "",
+            achievements: [],
           })),
         });
       }
@@ -210,6 +211,7 @@ export async function getRoutine(db: SQLiteDatabase, routineId: string) {
         complete: false,
         weight: "",
         reps: "",
+        achievements: [],
       })),
     });
   }
