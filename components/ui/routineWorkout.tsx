@@ -14,7 +14,7 @@ import { IconSymbol } from "./icon-symbol";
 interface routineWorkoutProps {
   item: {
     id: string;
-    title: string;
+    name: string;
     exercises: any[];
   };
   exercisePreviewText: string;
@@ -41,13 +41,13 @@ function RoutineWorkout({
     >
       <View style={styles.topView}>
         <View style={styles.removeView}>
-          <Pressable onPress={() => setModalVisible(item.title, item.id)}>
+          <Pressable onPress={() => setModalVisible(item.name, item.id)}>
             <IconSymbol name={"x.circle"} size={24} color={"red"} />
           </Pressable>
         </View>
 
         <ThemedText type="defaultSemiBold" style={styles.cardTitle}>
-          {item.title}
+          {item.name}
         </ThemedText>
       </View>
 
@@ -60,7 +60,7 @@ function RoutineWorkout({
         onPress={() =>
           router.push({
             pathname: "../new-workout",
-            params: { presetTitle: item.title },
+            params: { presetTitle: item.name, routineId: item.id },
           })
         }
         backgroundColor={buttonBackground}

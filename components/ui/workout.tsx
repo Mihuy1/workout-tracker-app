@@ -1,7 +1,12 @@
-import { useRestTimer } from "@/app/contexts/restTimerContext";
-import { useWorkoutActions } from "@/app/contexts/workoutActionsContext";
+import { useRestTimer } from "@/contexts/restTimerContext";
+import { useWorkoutActions } from "@/contexts/workoutActionsContext";
 import { useThemeColor } from "@/hooks/use-theme-color";
-import { Exercise } from "@/types/workout";
+import {
+  Exercise,
+  ExercisePrBaseline,
+  SetAchievement,
+  SetRow,
+} from "@/types/workout";
 import { memo, useState } from "react";
 import { Button, Pressable, StyleSheet, TextInput, View } from "react-native";
 import { ThemedText } from "../themed-text";
@@ -13,12 +18,14 @@ type WorkoutProps = {
   exercise: Exercise;
   prefilledSets?: Record<string, any>;
   fallbackRestTime?: number;
+  prBaseline?: ExercisePrBaseline;
 };
 
 export const Workout = memo(function Workout({
   exercise,
   prefilledSets,
   fallbackRestTime = 120,
+  prBaseline,
 }: WorkoutProps) {
   const {
     removeExercise,
@@ -47,6 +54,57 @@ export const Workout = memo(function Workout({
   const successColor = useThemeColor({}, "success");
 
   const [confirmVisible, setConfirmVisible] = useState(false);
+
+  function calculateSetAchievements(
+    prBaseline: ExercisePrBaseline,
+    candidateSetId: number,
+    sets: SetRow[],
+    weightGrams: number,
+    reps: number,
+  ) {
+    let bestWeightGrams = prBaseline.bestWeightGrams;
+    let bestRepsAtWeight = prBaseline.bestRepsByWeight[String(weightGrams)];
+
+    for (const set of sets) {
+      if (!set.complete || set.id === candidateSetId) continue;
+
+      const setWeightGrams = Math.round(Number(set.weight) * 1000);
+      const setReps = Number(set.reps);
+
+      if (!Number.isFinite(setWeightGrams) || !Number.isFinite(setReps))
+        continue;
+
+      if (bestWeightGrams === null || bestWeightGrams < setWeightGrams) {
+        bestWeightGrams = setWeightGrams;
+      }
+
+      if (setWeightGrams === weightGrams) {
+        if (bestRepsAtWeight === undefined || bestRepsAtWeight < setReps) {
+          bestRepsAtWeight = setReps;
+        }
+      }
+    }
+
+    const achievements: SetAchievement[] = [];
+
+    if (bestWeightGrams !== null && weightGrams > bestWeightGrams) {
+      achievements.push({
+        type: "new_weight_pr",
+        previousBestValue: bestWeightGrams,
+        newBestValue: weightGrams,
+      });
+    }
+
+    if (bestRepsAtWeight !== undefined && reps > bestRepsAtWeight) {
+      achievements.push({
+        type: "new_reps_pr",
+        previousBestValue: bestRepsAtWeight,
+        newBestValue: reps,
+      });
+    }
+
+    return achievements;
+  }
 
   return (
     <View style={[styles.container, { borderColor, backgroundColor: surface }]}>
@@ -82,7 +140,6 @@ export const Workout = memo(function Workout({
         />
       </View>
 
-      {/* <RestTimer duration={restTime} restStartTrigger={restStartTrigger} /> */}
       <View style={[styles.tableHeader, { borderColor }]}>
         <ThemedText type="defaultSemiBold" style={[styles.cell, styles.setCol]}>
           SET
@@ -174,6 +231,7 @@ export const Workout = memo(function Workout({
           />
 
           <Pressable
+            disabled={!prBaseline}
             onPress={() => {
               const finalWeight =
                 item.weight !== ""
@@ -196,21 +254,52 @@ export const Workout = memo(function Workout({
 
               const willBeCompleted = !item.complete;
 
+              if (!prBaseline) return;
+
+              if (willBeCompleted) {
+                triggerRestTimer(restTime);
+              }
+
+              const weightGramsNumber = Math.round(Number(finalWeight) * 1000);
+
+              const achievements: SetAchievement[] = willBeCompleted
+                ? calculateSetAchievements(
+                    prBaseline,
+                    item.id,
+                    exercise.sets,
+                    weightGramsNumber,
+                    Number(finalReps),
+                  )
+                : [];
+
+              console.log("achievements:", achievements);
+
               handleCompleteSet(
                 workoutName,
                 item.id,
                 !item.complete,
                 finalWeight,
                 finalReps,
+                achievements,
               );
-
-              if (willBeCompleted) triggerRestTimer(restTime);
             }}
           >
             <IconSymbol
-              name={item.complete ? "checkmark" : "circle"}
+              name={
+                !item.complete
+                  ? "circle"
+                  : item.achievements.length > 0
+                    ? "trophy.fill"
+                    : "checkmark"
+              }
               size={18}
-              color={item.complete ? successColor : iconColor}
+              color={
+                item.achievements.length > 0
+                  ? "#D4AF37"
+                  : item.complete
+                    ? successColor
+                    : iconColor
+              }
             />
           </Pressable>
           <View style={[styles.cell, styles.actionCol]}>

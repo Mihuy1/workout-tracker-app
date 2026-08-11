@@ -4,15 +4,14 @@ import { IconSymbol } from "@/components/ui/icon-symbol";
 import WorkoutHistoryCard from "@/components/ui/workoutHistoryCard";
 import { WorkoutTimer } from "@/components/ui/workoutTimer";
 import { useThemeColor } from "@/hooks/use-theme-color";
+import { deleteWorkout, getWorkoutHistory } from "@/storage/workoutRepository";
+import { SetRow } from "@/types/workout";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useSQLiteContext } from "expo-sqlite";
 import { useMemo, useState } from "react";
 import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 import Animated, { LinearTransition } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
-import {
-  getCompletedExercises,
-  removeCompletedExercise,
-} from "../storage/completedExercises";
 
 export type CompletedWorkout = {
   id: string;
@@ -22,23 +21,17 @@ export type CompletedWorkout = {
   exercises: {
     name: string;
     mechanic: string | null;
-    sets: {
-      id: number;
-      complete: boolean;
-      weight: string;
-      reps: string;
-    }[];
+    sets: SetRow[];
   }[];
 };
 
 export default function TabTwoScreen() {
+  const db = useSQLiteContext();
   const queryClient = useQueryClient();
-  // const [history, setHistory] = useState<CompletedWorkout[]>([]);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [selectedWorkoutId, setSelectedWorkoutId] = useState<string | null>(
     null,
   );
-  // const openDeleteModal = (id: string) => setSelectedWorkoutId(id);
   const closeDeleteModal = () => setSelectedWorkoutId(null);
   const screenBg = useThemeColor({}, "background");
   const cardBg = useThemeColor({}, "surface");
@@ -47,11 +40,12 @@ export default function TabTwoScreen() {
 
   const fetchHistory = async () => {
     try {
-      const data = await getCompletedExercises();
+      const data = await getWorkoutHistory(db);
 
       return data;
     } catch (error) {
       console.error("failed to fetch history:", error);
+      throw error;
     }
   };
 
@@ -69,7 +63,7 @@ export default function TabTwoScreen() {
   );
 
   const deleteMutation = useMutation({
-    mutationFn: (id: string) => removeCompletedExercise(id),
+    mutationFn: (id: string) => deleteWorkout(db, id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["history"] });
       setSelectedWorkoutId(null);
@@ -77,16 +71,7 @@ export default function TabTwoScreen() {
   });
 
   const handleRemove = async (id: string) => {
-    // const didRemove = await removeCompletedExercise(id);
-
-    // console.log("DidRemove:", didRemove);
-
-    // if (!didRemove) return;
-
-    // setSelectedWorkoutId(null);
-    // setHistory(didRemove);
     deleteMutation.mutate(id);
-    // setExpandedId((prev) => (prev === id ? null : prev));
   };
 
   if (isLoading) return <Text>Loaidng...</Text>;
@@ -167,9 +152,8 @@ const styles = StyleSheet.create({
     gap: 12,
     padding: 12,
   },
+
   removeView: {
-    // marginLeft: "auto",
-    // flexDirection: "row",
     position: "absolute",
     top: -6,
     right: -6,
