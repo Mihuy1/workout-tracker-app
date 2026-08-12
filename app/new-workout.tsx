@@ -3,7 +3,6 @@ import { NewWorkout } from "@/components/ui/newWorkout";
 import { useRestTimer } from "@/contexts/restTimerContext";
 import { useWorkoutActions } from "@/contexts/workoutActionsContext";
 import { useWorkoutState } from "@/contexts/workoutStateContext";
-import { saveWeightProgressionByExerciseName } from "@/storage/completedExercises";
 import {
   getRoutine,
   saveRoutine,
@@ -117,19 +116,19 @@ export default function NewWorkoutScreen() {
         workoutDurMs,
       );
 
-      const weightsPerExercise = completedExercises.map((exercise) => ({
-        exerciseName: exercise.name,
-        weight: exercise.sets.map((set) => set.weight),
-        reps: exercise.sets.map((set) => set.reps),
-      }));
+      // const weightsPerExercise = completedExercises.map((exercise) => ({
+      //   exerciseName: exercise.name,
+      //   weight: exercise.sets.map((set) => set.weight),
+      //   reps: exercise.sets.map((set) => set.reps),
+      // }));
 
-      for (const exercise of weightsPerExercise) {
-        await saveWeightProgressionByExerciseName(
-          exercise.exerciseName,
-          exercise.weight,
-          exercise.reps,
-        );
-      }
+      // for (const exercise of weightsPerExercise) {
+      //   await saveWeightProgressionByExerciseName(
+      //     exercise.exerciseName,
+      //     exercise.weight,
+      //     exercise.reps,
+      //   );
+      // }
 
       if (presetName && shouldUpdatePreset) {
         if (routineId) {
@@ -154,7 +153,6 @@ export default function NewWorkoutScreen() {
     },
     onSuccess: (didChangePresets) => {
       if (didChangePresets) {
-        console.log("This got called!");
         queryClient.invalidateQueries({ queryKey: ["presets"] });
         queryClient.invalidateQueries({ queryKey: ["history"] });
       }

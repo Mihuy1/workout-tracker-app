@@ -17,6 +17,11 @@ type RoutineUpdate = {
   exercises: Exercise[];
 };
 
+type RoutineOperation =
+  | { type: "none" }
+  | { type: "create"; routine: Routine }
+  | { type: "update"; routineUpdate: RoutineUpdate };
+
 type RoutineRow = {
   routine_id: string;
   routine_name: string;
@@ -150,6 +155,12 @@ export async function updateRoutine(
     }
   });
 }
+
+export async function saveWorkoutAndRoutine(
+  db: SQLiteDatabase,
+  workout: Exercise[],
+  routineOperation: RoutineOperation,
+) {}
 
 export async function deleteRoutine(db: SQLiteDatabase, routineId: string) {
   return await db.runAsync(

@@ -272,8 +272,6 @@ export const Workout = memo(function Workout({
                   )
                 : [];
 
-              console.log("achievements:", achievements);
-
               handleCompleteSet(
                 workoutName,
                 item.id,
