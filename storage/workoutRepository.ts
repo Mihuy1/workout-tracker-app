@@ -40,6 +40,7 @@ type LatestPerformanceRow = {
 };
 
 type ExercisePrBaselineRow = {
+  exercise_id: string;
   best_reps: number;
   weight_grams: number;
 };
@@ -327,39 +328,53 @@ export async function getLatestExercisePerformances(
   return result;
 }
 
-export async function getBestWeightAndRepsBaseline(
+export async function getBaselines(
   db: SQLiteDatabase,
-  exerciseId: string,
-): Promise<ExercisePrBaseline> {
-  const rows: ExercisePrBaselineRow[] = await db.getAllAsync(
+  exerciseIds: string[],
+): Promise<ExercisePrBaselines> {
+  const uniqueIds = [...new Set(exerciseIds)];
+
+  if (uniqueIds.length === 0) return {};
+
+  const placeholders = uniqueIds.map(() => "?").join(", ");
+
+  const rows = await db.getAllAsync<ExercisePrBaselineRow>(
     `
     SELECT
+      we.exercise_id,
       ws.weight_grams,
       MAX(ws.reps) AS best_reps
     FROM workout_sets ws
     JOIN workout_exercises we
       ON we.id = ws.workout_exercise_id
-    WHERE we.exercise_id = ?
-    GROUP BY ws.weight_grams;
+    WHERE we.exercise_id IN (${placeholders})
+    GROUP BY we.exercise_id, ws.weight_grams
+
     `,
-    exerciseId,
+    uniqueIds,
   );
 
-  console.log("Baseline:", rows);
+  const result: ExercisePrBaselines = {};
 
-  const result: ExercisePrBaseline = {
-    bestWeightGrams: null,
-    bestRepsByWeight: {},
-  };
+  for (const exerciseId of uniqueIds) {
+    result[exerciseId] = {
+      bestWeightGrams: null,
+      bestRepsByWeight: {},
+    };
+  }
 
   for (const row of rows) {
-    result.bestRepsByWeight[String(row.weight_grams)] = row.best_reps;
+    const baseline = result[row.exercise_id];
+
+    if (!baseline) continue;
+
+    baseline.bestRepsByWeight[String(row.weight_grams)] = row.best_reps;
 
     if (
-      result.bestWeightGrams === null ||
-      row.weight_grams > result.bestWeightGrams
+      baseline.bestWeightGrams === null ||
+      row.weight_grams > baseline.bestWeightGrams
     ) {
-      result.bestWeightGrams = row.weight_grams;
+      baseline.bestWeightGrams = row.weight_grams;
     }
   }
 

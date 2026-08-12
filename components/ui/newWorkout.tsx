@@ -2,7 +2,7 @@ import { useWorkoutActions } from "@/contexts/workoutActionsContext";
 import { useWorkoutState } from "@/contexts/workoutStateContext";
 import { getRoutine } from "@/storage/routineRepository";
 import {
-  getBestWeightAndRepsBaseline,
+  getBaselines,
   getLatestExercisePerformances,
   LatestExercisePerformance,
 } from "@/storage/workoutRepository";
@@ -25,7 +25,7 @@ type NewWorkoutProps = {
 export function NewWorkout({ routineId, startedAt }: NewWorkoutProps) {
   const db = useSQLiteContext();
   const { exercises, prBaselines } = useWorkoutState();
-  const { addExercises, setExerciseBaseline } = useWorkoutActions();
+  const { addExercises, setExerciseBaselines } = useWorkoutActions();
   const [historyMap, setHistoryMap] = useState<
     Partial<Record<string, LatestExercisePerformance>>
   >({});
@@ -42,19 +42,17 @@ export function NewWorkout({ routineId, startedAt }: NewWorkoutProps) {
     const exerciseIds = JSON.parse(exerciseIdKeys) as string[];
 
     const loadBaselines = async () => {
-      const entries = await Promise.all(
-        exerciseIds.map(async (exId) => {
-          const baseline = await getBestWeightAndRepsBaseline(db, exId);
-
-          return [exId, baseline] as const;
-        }),
+      const missingIds = exerciseIds.filter(
+        (id) => prBaselines[id] === undefined,
       );
+
+      if (missingIds.length === 0) return;
+
+      const baselines = await getBaselines(db, missingIds);
 
       if (cancelled) return;
 
-      for (const [exId, baseline] of entries) {
-        setExerciseBaseline(exId, baseline);
-      }
+      setExerciseBaselines(baselines);
     };
 
     loadBaselines();
@@ -62,7 +60,7 @@ export function NewWorkout({ routineId, startedAt }: NewWorkoutProps) {
     return () => {
       cancelled = true;
     };
-  }, [db, exerciseIdKeys, setExerciseBaseline]);
+  }, [db, exerciseIdKeys, setExerciseBaselines, prBaselines]);
 
   useEffect(() => {
     let cancelled = false;
