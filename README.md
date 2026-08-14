@@ -1,37 +1,45 @@
 # Workout Tracker App
 
-A React Native + Expo (Expo Router) workout tracker for building workouts, timing sessions, and reviewing workout history.
+An iOS-first workout tracker built with React Native and Expo. Create reusable routines, log workouts set by set, and keep your training history stored locally on your device.
 
-## Status
+## Screenshots
 
-This app is currently **iOS-first**. It has not been tested on Android yet.
+| Home and routines | Active workout | Workout history |
+| :---: | :---: | :---: |
+| <img src="images/Home%20screen.png" alt="Home screen showing saved workout routines" width="260" /> | <img src="images/Workout.png" alt="Active workout with weight and repetition tracking" width="260" /> | <img src="images/History.png" alt="Completed workout history" width="260" /> |
 
 ## Features
 
-- Create and run workouts with a built-in timer
-- Browse exercises from included datasets
-- Save completed workouts locally and view workout history
+- Start an empty workout or build and reuse saved routines
+- Search the exercise library and filter by strength, stretching, or cardio
+- Track weight, repetitions, completed sets, and workout duration
+- Add or remove exercises and sets while a workout is in progress
+- Configure rest times and use the built-in rest timer
+- Prefill sets from the most recent performance for each exercise
+- Highlight new weight and repetition personal records
+- Save completed workouts locally with SQLite
+- Review, expand, and delete entries from workout history
+- Follow the device's light or dark color scheme
+
+## Status
+
+The app is currently focused on iOS and has not yet been tested on Android. The Statistics and Settings screens are still under development.
 
 ## Run locally
 
 ### Prerequisites
 
-- Node.js + npm
-- Xcode (for the iOS Simulator)
+- Node.js and npm
+- Xcode with an iOS Simulator
 
-### Install
+### Install and start
 
 ```bash
 npm install
-```
-
-### Start (iOS)
-
-```bash
 npm run ios
 ```
 
-### Other scripts
+Other available commands:
 
 ```bash
 npm run start
@@ -39,6 +47,10 @@ npm run android
 npm run web
 ```
 
-## Project notes
+## Built with
 
-- Routes live in the `app/` directory (file-based routing via Expo Router).
+- React Native and Expo
+- Expo Router
+- Expo SQLite
+- TanStack Query
+- TypeScript
