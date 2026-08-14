@@ -62,6 +62,8 @@ export const Workout = memo(function Workout({
     weightGrams: number,
     reps: number,
   ) {
+    if (prBaseline.bestWeightGrams === null) return [];
+
     let bestWeightGrams = prBaseline.bestWeightGrams;
     let bestRepsAtWeight = prBaseline.bestRepsByWeight[String(weightGrams)];
 
