@@ -1,5 +1,4 @@
 import { Tabs } from "expo-router";
-import React from "react";
 
 import { HapticTab } from "@/components/haptic-tab";
 import { IconSymbol } from "@/components/ui/icon-symbol";
@@ -31,7 +30,7 @@ export default function TabLayout() {
         options={{
           title: "History",
           tabBarIcon: ({ color }) => (
-            <IconSymbol size={28} name="paperplane.fill" color={color} />
+            <IconSymbol size={28} name="clock.arrow.circlepath" color={color} />
           ),
         }}
       />
@@ -40,7 +39,7 @@ export default function TabLayout() {
         options={{
           title: "Statistics",
           tabBarIcon: ({ color }) => (
-            <IconSymbol size={28} name="x.circle" color={color} />
+            <IconSymbol size={28} name="chart.bar.fill" color={color} />
           ),
         }}
       />

@@ -26,6 +26,8 @@ const MAPPING = {
   "x.circle": "highlight-remove",
   circle: "circle",
   "trophy.fill": "emoji-events",
+  "clock.arrow.circlepath": "history",
+  "chart.bar.fill": "bar-chart",
 } as const satisfies IconMapping;
 
 type IconSymbolName = keyof typeof MAPPING;
