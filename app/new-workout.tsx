@@ -116,20 +116,6 @@ export default function NewWorkoutScreen() {
         workoutDurMs,
       );
 
-      // const weightsPerExercise = completedExercises.map((exercise) => ({
-      //   exerciseName: exercise.name,
-      //   weight: exercise.sets.map((set) => set.weight),
-      //   reps: exercise.sets.map((set) => set.reps),
-      // }));
-
-      // for (const exercise of weightsPerExercise) {
-      //   await saveWeightProgressionByExerciseName(
-      //     exercise.exerciseName,
-      //     exercise.weight,
-      //     exercise.reps,
-      //   );
-      // }
-
       if (presetName && shouldUpdatePreset) {
         if (routineId) {
           await updateRoutine(db, {

@@ -158,9 +158,15 @@ export async function updateRoutine(
 
 export async function saveWorkoutAndRoutine(
   db: SQLiteDatabase,
-  workout: Exercise[],
+  workouts: Exercise[],
   routineOperation: RoutineOperation,
-) {}
+) {
+  await db.withTransactionAsync(async () => {
+    await db.runAsync(`
+      INSERT INTO workouts 
+      `);
+  });
+}
 
 export async function deleteRoutine(db: SQLiteDatabase, routineId: string) {
   return await db.runAsync(
