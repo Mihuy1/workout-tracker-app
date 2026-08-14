@@ -1,10 +1,5 @@
 import { ExercisePrBaselines } from "@/storage/workoutRepository";
-import {
-  Exercise,
-  ExercisePrBaseline,
-  SetAchievement,
-  SetRow,
-} from "@/types/workout";
+import { Exercise, SetAchievement, SetRow } from "@/types/workout";
 import {
   createContext,
   useCallback,
@@ -34,10 +29,8 @@ type WorkoutActionsContextType = {
     reps: string,
     achievements: SetAchievement[],
   ) => void;
-  setExerciseBaseline: (
-    exerciseId: string,
-    baseline: ExercisePrBaseline,
-  ) => void;
+
+  setExerciseBaselines: (baselines: ExercisePrBaselines) => void;
   clearWorkout: () => void;
 };
 
@@ -163,12 +156,12 @@ export const WorkoutProvider: React.FC<React.PropsWithChildren> = ({
     [],
   );
 
-  const setExerciseBaseline = useCallback(
-    (exerciseId: string, baseline: ExercisePrBaseline) => {
-      setPrBaselines((prev) => ({ ...prev, [exerciseId]: baseline }));
-    },
-    [],
-  );
+  const setExerciseBaselines = useCallback((baselines: ExercisePrBaselines) => {
+    setPrBaselines((prev) => ({
+      ...prev,
+      ...baselines,
+    }));
+  }, []);
 
   const clearWorkout = useCallback(() => {
     setExercises([]);
@@ -185,7 +178,7 @@ export const WorkoutProvider: React.FC<React.PropsWithChildren> = ({
       removeSet,
       updateSet,
       handleCompleteSet,
-      setExerciseBaseline,
+      setExerciseBaselines,
       clearWorkout,
     }),
     [
@@ -197,7 +190,7 @@ export const WorkoutProvider: React.FC<React.PropsWithChildren> = ({
       removeSet,
       updateSet,
       handleCompleteSet,
-      setExerciseBaseline,
+      setExerciseBaselines,
       clearWorkout,
     ],
   );

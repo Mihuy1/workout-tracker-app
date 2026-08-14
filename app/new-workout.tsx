@@ -3,7 +3,6 @@ import { NewWorkout } from "@/components/ui/newWorkout";
 import { useRestTimer } from "@/contexts/restTimerContext";
 import { useWorkoutActions } from "@/contexts/workoutActionsContext";
 import { useWorkoutState } from "@/contexts/workoutStateContext";
-import { saveWeightProgressionByExerciseName } from "@/storage/completedExercises";
 import {
   getRoutine,
   saveRoutine,
@@ -52,6 +51,9 @@ export default function NewWorkoutScreen() {
   const { clearRestTimer } = useRestTimer();
   const navigation = useNavigation();
   const [isFinishing, setIsFinishing] = useState(false);
+  const [isExiting, setIsExiting] = useState(false);
+  const finishInFlightRef = useRef(false);
+  const exitStartedRef = useRef(false);
   const shouldExitRef = useRef(false);
 
   const [startedAt] = useState(() => Date.now());
@@ -72,6 +74,22 @@ export default function NewWorkoutScreen() {
 
   const pendingNavActionRef = useRef<any>(null);
   const originalExercisesRef = useRef<Exercise[]>([]);
+
+  const closeActionModals = () => {
+    setDiscardVisible(false);
+    setSaveWorkoutVisible(false);
+    setSaveAsPresetVisible(false);
+    setUpdatePresetVisible(false);
+    pendingNavActionRef.current = null;
+  };
+
+  const beginExit = () => {
+    if (exitStartedRef.current) return;
+
+    exitStartedRef.current = true;
+    shouldExitRef.current = true;
+    setIsExiting(true);
+  };
 
   const finishWorkoutMutation = useMutation({
     mutationFn: async ({
@@ -98,20 +116,6 @@ export default function NewWorkoutScreen() {
         workoutDurMs,
       );
 
-      const weightsPerExercise = completedExercises.map((exercise) => ({
-        exerciseName: exercise.name,
-        weight: exercise.sets.map((set) => set.weight),
-        reps: exercise.sets.map((set) => set.reps),
-      }));
-
-      for (const exercise of weightsPerExercise) {
-        await saveWeightProgressionByExerciseName(
-          exercise.exerciseName,
-          exercise.weight,
-          exercise.reps,
-        );
-      }
-
       if (presetName && shouldUpdatePreset) {
         if (routineId) {
           await updateRoutine(db, {
@@ -135,24 +139,22 @@ export default function NewWorkoutScreen() {
     },
     onSuccess: (didChangePresets) => {
       if (didChangePresets) {
-        console.log("This got called!");
         queryClient.invalidateQueries({ queryKey: ["presets"] });
         queryClient.invalidateQueries({ queryKey: ["history"] });
       }
 
-      clearWorkout();
-      clearRestTimer();
-      router.back();
+      beginExit();
     },
     onError: (error) => {
       console.error("error finishWorkoutMutation:", error);
+      finishInFlightRef.current = false;
       setIsFinishing(false);
       setSaveErrorVisible(true);
     },
   });
 
   useEffect(() => {
-    if (!isFinishing || !shouldExitRef.current) return;
+    if (!isExiting || !shouldExitRef.current) return;
 
     shouldExitRef.current = false;
     clearWorkout();
@@ -165,7 +167,7 @@ export default function NewWorkoutScreen() {
     } else {
       router.back();
     }
-  }, [isFinishing, clearWorkout, clearRestTimer, navigation]);
+  }, [isExiting, clearWorkout, clearRestTimer, navigation]);
 
   useEffect(() => {
     if (!routineId) {
@@ -188,22 +190,31 @@ export default function NewWorkoutScreen() {
     };
   }, [db, routineId]);
 
-  const finishWorkout = async (
+  const finishWorkout = (
     presetName: string | null,
     shouldUpdatePreset: boolean = true,
   ) => {
+    if (finishInFlightRef.current || exitStartedRef.current) return;
+
+    finishInFlightRef.current = true;
     setIsFinishing(true);
+    setSaveErrorVisible(false);
+    closeActionModals();
     finishWorkoutMutation.mutate({ presetName, shouldUpdatePreset });
   };
 
-  const shouldPreventRemove = exercises.length > 0 && !isFinishing;
+  const shouldPreventRemove = exercises.length > 0 && !isExiting;
 
   usePreventRemove(shouldPreventRemove, ({ data }) => {
+    if (finishInFlightRef.current) return;
+
     pendingNavActionRef.current = data.action;
     setDiscardVisible(true);
   });
 
   const handleCompletePress = () => {
+    if (finishInFlightRef.current || exitStartedRef.current) return;
+
     if (exercises.length === 0) {
       setInfoVisible(true);
       return;
@@ -248,6 +259,8 @@ export default function NewWorkoutScreen() {
   };
 
   const handleDiscardPress = () => {
+    if (finishInFlightRef.current || exitStartedRef.current) return;
+
     if (exercises.length > 0) {
       setDiscardVisible(true);
     } else {
@@ -262,11 +275,19 @@ export default function NewWorkoutScreen() {
           title: presetTitle ? presetTitle : "New Workout",
           gestureEnabled: !shouldPreventRemove,
           headerLeft: () => (
-            <Button title="Discard" onPress={handleDiscardPress} />
+            <Button
+              title="Discard"
+              onPress={handleDiscardPress}
+              disabled={isFinishing || isExiting}
+            />
           ),
           headerBackButtonMenuEnabled: false,
           headerRight: () => (
-            <Button title="Complete" onPress={handleCompletePress} />
+            <Button
+              title="Complete"
+              onPress={handleCompletePress}
+              disabled={isFinishing || isExiting}
+            />
           ),
         }}
       />
@@ -285,8 +306,7 @@ export default function NewWorkoutScreen() {
         }}
         onPrimary={() => {
           setDiscardVisible(false);
-          setIsFinishing(true);
-          shouldExitRef.current = true;
+          beginExit();
         }}
         onSecondary={() => {
           setDiscardVisible(false);
@@ -336,9 +356,7 @@ export default function NewWorkoutScreen() {
         onRequestClose={() => setSaveWorkoutVisible(false)}
         onSecondary={() => {
           setSaveWorkoutVisible(false);
-          setIsFinishing(true);
-
-          shouldExitRef.current = true;
+          beginExit();
         }}
         onPrimary={() => {
           setSaveWorkoutVisible(false);

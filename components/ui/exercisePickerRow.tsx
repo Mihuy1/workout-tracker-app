@@ -15,9 +15,14 @@ export interface ExercisePickerRowItem {
 interface ExercisePickerRowProps {
   item: ExercisePickerRowItem;
   onAdd: (item: ExercisePickerRowItem) => void;
+  disabled: boolean;
 }
 
-export function ExercisePickerRow({ item, onAdd }: ExercisePickerRowProps) {
+export function ExercisePickerRow({
+  item,
+  onAdd,
+  disabled,
+}: ExercisePickerRowProps) {
   const surface = useThemeColor({}, "surface");
   const borderColor = useThemeColor({}, "border");
   const mutedText = useThemeColor({}, "mutedText");
@@ -34,13 +39,16 @@ export function ExercisePickerRow({ item, onAdd }: ExercisePickerRowProps) {
   return (
     <Pressable
       onPress={() => onAdd(item)}
+      disabled={disabled}
       accessibilityRole="button"
       accessibilityLabel={`Add ${item.name}`}
       accessibilityHint={metadata}
+      accessibilityState={{ disabled }}
       style={({ pressed }) => [
         styles.row,
         { backgroundColor: surface, borderColor },
         pressed && styles.pressed,
+        disabled && styles.disabled,
       ]}
     >
       <View style={[styles.avatar, { backgroundColor: avatarBackground }]}>
@@ -113,6 +121,9 @@ const styles = StyleSheet.create({
   pressed: {
     opacity: 0.62,
     transform: [{ scale: 0.99 }],
+  },
+  disabled: {
+    opacity: 0.5,
   },
   avatar: {
     width: 42,

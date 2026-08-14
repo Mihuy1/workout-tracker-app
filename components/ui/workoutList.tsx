@@ -2,12 +2,10 @@ import exercises from "@/app/datasets/exercises.json";
 import { useWorkoutActions } from "@/contexts/workoutActionsContext";
 import { useWorkoutState } from "@/contexts/workoutStateContext";
 import { useThemeColor } from "@/hooks/use-theme-color";
-import { getBestWeightAndRepsBaseline } from "@/storage/workoutRepository";
 import { Exercise } from "@/types/workout";
 import { router } from "expo-router";
-import { useSQLiteContext } from "expo-sqlite";
 import Fuse from "fuse.js";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { FlatList, Pressable, StyleSheet, TextInput, View } from "react-native";
 import { ThemedText } from "../themed-text";
 import { ExercisePickerRow, ExercisePickerRowItem } from "./exercisePickerRow";
@@ -17,9 +15,10 @@ const FILTERS = ["All", "Strength", "Stretch", "Cardio"] as const;
 type ExerciseFilter = (typeof FILTERS)[number];
 
 export function WorkoutList() {
-  const db = useSQLiteContext();
   const [text, onChangeText] = useState("");
   const [activeFilter, setActiveFilter] = useState<ExerciseFilter>("All");
+  const [addInFlight, setAddInFlight] = useState(false);
+  const addInFlightRef = useRef(false);
   const { exercises: workoutExercises } = useWorkoutState();
   const { addExercise } = useWorkoutActions();
   const textColor = useThemeColor({}, "text");
@@ -83,10 +82,11 @@ export function WorkoutList() {
     );
   }, [text, fuse, filtered, selectedExercisesNames, activeFilter]);
 
-  const onAdd = async (item: ExercisePickerRowItem) => {
-    const t = await getBestWeightAndRepsBaseline(db, item.id);
+  const onAdd = (item: ExercisePickerRowItem) => {
+    if (addInFlightRef.current) return;
 
-    console.log("T:", t);
+    addInFlightRef.current = true;
+    setAddInFlight(true);
 
     const exercise: Exercise = {
       exerciseId: item.id,
@@ -174,7 +174,11 @@ export function WorkoutList() {
         keyboardShouldPersistTaps="handled"
         keyboardDismissMode="on-drag"
         renderItem={({ item }) => (
-          <ExercisePickerRow item={item} onAdd={onAdd} />
+          <ExercisePickerRow
+            item={item}
+            onAdd={onAdd}
+            disabled={addInFlight}
+          />
         )}
         ListEmptyComponent={
           <View style={styles.emptyState}>

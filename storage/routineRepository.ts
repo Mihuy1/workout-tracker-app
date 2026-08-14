@@ -17,6 +17,11 @@ type RoutineUpdate = {
   exercises: Exercise[];
 };
 
+type RoutineOperation =
+  | { type: "none" }
+  | { type: "create"; routine: Routine }
+  | { type: "update"; routineUpdate: RoutineUpdate };
+
 type RoutineRow = {
   routine_id: string;
   routine_name: string;
@@ -148,6 +153,18 @@ export async function updateRoutine(
         ],
       );
     }
+  });
+}
+
+export async function saveWorkoutAndRoutine(
+  db: SQLiteDatabase,
+  workouts: Exercise[],
+  routineOperation: RoutineOperation,
+) {
+  await db.withTransactionAsync(async () => {
+    await db.runAsync(`
+      INSERT INTO workouts 
+      `);
   });
 }
 
