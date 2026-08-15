@@ -1,5 +1,5 @@
-import { useRestTimer } from "@/contexts/restTimerContext";
 import { Colors } from "@/constants/theme";
+import { useRestTimer } from "@/contexts/restTimerContext";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   Animated,
@@ -77,7 +77,17 @@ export const RestTimer = () => {
   const start = useCallback(
     (initialTimeLeft?: number) => {
       const nextTimeLeft = initialTimeLeft ?? timeLeftRef.current;
-      if (isActiveRef.current || nextTimeLeft <= 0) return;
+
+      if (isActiveRef.current) return;
+
+      if (nextTimeLeft <= 0) {
+        setIsActive(false);
+        setIsPaused(false);
+        setTimeLeft(0);
+        timeLeftRef.current = 0;
+
+        return;
+      }
 
       setIsActive(true);
       isActiveRef.current = true;
@@ -197,7 +207,7 @@ export const RestTimer = () => {
               fontSize={30}
               fontWeight={600}
               lineHeight={58}
-              elapsedTimeMs={timeLeft}
+              elapsedTimeMs={Math.ceil(timeLeft / 1000) * 1000}
             />
           </View>
           <View style={styles.timeAdjustRow}>
