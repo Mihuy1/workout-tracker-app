@@ -76,6 +76,11 @@ export default function NewWorkoutScreen() {
   const pendingNavActionRef = useRef<any>(null);
   const originalExercisesRef = useRef<Exercise[]>([]);
 
+  const openDiscardModal = () => {
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+    setDiscardVisible(true);
+  };
+
   const closeActionModals = () => {
     setDiscardVisible(false);
     setSaveWorkoutVisible(false);
@@ -212,7 +217,7 @@ export default function NewWorkoutScreen() {
     if (finishInFlightRef.current) return;
 
     pendingNavActionRef.current = data.action;
-    setDiscardVisible(true);
+    openDiscardModal();
   });
 
   const handleCompletePress = () => {
@@ -267,8 +272,7 @@ export default function NewWorkoutScreen() {
     if (finishInFlightRef.current || exitStartedRef.current) return;
 
     if (exercises.length > 0) {
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
-      setDiscardVisible(true);
+      openDiscardModal();
     } else {
       router.back();
     }
