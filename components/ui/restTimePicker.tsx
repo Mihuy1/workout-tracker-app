@@ -1,5 +1,6 @@
 import { Colors } from "@/constants/theme";
 import { useThemeColor } from "@/hooks/use-theme-color";
+import * as Haptics from "expo-haptics";
 import { useState } from "react";
 import {
   Button,
@@ -53,6 +54,7 @@ export const RestTimePicker = ({
     const minutesValue = Number(minutes || 0);
     const secondsValue = Number(seconds || 0);
 
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setRestTime(minutesValue * 60 + secondsValue);
     setShowPicker(false);
   };
