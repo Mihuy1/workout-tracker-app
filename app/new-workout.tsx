@@ -12,6 +12,7 @@ import { saveWorkout } from "@/storage/workoutRepository";
 import type { Exercise, SetRow } from "@/types/workout";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import * as Crypto from "expo-crypto";
+import * as Haptics from "expo-haptics";
 import {
   router,
   Stack,
@@ -138,6 +139,8 @@ export default function NewWorkoutScreen() {
       return true;
     },
     onSuccess: (didChangePresets) => {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+
       if (didChangePresets) {
         queryClient.invalidateQueries({ queryKey: ["presets"] });
         queryClient.invalidateQueries({ queryKey: ["history"] });
@@ -216,6 +219,7 @@ export default function NewWorkoutScreen() {
     if (finishInFlightRef.current || exitStartedRef.current) return;
 
     if (exercises.length === 0) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
       setInfoVisible(true);
       return;
     }
@@ -225,6 +229,7 @@ export default function NewWorkoutScreen() {
     );
 
     if (!hasAnyCompleteSets) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       setEmptySetsVisible(true);
       return;
     }
@@ -262,6 +267,7 @@ export default function NewWorkoutScreen() {
     if (finishInFlightRef.current || exitStartedRef.current) return;
 
     if (exercises.length > 0) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
       setDiscardVisible(true);
     } else {
       router.back();

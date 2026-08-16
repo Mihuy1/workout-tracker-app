@@ -1,5 +1,6 @@
 import { Colors } from "@/constants/theme";
 import { useRestTimer } from "@/contexts/restTimerContext";
+import * as Haptics from "expo-haptics";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   Animated,
@@ -39,6 +40,8 @@ export const RestTimer = () => {
 
   const adjustByMs = (deltaMs: number) => {
     if (!isActiveRef.current || !endTimeRef.current) return;
+
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 
     const now = Date.now();
 
@@ -117,6 +120,7 @@ export const RestTimer = () => {
           clearInterval(intervalRef.current);
           setIsActive(false);
           isActiveRef.current = false;
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
         }
       }, 1000);
     },

@@ -1,4 +1,5 @@
 import { useThemeColor } from "@/hooks/use-theme-color";
+import * as Haptics from "expo-haptics";
 import { Pressable, StyleSheet, View } from "react-native";
 import { ThemedText } from "../themed-text";
 import { IconSymbol } from "./icon-symbol";
@@ -38,7 +39,10 @@ export function ExercisePickerRow({
 
   return (
     <Pressable
-      onPress={() => onAdd(item)}
+      onPress={() => {
+        Haptics.selectionAsync();
+        onAdd(item);
+      }}
       disabled={disabled}
       accessibilityRole="button"
       accessibilityLabel={`Add ${item.name}`}

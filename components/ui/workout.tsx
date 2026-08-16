@@ -7,6 +7,7 @@ import {
   SetAchievement,
   SetRow,
 } from "@/types/workout";
+import * as Haptics from "expo-haptics";
 import { memo, useState } from "react";
 import { Button, Pressable, StyleSheet, TextInput, View } from "react-native";
 import { ThemedText } from "../themed-text";
@@ -251,6 +252,9 @@ export const Workout = memo(function Workout({
 
               if (finalReps === "" || finalWeight === "") {
                 console.log("Show popup, returning");
+                Haptics.notificationAsync(
+                  Haptics.NotificationFeedbackType.Warning,
+                );
                 return;
               }
 
@@ -273,6 +277,18 @@ export const Workout = memo(function Workout({
                     Number(finalReps),
                   )
                 : [];
+
+              if (willBeCompleted) {
+                if (achievements.length > 0) {
+                  Haptics.notificationAsync(
+                    Haptics.NotificationFeedbackType.Success,
+                  );
+                } else {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                }
+              } else {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              }
 
               handleCompleteSet(
                 workoutName,
@@ -303,14 +319,25 @@ export const Workout = memo(function Workout({
             />
           </Pressable>
           <View style={[styles.cell, styles.actionCol]}>
-            <Pressable onPress={() => removeSet(workoutName, item.id)}>
+            <Pressable
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                removeSet(workoutName, item.id);
+              }}
+            >
               <IconSymbol name="minus.circle" size={18} color="red" />
             </Pressable>
           </View>
         </View>
       ))}
 
-      <Button title="Add Set" onPress={() => addSet(workoutName)} />
+      <Button
+        title="Add Set"
+        onPress={() => {
+          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+          addSet(workoutName);
+        }}
+      />
     </View>
   );
 });
