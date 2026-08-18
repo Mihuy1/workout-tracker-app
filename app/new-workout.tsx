@@ -10,7 +10,7 @@ import {
 } from "@/storage/routineRepository";
 import { saveWorkout } from "@/storage/workoutRepository";
 import type { Exercise, SetRow } from "@/types/workout";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import * as Crypto from "expo-crypto";
 import * as Haptics from "expo-haptics";
 import {
@@ -21,7 +21,7 @@ import {
 } from "expo-router";
 import { usePreventRemove } from "expo-router/react-navigation";
 import { useSQLiteContext } from "expo-sqlite";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { Button } from "react-native";
 
 const isValidCompletedSet = (set: SetRow): boolean => {
@@ -55,7 +55,6 @@ export default function NewWorkoutScreen() {
   const [isExiting, setIsExiting] = useState(false);
   const finishInFlightRef = useRef(false);
   const exitStartedRef = useRef(false);
-  const shouldExitRef = useRef(false);
 
   const [startedAt] = useState(() => Date.now());
 
@@ -74,7 +73,6 @@ export default function NewWorkoutScreen() {
   const [updatePresetVisible, setUpdatePresetVisible] = useState(false);
 
   const pendingNavActionRef = useRef<any>(null);
-  const originalExercisesRef = useRef<Exercise[]>([]);
 
   const openDiscardModal = () => {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
@@ -91,10 +89,19 @@ export default function NewWorkoutScreen() {
 
   const beginExit = () => {
     if (exitStartedRef.current) return;
-
     exitStartedRef.current = true;
-    shouldExitRef.current = true;
     setIsExiting(true);
+
+    clearWorkout();
+    clearRestTimer();
+
+    const action = pendingNavActionRef.current;
+    pendingNavActionRef.current = null;
+    if (action) {
+      navigation.dispatch(action);
+    } else {
+      router.back();
+    }
   };
 
   const finishWorkoutMutation = useMutation({
@@ -161,42 +168,11 @@ export default function NewWorkoutScreen() {
     },
   });
 
-  useEffect(() => {
-    if (!isExiting || !shouldExitRef.current) return;
-
-    shouldExitRef.current = false;
-    clearWorkout();
-    clearRestTimer();
-
-    const action = pendingNavActionRef.current;
-    pendingNavActionRef.current = null;
-    if (action) {
-      navigation.dispatch(action);
-    } else {
-      router.back();
-    }
-  }, [isExiting, clearWorkout, clearRestTimer, navigation]);
-
-  useEffect(() => {
-    if (!routineId) {
-      originalExercisesRef.current = [];
-      return;
-    }
-
-    let cancelled = false;
-
-    const loadOriginalRoutine = async () => {
-      const routine = await getRoutine(db, routineId);
-
-      if (!cancelled) originalExercisesRef.current = routine?.exercises ?? [];
-    };
-
-    loadOriginalRoutine();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [db, routineId]);
+  const { data: originalRoutine } = useQuery({
+    queryKey: ["routine", routineId],
+    queryFn: () => (routineId ? getRoutine(db, routineId) : null),
+    enabled: Boolean(routineId),
+  });
 
   const finishWorkout = (
     presetName: string | null,
@@ -240,7 +216,8 @@ export default function NewWorkoutScreen() {
     }
 
     if (routineId) {
-      const originalExercises = originalExercisesRef.current;
+      // const originalExercises = originalExercisesRef.current;
+      const originalExercises = originalRoutine?.exercises ?? [];
 
       const hasRoutineChanged =
         exercises.length !== originalExercises.length ||
