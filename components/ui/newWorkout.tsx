@@ -1,15 +1,12 @@
-import { useWorkoutActions } from "@/contexts/workoutActionsContext";
 import { useWorkoutState } from "@/contexts/workoutStateContext";
-import { getRoutine } from "@/storage/routineRepository";
 import {
   getBaselines,
   getLatestExercisePerformances,
-  LatestExercisePerformance,
 } from "@/storage/workoutRepository";
 import { SetRow } from "@/types/workout";
+import { useQuery } from "@tanstack/react-query";
 import { router } from "expo-router";
 import { useSQLiteContext } from "expo-sqlite";
-import { useEffect, useRef, useState } from "react";
 import { Button, FlatList, StyleSheet, View } from "react-native";
 import LiveWorkoutTimer from "../liveWorkoutTImer";
 import { RestTimer } from "./RestTimer";
@@ -24,92 +21,20 @@ type NewWorkoutProps = {
 
 export function NewWorkout({ routineId, startedAt }: NewWorkoutProps) {
   const db = useSQLiteContext();
-  const { exercises, prBaselines } = useWorkoutState();
-  const { addExercises, setExerciseBaselines } = useWorkoutActions();
-  const [historyMap, setHistoryMap] = useState<
-    Partial<Record<string, LatestExercisePerformance>>
-  >({});
+  const { exercises } = useWorkoutState();
+  const exerciseIds = exercises.map((ex) => ex.exerciseId);
 
-  const exerciseIdKeys = JSON.stringify(
-    exercises.map((ex) => ex.exerciseId).sort(),
-  );
+  const { data: baselines = {} } = useQuery({
+    queryKey: ["baselines", exerciseIds],
+    queryFn: () => getBaselines(db, exerciseIds),
+    enabled: exerciseIds.length > 0,
+  });
 
-  const loadedPresetRef = useRef<string | null>(null);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    const exerciseIds = JSON.parse(exerciseIdKeys) as string[];
-
-    const loadBaselines = async () => {
-      const missingIds = exerciseIds.filter(
-        (id) => prBaselines[id] === undefined,
-      );
-
-      if (missingIds.length === 0) return;
-
-      const baselines = await getBaselines(db, missingIds);
-
-      if (cancelled) return;
-
-      setExerciseBaselines(baselines);
-    };
-
-    loadBaselines();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [db, exerciseIdKeys, setExerciseBaselines, prBaselines]);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    const loadHistory = async () => {
-      const exerciseIds = JSON.parse(exerciseIdKeys) as string[];
-
-      const history = await getLatestExercisePerformances(db, exerciseIds);
-
-      if (!cancelled) setHistoryMap(history);
-    };
-
-    loadHistory();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [db, exerciseIdKeys]);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    if (!routineId) return;
-    if (loadedPresetRef.current === routineId) return;
-
-    const loadPreset = async () => {
-      const routine = await getRoutine(db, routineId);
-
-      if (cancelled) return;
-      if (!routine) return;
-
-      loadedPresetRef.current = routineId;
-
-      const existingExerciseIds = new Set(exercises.map((ex) => ex.exerciseId));
-
-      const exercisesToAdd = routine.exercises.filter(
-        (exercise) => !existingExerciseIds.has(exercise.exerciseId),
-      );
-
-      if (exercisesToAdd.length > 0) {
-        addExercises(exercisesToAdd);
-      }
-    };
-    loadPreset();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [db, routineId, exercises, addExercises]);
+  const { data: historyExerciseMap = {} } = useQuery({
+    queryKey: ["historyExerciseMap", exerciseIds],
+    queryFn: () => getLatestExercisePerformances(db, exerciseIds),
+    enabled: exerciseIds.length > 0,
+  });
 
   return (
     <View style={styles.container}>
@@ -125,10 +50,13 @@ export function NewWorkout({ routineId, startedAt }: NewWorkoutProps) {
               <Workout
                 exercise={item}
                 prefilledSets={
-                  historyMap[item.exerciseId]?.sets ?? EMPTY_PREFILLED_SETS
+                  historyExerciseMap[item.exerciseId]?.sets ??
+                  EMPTY_PREFILLED_SETS
                 }
-                fallbackRestTime={historyMap[item.exerciseId]?.restTime ?? 120}
-                prBaseline={prBaselines[item.exerciseId]}
+                fallbackRestTime={
+                  historyExerciseMap[item.exerciseId]?.restTime ?? 120
+                }
+                prBaseline={baselines[item.exerciseId]}
               />
             </View>
           )}

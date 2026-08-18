@@ -1,3 +1,4 @@
+import { useWorkoutActions } from "@/contexts/workoutActionsContext";
 import { useThemeColor } from "@/hooks/use-theme-color";
 import { router } from "expo-router";
 import {
@@ -26,6 +27,7 @@ function RoutineWorkout({
   exercisePreviewText,
   setModalVisible,
 }: routineWorkoutProps) {
+  const { clearWorkout, addExercises } = useWorkoutActions();
   const cardBackground = useThemeColor({}, "surface");
   const cardBorder = useThemeColor({}, "border");
   const buttonBackground = useThemeColor({}, "surfaceMuted");
@@ -57,12 +59,14 @@ function RoutineWorkout({
 
       <CustomButton
         title="Start Routine"
-        onPress={() =>
+        onPress={() => {
+          clearWorkout();
+          addExercises(item.exercises);
           router.push({
             pathname: "../new-workout",
             params: { presetTitle: item.name, routineId: item.id },
-          })
-        }
+          });
+        }}
         backgroundColor={buttonBackground}
         textColor={buttonTextColor}
       />

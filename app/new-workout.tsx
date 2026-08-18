@@ -216,7 +216,6 @@ export default function NewWorkoutScreen() {
     }
 
     if (routineId) {
-      // const originalExercises = originalExercisesRef.current;
       const originalExercises = originalRoutine?.exercises ?? [];
 
       const hasRoutineChanged =
