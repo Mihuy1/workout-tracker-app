@@ -12,99 +12,36 @@ import {
 } from "react-native";
 import { WorkoutTimer } from "./workoutTimer";
 
-export const RestTimer = () => {
-  const { restDuration, restStartTrigger } = useRestTimer();
+type TimerStatus = "idle" | "running" | "paused";
 
-  const durationMs = restDuration * 1000;
+export const RestTimer = () => {
+  const { restTimerRun } = useRestTimer();
+  const [restTimerStatus, setRestTimerStatus] = useState<TimerStatus>("idle");
+  const [timeLeft, setTimeLeft] = useState<number>(0);
+  const [animatedProgress] = useState<Animated.Value>(
+    () => new Animated.Value(1),
+  );
+
+  const endTimeRef = useRef<number | null>(null);
+  const intervalRef = useRef<number | undefined>(undefined);
 
   const theme = useColorScheme() === "dark" ? "dark" : "light";
   const colors = Colors[theme];
 
-  const [timeLeft, setTimeLeft] = useState(durationMs);
-  const [isActive, setIsActive] = useState(false);
-  const [isPaused, setIsPaused] = useState(false);
-
-  const [animatedProgress] = useState<Animated.Value>(
-    () => new Animated.Value(1),
-  );
-  const endTimeRef = useRef<number | null>(null);
-  const intervalRef = useRef<number | undefined>(undefined);
-  const isActiveRef = useRef<boolean>(false);
-  const isPausedRef = useRef<boolean>(false);
-  const timeLeftRef = useRef<number>(timeLeft);
-
-  useEffect(() => {
-    isActiveRef.current = isActive;
-    timeLeftRef.current = timeLeft;
-  }, [isActive, timeLeft]);
-
-  const adjustByMs = (deltaMs: number) => {
-    if (!isActiveRef.current || !endTimeRef.current) return;
-
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-
-    const now = Date.now();
-
-    const prevMsLeft = Math.max(0, endTimeRef.current - now);
-    const newMsLeft = Math.max(0, prevMsLeft + deltaMs);
-    const clampedMsLeft = Math.min(durationMs, newMsLeft);
-
-    endTimeRef.current = now + clampedMsLeft;
-    setTimeLeft(clampedMsLeft);
-    timeLeftRef.current = clampedMsLeft;
-
-    animatedProgress.stopAnimation((currentValue) => {
-      const ratio = prevMsLeft > 0 ? clampedMsLeft / prevMsLeft : 1;
-      const nextValue = Math.max(0, Math.min(1, currentValue * ratio));
-
-      animatedProgress.setValue(nextValue);
-
-      Animated.timing(animatedProgress, {
-        toValue: 0,
-        duration: clampedMsLeft,
-        easing: Easing.linear,
-        useNativeDriver: true,
-      }).start();
-    });
-
-    if (clampedMsLeft === 0) {
-      if (intervalRef.current) clearInterval(intervalRef.current);
-      setIsActive(false);
-      isActiveRef.current = false;
-    }
-  };
-
-  const incraseBy15 = () => adjustByMs(15000);
-  const decreaseBy15 = () => adjustByMs(-15000);
-
   const start = useCallback(
-    (initialTimeLeft?: number) => {
-      const nextTimeLeft = initialTimeLeft ?? timeLeftRef.current;
+    (initialTimeLeft: number) => {
+      if (initialTimeLeft <= 0) return;
 
-      if (isActiveRef.current) return;
+      setRestTimerStatus("running");
 
-      if (nextTimeLeft <= 0) {
-        setIsActive(false);
-        setIsPaused(false);
-        setTimeLeft(0);
-        timeLeftRef.current = 0;
+      if (intervalRef.current) clearInterval(intervalRef.current);
 
-        return;
-      }
-
-      setIsActive(true);
-      isActiveRef.current = true;
-      setTimeLeft(nextTimeLeft);
-      timeLeftRef.current = nextTimeLeft;
-
-      setIsPaused(false);
-      isPausedRef.current = false;
-
-      endTimeRef.current = Date.now() + nextTimeLeft;
+      setTimeLeft(initialTimeLeft);
+      endTimeRef.current = Date.now() + initialTimeLeft;
 
       Animated.timing(animatedProgress, {
         toValue: 0,
-        duration: nextTimeLeft,
+        duration: initialTimeLeft,
         easing: Easing.linear,
         useNativeDriver: true,
       }).start();
@@ -112,14 +49,17 @@ export const RestTimer = () => {
       intervalRef.current = setInterval(() => {
         if (!endTimeRef.current) return;
 
-        const msLeft = Math.max(0, endTimeRef.current - Date.now());
-        setTimeLeft(msLeft);
-        timeLeftRef.current = msLeft;
+        const remaining = Math.max(0, endTimeRef.current - Date.now());
 
-        if (msLeft === 0) {
-          clearInterval(intervalRef.current);
-          setIsActive(false);
-          isActiveRef.current = false;
+        setTimeLeft(remaining);
+
+        if (remaining === 0) {
+          if (intervalRef.current) {
+            clearInterval(intervalRef.current);
+            intervalRef.current = undefined;
+          }
+
+          setRestTimerStatus("idle");
           Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
         }
       }, 1000);
@@ -127,120 +67,174 @@ export const RestTimer = () => {
     [animatedProgress],
   );
 
-  useEffect(() => {
-    if (restStartTrigger === 0) return;
+  const resume = () => {
+    if (restTimerStatus !== "paused" || timeLeft <= 0) return;
+
+    start(timeLeft);
+  };
+
+  const pause = () => {
+    if (!endTimeRef.current) return;
+
+    const remaining = Math.max(0, endTimeRef.current - Date.now());
+
+    setTimeLeft(remaining);
+    setRestTimerStatus("paused");
 
     if (intervalRef.current) {
       clearInterval(intervalRef.current);
       intervalRef.current = undefined;
-    }
-
-    isActiveRef.current = false;
-    isPausedRef.current = false;
-    timeLeftRef.current = durationMs;
-
-    animatedProgress.setValue(1);
-    endTimeRef.current = null;
-
-    start(durationMs);
-  }, [animatedProgress, durationMs, restStartTrigger, start]);
-
-  const pause = () => {
-    if (!isActiveRef.current) return;
-
-    setIsActive(false);
-    setIsPaused(true);
-    isActiveRef.current = false;
-    isPausedRef.current = true;
-
-    if (intervalRef.current) clearInterval(intervalRef.current);
-
-    if (endTimeRef.current) {
-      const msLeft = Math.max(0, endTimeRef.current - Date.now());
-      setTimeLeft(msLeft);
-      timeLeftRef.current = msLeft;
     }
 
     animatedProgress.stopAnimation();
   };
 
-  const restart = () => {
+  const stop = useCallback(() => {
     if (intervalRef.current) {
       clearInterval(intervalRef.current);
       intervalRef.current = undefined;
     }
 
-    setIsActive(false);
-    isActiveRef.current = false;
-
-    setIsPaused(false);
-    isPausedRef.current = false;
-
-    setTimeLeft(durationMs);
-    timeLeftRef.current = durationMs;
-
-    animatedProgress.setValue(1);
+    animatedProgress.stopAnimation();
     endTimeRef.current = null;
+  }, [animatedProgress]);
 
-    start(durationMs);
-  };
+  const adjustByMs = (delta: number) => {
+    if (
+      restTimerStatus !== "running" ||
+      !restTimerRun ||
+      endTimeRef.current === null
+    )
+      return;
 
-  useEffect(() => {
-    return () => {
-      if (intervalRef.current) {
+    const now = Date.now();
+    const previousTimeLeft = Math.max(0, endTimeRef.current - now);
+
+    const nextTimeLeft = Math.max(0, previousTimeLeft + delta);
+
+    endTimeRef.current = now + nextTimeLeft;
+    setTimeLeft(nextTimeLeft);
+
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+
+    animatedProgress.stopAnimation((currentProgress) => {
+      const nextProgress =
+        previousTimeLeft > 0
+          ? currentProgress * (nextTimeLeft / previousTimeLeft)
+          : nextTimeLeft / restTimerRun.durationMs;
+
+      animatedProgress.setValue(Math.max(0, Math.min(1, nextProgress)));
+
+      if (nextTimeLeft > 0) {
+        Animated.timing(animatedProgress, {
+          toValue: 0,
+          duration: nextTimeLeft,
+          easing: Easing.linear,
+          useNativeDriver: true,
+        }).start();
+      }
+    });
+
+    if (nextTimeLeft === 0) {
+      if (intervalRef.current !== undefined) {
         clearInterval(intervalRef.current);
         intervalRef.current = undefined;
       }
+
+      setRestTimerStatus("idle");
+    }
+  };
+
+  const decreaseBy15 = () => {
+    adjustByMs(-15000);
+  };
+
+  const increaseBy15 = () => {
+    adjustByMs(15000);
+  };
+
+  useEffect(() => {
+    if (!restTimerRun) return;
+
+    const timeLeft = Math.max(0, restTimerRun.endsAt - Date.now());
+
+    animatedProgress.setValue(1);
+
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    start(timeLeft);
+
+    return () => {
+      stop();
     };
-  }, []);
+  }, [restTimerRun, animatedProgress, start, stop]);
 
   return (
     <>
-      {(isActive || isPaused) && (
-        <View
-          style={[
-            styles.container,
-            {
-              backgroundColor: colors.restTimeBackground,
-              borderColor: colors.restTimeBorder,
-            },
-          ]}
-        >
-          <View style={styles.restTimeText}>
-            <WorkoutTimer
-              fontSize={30}
-              fontWeight={600}
-              lineHeight={58}
-              elapsedTimeMs={Math.ceil(timeLeft / 1000) * 1000}
-            />
-          </View>
-          <View style={styles.timeAdjustRow}>
-            <Button title="-15" onPress={decreaseBy15} disabled={!isActive} />
-            <Button title="+15" onPress={incraseBy15} disabled={!isActive} />
-          </View>
-
-          <Animated.View
+      {restTimerRun &&
+        (restTimerStatus === "running" || restTimerStatus === "paused") && (
+          <View
             style={[
-              styles.bar,
+              styles.container,
               {
-                backgroundColor: colors.barColor,
-                transformOrigin: "left center",
-                transform: [{ scaleX: animatedProgress }],
+                backgroundColor: colors.restTimeBackground,
+                borderColor: colors.restTimeBorder,
               },
             ]}
-          />
+          >
+            <View style={styles.restTimeText}>
+              <WorkoutTimer
+                fontSize={30}
+                fontWeight={600}
+                lineHeight={58}
+                elapsedTimeMs={timeLeft}
+              />
+            </View>
+            <View style={styles.timeAdjustRow}>
+              <Button
+                title="-15"
+                onPress={decreaseBy15}
+                disabled={restTimerStatus === "paused"}
+              />
+              <Button
+                title="+15"
+                onPress={increaseBy15}
+                disabled={restTimerStatus === "paused"}
+              />
+            </View>
 
-          <View style={styles.buttonRow}>
-            <Button
-              title="Resume"
-              onPress={() => start()}
-              disabled={isActive}
-            />
-            <Button title="Pause" onPress={pause} disabled={!isActive} />
-            <Button title="Restart" onPress={restart} />
+            <View
+              style={[
+                styles.barTrack,
+                { backgroundColor: colors.restTimeBorder },
+              ]}
+            >
+              <Animated.View
+                style={[
+                  styles.barFill,
+                  {
+                    backgroundColor: colors.barColor,
+                    transformOrigin: "left center",
+                    transform: [{ scaleX: animatedProgress }],
+                  },
+                ]}
+              />
+            </View>
+
+            <View style={styles.buttonRow}>
+              <Button
+                title="Resume"
+                onPress={() => resume()}
+                disabled={restTimerStatus === "running"}
+              />
+              <Button
+                title="Pause"
+                onPress={pause}
+                disabled={restTimerStatus !== "running"}
+              />
+              {/* <Button title="Restart" onPress={restart} /> */}
+            </View>
           </View>
-        </View>
-      )}
+        )}
     </>
   );
 };
@@ -264,6 +258,16 @@ const styles = StyleSheet.create({
   },
   bar: {
     height: 12,
+    borderRadius: 10,
+  },
+  barTrack: {
+    width: "100%",
+    height: 12,
+    borderRadius: 10,
+    overflow: "hidden",
+  },
+  barFill: {
+    height: "100%",
     borderRadius: 10,
   },
   buttonRow: {

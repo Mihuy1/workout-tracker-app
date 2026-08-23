@@ -1,34 +1,46 @@
-import { createContext, ReactNode, useContext, useState } from "react";
+import { createContext, ReactNode, useContext, useRef, useState } from "react";
 
-type restTimerContextType = {
-  restDuration: number;
-  restStartTrigger: number;
+type RestTimerRun = {
+  id: number;
+  durationMs: number;
+  endsAt: number;
+};
+
+type RestTimerContextType = {
+  restTimerRun: RestTimerRun | null;
   triggerRestTimer: (seconds: number) => void;
   clearRestTimer: () => void;
 };
 
-const RestTimerContext = createContext<restTimerContextType | undefined>(
+const RestTimerContext = createContext<RestTimerContextType | undefined>(
   undefined,
 );
 
 export const RestTimerProvider = ({ children }: { children: ReactNode }) => {
-  const [restDuration, setRestDuration] = useState<number>(0);
-  const [restStartTrigger, setRestStartTrigger] = useState<number>(0);
+  const [restTimerRun, setRestTimerRun] = useState<RestTimerRun | null>(null);
+
+  const nextRunId = useRef(0);
+
   const triggerRestTimer = (seconds: number) => {
-    setRestDuration(seconds);
-    setRestStartTrigger((prev) => prev + 1);
+    const durationMs = seconds * 1000;
+
+    nextRunId.current += 1;
+
+    setRestTimerRun({
+      id: nextRunId.current,
+      durationMs: durationMs,
+      endsAt: Date.now() + durationMs,
+    });
   };
 
   const clearRestTimer = () => {
-    setRestDuration(0);
-    setRestStartTrigger(0);
+    setRestTimerRun(null);
   };
 
   return (
     <RestTimerContext.Provider
       value={{
-        restDuration,
-        restStartTrigger,
+        restTimerRun,
         triggerRestTimer,
         clearRestTimer,
       }}
