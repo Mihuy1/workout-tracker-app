@@ -22,6 +22,10 @@ export const RestTimerProvider = ({ children }: { children: ReactNode }) => {
   const nextRunId = useRef(0);
 
   const triggerRestTimer = (seconds: number) => {
+    if (seconds <= 0) {
+      setRestTimerRun(null);
+      return;
+    }
     const durationMs = seconds * 1000;
 
     nextRunId.current += 1;
