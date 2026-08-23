@@ -37,7 +37,7 @@ export const Workout = memo(function Workout({
     setRestTime,
   } = useWorkoutActions();
 
-  const { triggerRestTimer } = useRestTimer();
+  const { triggerRestTimer, clearRestTimer } = useRestTimer();
 
   const { name: workoutName, mechanic: workoutMechanic } = exercise;
 
@@ -184,7 +184,7 @@ export const Workout = memo(function Workout({
           ]}
         >
           <ThemedText type="default" style={[styles.cell, styles.setCol]}>
-            {item.id}
+            {index + 1}
           </ThemedText>
 
           <TextInput
@@ -323,6 +323,8 @@ export const Workout = memo(function Workout({
               onPress={() => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
                 removeSet(workoutName, item.id);
+
+                clearRestTimer();
               }}
             >
               <IconSymbol name="minus.circle" size={18} color="red" />
