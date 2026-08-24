@@ -1,3 +1,7 @@
+import { RestTimePicker } from "@/components/timer/RestTimePicker";
+import { CustomModal } from "@/components/ui/CustomModal";
+import { IconSymbol } from "@/components/ui/IconSymbol";
+import { ThemedText } from "@/components/ui/ThemedText";
 import { useRestTimer } from "@/contexts/restTimerContext";
 import { useWorkoutActions } from "@/contexts/workoutActionsContext";
 import { useThemeColor } from "@/hooks/use-theme-color";
@@ -10,24 +14,20 @@ import {
 import * as Haptics from "expo-haptics";
 import { memo, useState } from "react";
 import { Button, Pressable, StyleSheet, TextInput, View } from "react-native";
-import { ThemedText } from "../themed-text";
-import { CustomModal } from "./customModal";
-import { IconSymbol } from "./icon-symbol";
-import { RestTimePicker } from "./restTimePicker";
 
-type WorkoutProps = {
+type WorkoutExerciseCardProps = {
   exercise: Exercise;
   prefilledSets?: SetRow[];
   fallbackRestTime?: number;
   prBaseline?: ExercisePrBaseline;
 };
 
-export const Workout = memo(function Workout({
+export const WorkoutExerciseCard = memo(function WorkoutExerciseCard({
   exercise,
   prefilledSets,
   fallbackRestTime = 120,
   prBaseline,
-}: WorkoutProps) {
+}: WorkoutExerciseCardProps) {
   const {
     removeExercise,
     addSet,
@@ -256,7 +256,6 @@ export const Workout = memo(function Workout({
                 const finalReps = item.reps !== "" ? item.reps : suggestedReps;
 
                 if (finalReps === "" || finalWeight === "") {
-                  console.log("Show popup, returning");
                   Haptics.notificationAsync(
                     Haptics.NotificationFeedbackType.Warning,
                   );

@@ -1,7 +1,7 @@
-import { ThemedText } from "@/components/themed-text";
-import { CustomButton } from "@/components/ui/customButton";
-import { CustomModal } from "@/components/ui/customModal";
-import RoutineWorkout from "@/components/ui/routineWorkout";
+import { ThemedText } from "@/components/ui/ThemedText";
+import { CustomButton } from "@/components/ui/CustomButton";
+import { CustomModal } from "@/components/ui/CustomModal";
+import { RoutineCard } from "@/components/routines/RoutineCard";
 import { useThemeColor } from "@/hooks/use-theme-color";
 import { router } from "expo-router";
 import { useState } from "react";
@@ -96,7 +96,7 @@ export default function HomeScreen() {
         >
           <CustomButton
             title="Start Empty Workout"
-            onPress={() => router.push("../new-workout")}
+            onPress={() => router.push("/new-workout")}
             backgroundColor={buttonBackground}
             textColor={buttonTextColor}
           />
@@ -118,7 +118,7 @@ export default function HomeScreen() {
               exerciseNames.length > 3 ? `${previewNames}...` : previewNames;
 
             return (
-              <RoutineWorkout
+              <RoutineCard
                 item={item}
                 exercisePreviewText={exercisePreviewText}
                 setModalVisible={handleSetModal}

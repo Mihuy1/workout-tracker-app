@@ -6,8 +6,8 @@ import Animated, {
   FadeOut,
   LinearTransition,
 } from "react-native-reanimated";
-import { ThemedText } from "../themed-text";
-import { IconSymbol } from "./icon-symbol";
+import { ThemedText } from "@/components/ui/ThemedText";
+import { IconSymbol } from "@/components/ui/IconSymbol";
 
 type WorkoutHistoryCardProps = {
   exercises: CompletedWorkout["exercises"];
@@ -15,7 +15,7 @@ type WorkoutHistoryCardProps = {
   itemId: string;
 };
 
-export default function WorkoutHistoryCard({
+export function WorkoutHistoryCard({
   exercises,
   expandId,
   itemId,

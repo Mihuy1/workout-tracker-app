@@ -1,4 +1,4 @@
-import { ThemedText } from "@/components/themed-text";
+import { ThemedText } from "./ThemedText";
 import React from "react";
 import {
   Platform,

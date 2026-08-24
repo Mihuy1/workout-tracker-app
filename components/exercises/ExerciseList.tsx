@@ -1,4 +1,4 @@
-import exercises from "@/app/datasets/exercises.json";
+import exercises from "@/data/exercises.json";
 import { useWorkoutActions } from "@/contexts/workoutActionsContext";
 import { useWorkoutState } from "@/contexts/workoutStateContext";
 import { useThemeColor } from "@/hooks/use-theme-color";
@@ -7,14 +7,14 @@ import { router } from "expo-router";
 import Fuse from "fuse.js";
 import { useMemo, useRef, useState } from "react";
 import { FlatList, Pressable, StyleSheet, TextInput, View } from "react-native";
-import { ThemedText } from "../themed-text";
-import { ExercisePickerRow, ExercisePickerRowItem } from "./exercisePickerRow";
-import { IconSymbol } from "./icon-symbol";
+import { ThemedText } from "@/components/ui/ThemedText";
+import { ExercisePickerRow, ExercisePickerRowItem } from "./ExercisePickerRow";
+import { IconSymbol } from "@/components/ui/IconSymbol";
 
 const FILTERS = ["All", "Strength", "Stretch", "Cardio"] as const;
 type ExerciseFilter = (typeof FILTERS)[number];
 
-export function WorkoutList() {
+export function ExerciseList() {
   const [text, onChangeText] = useState("");
   const [activeFilter, setActiveFilter] = useState<ExerciseFilter>("All");
   const [addInFlight, setAddInFlight] = useState(false);

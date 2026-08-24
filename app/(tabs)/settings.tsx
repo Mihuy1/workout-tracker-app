@@ -1,6 +1,6 @@
-import ParallaxScrollView from "@/components/parallax-scroll-view";
-import { ThemedText } from "@/components/themed-text";
-import { IconSymbol } from "@/components/ui/icon-symbol";
+import { ParallaxScrollView } from "@/components/ui/ParallaxScrollView";
+import { ThemedText } from "@/components/ui/ThemedText";
+import { IconSymbol } from "@/components/ui/IconSymbol";
 import { StyleSheet } from "react-native";
 
 export default function TabThreeScreen() {

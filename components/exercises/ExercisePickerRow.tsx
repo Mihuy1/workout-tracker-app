@@ -1,8 +1,8 @@
 import { useThemeColor } from "@/hooks/use-theme-color";
 import * as Haptics from "expo-haptics";
 import { Pressable, StyleSheet, View } from "react-native";
-import { ThemedText } from "../themed-text";
-import { IconSymbol } from "./icon-symbol";
+import { ThemedText } from "@/components/ui/ThemedText";
+import { IconSymbol } from "@/components/ui/IconSymbol";
 
 export interface ExercisePickerRowItem {
   id: string;

@@ -1,4 +1,4 @@
-import { WorkoutList } from "@/components/ui/workoutList";
+import { ExerciseList } from "@/components/exercises/ExerciseList";
 import { Stack } from "expo-router";
 export default function ExerciseListScreen() {
   return (
@@ -10,7 +10,7 @@ export default function ExerciseListScreen() {
           headerRight: () => null,
         }}
       />
-      <WorkoutList />
+      <ExerciseList />
     </>
   );
 }

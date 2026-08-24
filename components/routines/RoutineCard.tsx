@@ -8,11 +8,11 @@ import {
   StyleSheet,
   View,
 } from "react-native";
-import { ThemedText } from "../themed-text";
-import { CustomButton } from "./customButton";
-import { IconSymbol } from "./icon-symbol";
+import { ThemedText } from "@/components/ui/ThemedText";
+import { CustomButton } from "@/components/ui/CustomButton";
+import { IconSymbol } from "@/components/ui/IconSymbol";
 
-interface routineWorkoutProps {
+interface RoutineCardProps {
   item: {
     id: string;
     name: string;
@@ -22,11 +22,11 @@ interface routineWorkoutProps {
   setModalVisible: (routineName: string, routineId: string) => void;
 }
 
-function RoutineWorkout({
+export function RoutineCard({
   item,
   exercisePreviewText,
   setModalVisible,
-}: routineWorkoutProps) {
+}: RoutineCardProps) {
   const { clearWorkout, addExercises } = useWorkoutActions();
   const cardBackground = useThemeColor({}, "surface");
   const cardBorder = useThemeColor({}, "border");
@@ -63,7 +63,7 @@ function RoutineWorkout({
           clearWorkout();
           addExercises(item.exercises);
           router.push({
-            pathname: "../new-workout",
+            pathname: "/new-workout",
             params: { presetTitle: item.name, routineId: item.id },
           });
         }}
@@ -111,5 +111,3 @@ const styles = StyleSheet.create({
     paddingBottom: 16,
   },
 });
-
-export default RoutineWorkout;

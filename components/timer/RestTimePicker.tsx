@@ -12,7 +12,7 @@ import {
   useColorScheme,
   View,
 } from "react-native";
-import { IconSymbol } from "./icon-symbol";
+import { IconSymbol } from "@/components/ui/IconSymbol";
 
 interface RestTimePickerProps {
   restTime: number;

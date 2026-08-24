@@ -10,7 +10,7 @@ import {
   useColorScheme,
   View,
 } from "react-native";
-import { WorkoutTimer } from "./workoutTimer";
+import { WorkoutTimer } from "./WorkoutTimer";
 
 type TimerStatus = "idle" | "running" | "paused";
 

@@ -1,5 +1,5 @@
-import { CustomModal } from "@/components/ui/customModal";
-import { NewWorkout } from "@/components/ui/newWorkout";
+import { CustomModal } from "@/components/ui/CustomModal";
+import { ActiveWorkout } from "@/components/workout/ActiveWorkout";
 import { useRestTimer } from "@/contexts/restTimerContext";
 import { useWorkoutActions } from "@/contexts/workoutActionsContext";
 import { useWorkoutState } from "@/contexts/workoutStateContext";
@@ -277,7 +277,7 @@ export default function NewWorkoutScreen() {
           ),
         }}
       />
-      <NewWorkout routineId={routineId} startedAt={startedAt} />
+      <ActiveWorkout routineId={routineId} startedAt={startedAt} />
 
       <CustomModal
         visible={discardVisible}
