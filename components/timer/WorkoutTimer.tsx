@@ -1,5 +1,5 @@
 import { View, type TextStyle } from "react-native";
-import { ThemedText } from "../themed-text";
+import { ThemedText } from "@/components/ui/ThemedText";
 
 type WorkoutTimerProps = {
   fontSize?: number;

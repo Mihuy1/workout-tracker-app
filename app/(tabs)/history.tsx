@@ -1,8 +1,8 @@
-import { ThemedText } from "@/components/themed-text";
-import { CustomModal } from "@/components/ui/customModal";
-import { IconSymbol } from "@/components/ui/icon-symbol";
-import WorkoutHistoryCard from "@/components/ui/workoutHistoryCard";
-import { WorkoutTimer } from "@/components/ui/workoutTimer";
+import { ThemedText } from "@/components/ui/ThemedText";
+import { CustomModal } from "@/components/ui/CustomModal";
+import { IconSymbol } from "@/components/ui/IconSymbol";
+import { WorkoutHistoryCard } from "@/components/history/WorkoutHistoryCard";
+import { WorkoutTimer } from "@/components/timer/WorkoutTimer";
 import { useThemeColor } from "@/hooks/use-theme-color";
 import { deleteWorkout, getWorkoutHistory } from "@/storage/workoutRepository";
 import { SetRow } from "@/types/workout";

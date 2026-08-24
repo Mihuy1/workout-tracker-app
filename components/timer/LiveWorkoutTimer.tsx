@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
-import { WorkoutTimer } from "./ui/workoutTimer";
+import { WorkoutTimer } from "./WorkoutTimer";
 
 interface LiveWorkoutTimerProps {
   startedAt: number;
 }
 
-export default function LiveWorkoutTimer({ startedAt }: LiveWorkoutTimerProps) {
+export function LiveWorkoutTimer({ startedAt }: LiveWorkoutTimerProps) {
   const [elapsedTimeMs, setElapsedTimeMs] = useState(
     () => Date.now() - startedAt,
   );

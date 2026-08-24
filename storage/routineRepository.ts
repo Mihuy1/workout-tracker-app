@@ -1,4 +1,4 @@
-import exerciseCatalog from "@/app/datasets/exercises.json";
+import exerciseCatalog from "@/data/exercises.json";
 import { Exercise } from "@/types/workout";
 import type { SQLiteDatabase } from "expo-sqlite";
 

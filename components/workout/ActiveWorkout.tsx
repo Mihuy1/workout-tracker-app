@@ -8,18 +8,18 @@ import { useQuery } from "@tanstack/react-query";
 import { router } from "expo-router";
 import { useSQLiteContext } from "expo-sqlite";
 import { Button, FlatList, StyleSheet, View } from "react-native";
-import LiveWorkoutTimer from "../liveWorkoutTImer";
-import { RestTimer } from "./RestTimer";
-import { Workout } from "./workout";
+import { LiveWorkoutTimer } from "@/components/timer/LiveWorkoutTimer";
+import { RestTimer } from "@/components/timer/RestTimer";
+import { WorkoutExerciseCard } from "./WorkoutExerciseCard";
 
 const EMPTY_PREFILLED_SETS: SetRow[] = [];
 
-type NewWorkoutProps = {
+type ActiveWorkoutProps = {
   routineId?: string | null;
   startedAt: number;
 };
 
-export function NewWorkout({ routineId, startedAt }: NewWorkoutProps) {
+export function ActiveWorkout({ routineId, startedAt }: ActiveWorkoutProps) {
   const db = useSQLiteContext();
   const { exercises } = useWorkoutState();
   const exerciseIds = exercises.map((ex) => ex.exerciseId);
@@ -47,7 +47,7 @@ export function NewWorkout({ routineId, startedAt }: NewWorkoutProps) {
           keyExtractor={(item) => item.exerciseId}
           renderItem={({ item }) => (
             <View style={{ marginBottom: 5 }}>
-              <Workout
+              <WorkoutExerciseCard
                 exercise={item}
                 prefilledSets={
                   historyExerciseMap[item.exerciseId]?.sets ??
