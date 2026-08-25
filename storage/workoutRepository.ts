@@ -45,9 +45,66 @@ type ExercisePrBaselineRow = {
   weight_grams: number;
 };
 
+type WorkoutStatsRow = {
+  workout_count: number;
+  total_sets: number;
+  total_duration: number;
+  total_volume: number;
+};
+
+export type WorkoutStats = {
+  workoutCount: number;
+  totalSets: number;
+  totalDuration: number;
+  totalVolume: number;
+};
+
+export async function getWorkoutStats(
+  db: SQLiteDatabase,
+  sinceMs?: number,
+): Promise<WorkoutStats> {
+  const cutOff = sinceMs ?? 0;
+
+  const rows = await db.getFirstAsync<WorkoutStatsRow>(
+    `SELECT
+      (SELECT COUNT(*)
+        FROM workouts
+        WHERE completed_at >= ?
+      ) AS workout_count,
+
+        (SELECT COUNT(ws.id)
+          FROM workout_sets ws
+          JOIN workout_exercises we ON we.id = ws.workout_exercise_id
+          JOIN workouts w ON w.id = we.workout_id
+          WHERE w.completed_at >= ?
+        ) AS total_sets,
+
+        (SELECT COALESCE(
+          SUM(duration_ms), 0) 
+          FROM workouts WHERE completed_at >= ?) AS total_duration,
+
+        (SELECT SUM(ws.weight_grams * ws.reps)
+          FROM workout_sets ws
+          JOIN workout_exercises we ON we.id = ws.workout_exercise_id
+          JOIN workouts w ON w.id = we.workout_id
+          WHERE w.completed_at >= ?
+        ) AS total_volume
+      `,
+    [cutOff, cutOff, cutOff, cutOff],
+  );
+  console.log("rows:", rows);
+
+  return {
+    workoutCount: rows?.workout_count ?? 0,
+    totalSets: rows?.total_sets ?? 0,
+    totalDuration: rows?.total_duration ?? 0,
+    totalVolume: rows?.total_volume ?? 0,
+  };
+}
+
 export type ExercisePrBaselines = Partial<Record<string, ExercisePrBaseline>>;
 
-export async function getWorkoutHistory(db: SQLiteDatabase) {
+export async function getWorkoutHistory(db: SQLiteDatabase, sinceMs?: number) {
   const rows = await db.getAllAsync<HistoryRow>(
     `
 
@@ -85,12 +142,15 @@ export async function getWorkoutHistory(db: SQLiteDatabase) {
     LEFT JOIN workout_set_achievements wsa
       ON wsa.workout_set_id = ws.id
 
+    WHERE w.completed_at >= ?
+
     ORDER BY
       w.completed_at DESC,
       we.position ASC,
       ws.set_number ASC
 
     `,
+    [sinceMs ?? 0],
   );
 
   const workouts = new Map<string, any>();

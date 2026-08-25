@@ -1,66 +1,83 @@
 import { ThemedText } from "@/components/ui/ThemedText";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useEffect } from "react";
-import { Button, StyleSheet } from "react-native";
+import { getWorkoutStats, WorkoutStats } from "@/storage/workoutRepository";
+import { useQuery } from "@tanstack/react-query";
+import { useSQLiteContext } from "expo-sqlite";
+import { useState } from "react";
+import { StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import {
-  getBestWeightByExerciseName,
-  getCompletedExercises,
-} from "@/storage/completedExercises";
+
+const RANGES = [
+  { label: "30D", days: 30 },
+  { label: "90D", days: 90 },
+  { label: "1Y", days: 365 },
+] as const;
+
+type Range = (typeof RANGES)[number];
+
+const DEFAULT_STATS: WorkoutStats = {
+  workoutCount: 0,
+  totalSets: 0,
+  totalDuration: 0,
+  totalVolume: 0,
+};
 
 export default function Statistics() {
-  // const [data, setData] = useState([]);
+  const db = useSQLiteContext();
 
-  useEffect(() => {
-    const fetchData = async () => {
-      const res = await getBestWeightByExerciseName("Dumbell Bicep Curls");
+  const [range, setRange] = useState<Range>(RANGES[0]);
+  const [setCount, setSetCount] = useState<number>(0);
 
-      if (!res) return;
+  const { data: stats = DEFAULT_STATS } = useQuery({
+    queryKey: ["statisticsData", range],
+    queryFn: () => getWorkoutStats(db, Date.now() - range.days * 86_400_000),
+  });
 
-      console.log("res:", res);
-    };
+  function formatDuration(ms: number) {
+    const totalMinutes = Math.floor(ms / (1000 * 60));
+    const hours = Math.floor(totalMinutes / 60);
+    const minutes = totalMinutes % 60;
 
-    fetchData();
-  }, []);
+    if (hours > 0) return `${hours}h ${minutes}m`;
 
-  const checkBestWeight = async () => {
-    const res = await getBestWeightByExerciseName("Leg Press");
+    return `${minutes}m`;
+  }
 
-    console.log("fetched:", res);
-  };
+  console.log("statistics:", stats);
 
-  // const saveWeightProgression = async () => {
-  //   const res = await saveWeightProgressionByExerciseName(
-  //     "Dumbbell Bicep Curls",
-  //     "25",
-  //   );
-
-  //   console.log("saved:", res);
-  // };
-
-  const checkCompletedExercises = async () => {
-    const res = await getCompletedExercises();
-
-    console.log("completed exercises:", res);
-
-    console.log("Last completed exercise:", res[res.length - 1].exercises);
-  };
-
-  const checkStorage = async () => {
-    const allKeys = await AsyncStorage.getAllKeys();
-    const allData = await AsyncStorage.multiGet(allKeys);
-    console.log(allData);
-  };
-
+  const formattedDuration = formatDuration(stats.totalDuration);
   return (
     <SafeAreaView style={styles.container}>
       <ThemedText type="title">Statistics</ThemedText>
-      <Button title="Check Best Weight" onPress={checkBestWeight} />
-      <Button title="Check Storage" onPress={checkStorage} />
-      <Button
-        title="Check Completed exercises"
-        onPress={checkCompletedExercises}
-      />
+      <View style={styles.mainDataView}>
+        <View style={styles.mainDataSubView}>
+          <ThemedText type="defaultSemiBold">Workouts</ThemedText>
+          <ThemedText>{stats.workoutCount}</ThemedText>
+          <ThemedText lightColor="#20c74c" darkColor="#20c74c">
+            +1
+          </ThemedText>
+        </View>
+        <View style={styles.mainDataSubView}>
+          <ThemedText type="defaultSemiBold">Duration</ThemedText>
+          <ThemedText>{formattedDuration}</ThemedText>
+          <ThemedText lightColor="#20c74c" darkColor="#20c74c">
+            +1h 25m
+          </ThemedText>
+        </View>
+        <View style={styles.mainDataSubView}>
+          <ThemedText type="defaultSemiBold">Volume</ThemedText>
+          <ThemedText>{stats.totalVolume / 1000} kg</ThemedText>
+          <ThemedText lightColor="#20c74c" darkColor="#20c74c">
+            +35k kg
+          </ThemedText>
+        </View>
+        <View style={styles.mainDataSubView}>
+          <ThemedText type="defaultSemiBold">Sets</ThemedText>
+          <ThemedText>{stats.totalSets}</ThemedText>
+          <ThemedText lightColor="#20c74c" darkColor="#20c74c">
+            +25
+          </ThemedText>
+        </View>
+      </View>
     </SafeAreaView>
   );
 }
@@ -69,5 +86,19 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingHorizontal: 10,
+  },
+  mainDataView: {
+    display: "flex",
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 12,
+  },
+  mainDataSubView: {
+    alignItems: "flex-start",
+    borderColor: "gray",
+    borderWidth: 1,
+    borderRadius: 5,
+    width: "48%",
+    padding: 10,
   },
 });
