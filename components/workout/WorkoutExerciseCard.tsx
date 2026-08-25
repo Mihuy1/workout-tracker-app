@@ -13,7 +13,14 @@ import {
 } from "@/types/workout";
 import * as Haptics from "expo-haptics";
 import { memo, useState } from "react";
-import { Button, Pressable, StyleSheet, TextInput, View } from "react-native";
+import {
+  Button,
+  Keyboard,
+  Pressable,
+  StyleSheet,
+  TextInput,
+  View,
+} from "react-native";
 
 type WorkoutExerciseCardProps = {
   exercise: Exercise;
@@ -176,7 +183,7 @@ export const WorkoutExerciseCard = memo(function WorkoutExerciseCard({
         </ThemedText>
         <IconSymbol
           name="checkmark"
-          size={16}
+          size={18}
           color={iconColor}
           style={[styles.cell, styles.actionCol]}
         />
@@ -249,7 +256,10 @@ export const WorkoutExerciseCard = memo(function WorkoutExerciseCard({
 
             <Pressable
               disabled={!prBaseline}
+              style={styles.iconButton}
               onPress={() => {
+                Keyboard.dismiss();
+
                 const finalWeight =
                   item.weight !== "" ? item.weight : suggestedWeight;
 
@@ -314,7 +324,7 @@ export const WorkoutExerciseCard = memo(function WorkoutExerciseCard({
                       ? "trophy.fill"
                       : "checkmark"
                 }
-                size={18}
+                size={24}
                 color={
                   item.achievements.length > 0
                     ? "#D4AF37"
@@ -326,6 +336,7 @@ export const WorkoutExerciseCard = memo(function WorkoutExerciseCard({
             </Pressable>
             <View style={[styles.cell, styles.actionCol]}>
               <Pressable
+                style={styles.iconButton}
                 onPress={() => {
                   Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
                   removeSet(workoutName, item.id);
@@ -333,7 +344,7 @@ export const WorkoutExerciseCard = memo(function WorkoutExerciseCard({
                   clearRestTimer();
                 }}
               >
-                <IconSymbol name="minus.circle" size={18} color="red" />
+                <IconSymbol name="minus.circle" size={24} color="red" />
               </Pressable>
             </View>
           </View>
@@ -357,6 +368,13 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     borderWidth: 1,
     marginBottom: 8,
+  },
+
+  iconButton: {
+    width: 44,
+    height: 44,
+    alignItems: "center",
+    justifyContent: "center",
   },
 
   titleRow: {

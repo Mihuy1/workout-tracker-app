@@ -1,3 +1,5 @@
+import { LiveWorkoutTimer } from "@/components/timer/LiveWorkoutTimer";
+import { RestTimer } from "@/components/timer/RestTimer";
 import { useWorkoutState } from "@/contexts/workoutStateContext";
 import {
   getBaselines,
@@ -8,8 +10,6 @@ import { useQuery } from "@tanstack/react-query";
 import { router } from "expo-router";
 import { useSQLiteContext } from "expo-sqlite";
 import { Button, FlatList, StyleSheet, View } from "react-native";
-import { LiveWorkoutTimer } from "@/components/timer/LiveWorkoutTimer";
-import { RestTimer } from "@/components/timer/RestTimer";
 import { WorkoutExerciseCard } from "./WorkoutExerciseCard";
 
 const EMPTY_PREFILLED_SETS: SetRow[] = [];
@@ -45,6 +45,10 @@ export function ActiveWorkout({ routineId, startedAt }: ActiveWorkoutProps) {
           style={styles.exerciseList}
           data={exercises}
           keyExtractor={(item) => item.exerciseId}
+          automaticallyAdjustKeyboardInsets
+          keyboardDismissMode="interactive"
+          keyboardShouldPersistTaps="always"
+          contentContainerStyle={styles.exerciseListContent}
           renderItem={({ item }) => (
             <View style={{ marginBottom: 5 }}>
               <WorkoutExerciseCard
@@ -82,6 +86,9 @@ const styles = StyleSheet.create({
   },
   exerciseList: {
     flex: 1,
+  },
+  exerciseListContent: {
+    paddingBottom: 16,
   },
   headerRow: {
     flexDirection: "row",
