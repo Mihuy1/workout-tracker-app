@@ -10,7 +10,6 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSQLiteContext } from "expo-sqlite";
 import { useMemo, useState } from "react";
 import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
-import Animated, { LinearTransition } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export type CompletedWorkout = {
@@ -99,8 +98,7 @@ export default function TabTwoScreen() {
           const isExpanded = expandedId === item.id;
           return (
             <>
-              <Animated.View
-                layout={LinearTransition.duration(220)}
+              <View
                 style={[
                   styles.card,
                   {
@@ -138,7 +136,7 @@ export default function TabTwoScreen() {
                     itemId={item.id}
                   />
                 </Pressable>
-              </Animated.View>
+              </View>
             </>
           );
         }}

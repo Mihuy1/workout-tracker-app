@@ -6,7 +6,6 @@ import {
   ThemeProvider,
 } from "expo-router/react-navigation";
 import { StatusBar } from "expo-status-bar";
-import "react-native-reanimated";
 
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { SQLiteProvider } from "expo-sqlite";
