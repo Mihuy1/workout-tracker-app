@@ -61,38 +61,39 @@ export type WorkoutStats = {
 
 export async function getWorkoutStats(
   db: SQLiteDatabase,
-  sinceMs?: number,
+  fromMs?: number,
+  toMs?: number,
 ): Promise<WorkoutStats> {
-  const cutOff = sinceMs ?? 0;
+  const lower = fromMs ?? 0;
+  const upper = toMs ?? Number.MAX_SAFE_INTEGER;
 
   const rows = await db.getFirstAsync<WorkoutStatsRow>(
     `SELECT
       (SELECT COUNT(*)
         FROM workouts
-        WHERE completed_at >= ?
+        WHERE completed_at >= ? AND completed_at < ?
       ) AS workout_count,
 
         (SELECT COUNT(ws.id)
           FROM workout_sets ws
           JOIN workout_exercises we ON we.id = ws.workout_exercise_id
           JOIN workouts w ON w.id = we.workout_id
-          WHERE w.completed_at >= ?
+          WHERE w.completed_at >= ? AND w.completed_at < ?
         ) AS total_sets,
 
         (SELECT COALESCE(
           SUM(duration_ms), 0) 
-          FROM workouts WHERE completed_at >= ?) AS total_duration,
+          FROM workouts WHERE completed_at >= ? AND completed_at < ?) AS total_duration,
 
         (SELECT SUM(ws.weight_grams * ws.reps)
           FROM workout_sets ws
           JOIN workout_exercises we ON we.id = ws.workout_exercise_id
           JOIN workouts w ON w.id = we.workout_id
-          WHERE w.completed_at >= ?
+          WHERE w.completed_at >= ? AND w.completed_at < ?
         ) AS total_volume
       `,
-    [cutOff, cutOff, cutOff, cutOff],
+    [lower, upper, lower, upper, lower, upper, lower, upper],
   );
-  console.log("rows:", rows);
 
   return {
     workoutCount: rows?.workout_count ?? 0,

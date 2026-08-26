@@ -6,6 +6,26 @@ import { useState } from "react";
 import { StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+type DeltaProps = {
+  value: number;
+  formatValue?: (value: number) => string;
+  suffix?: string;
+};
+
+function Delta({ value, formatValue = String, suffix = "" }: DeltaProps) {
+  const color = value > 0 ? "#20c74c" : value < 0 ? "#e05555" : "#888";
+  const sign = value > 0 ? "+" : value < 0 ? "-" : "";
+  const formattedValue = formatValue(Math.abs(value));
+
+  return (
+    <ThemedText lightColor={color} darkColor={color}>
+      {sign}
+      {formattedValue}
+      {suffix ? ` ${suffix}` : ""}
+    </ThemedText>
+  );
+}
+
 const RANGES = [
   { label: "30D", days: 30 },
   { label: "90D", days: 90 },
@@ -25,12 +45,24 @@ export default function Statistics() {
   const db = useSQLiteContext();
 
   const [range, setRange] = useState<Range>(RANGES[0]);
-  const [setCount, setSetCount] = useState<number>(0);
 
-  const { data: stats = DEFAULT_STATS } = useQuery({
+  const { data } = useQuery({
     queryKey: ["statisticsData", range],
-    queryFn: () => getWorkoutStats(db, Date.now() - range.days * 86_400_000),
+    queryFn: async () => {
+      const now = Date.now();
+      const windowMs = range.days * 86_400_000;
+
+      const [current, previous] = await Promise.all([
+        getWorkoutStats(db, now - windowMs, now),
+        getWorkoutStats(db, now - 2 * windowMs, now - windowMs),
+      ]);
+
+      return { current, previous };
+    },
   });
+
+  const stats = data?.current ?? DEFAULT_STATS;
+  const previousStats = data?.previous ?? DEFAULT_STATS;
 
   function formatDuration(ms: number) {
     const totalMinutes = Math.floor(ms / (1000 * 60));
@@ -43,6 +75,7 @@ export default function Statistics() {
   }
 
   console.log("statistics:", stats);
+  console.log("previous stats:", previousStats);
 
   const formattedDuration = formatDuration(stats.totalDuration);
   return (
@@ -52,30 +85,28 @@ export default function Statistics() {
         <View style={styles.mainDataSubView}>
           <ThemedText type="defaultSemiBold">Workouts</ThemedText>
           <ThemedText>{stats.workoutCount}</ThemedText>
-          <ThemedText lightColor="#20c74c" darkColor="#20c74c">
-            +1
-          </ThemedText>
+          <Delta value={stats.workoutCount - previousStats.workoutCount} />
         </View>
         <View style={styles.mainDataSubView}>
           <ThemedText type="defaultSemiBold">Duration</ThemedText>
           <ThemedText>{formattedDuration}</ThemedText>
-          <ThemedText lightColor="#20c74c" darkColor="#20c74c">
-            +1h 25m
-          </ThemedText>
+          <Delta
+            value={stats.totalDuration - previousStats.totalDuration}
+            formatValue={formatDuration}
+          />
         </View>
         <View style={styles.mainDataSubView}>
           <ThemedText type="defaultSemiBold">Volume</ThemedText>
           <ThemedText>{stats.totalVolume / 1000} kg</ThemedText>
-          <ThemedText lightColor="#20c74c" darkColor="#20c74c">
-            +35k kg
-          </ThemedText>
+          <Delta
+            value={(stats.totalVolume - previousStats.totalVolume) / 1000}
+            suffix="kg"
+          />
         </View>
         <View style={styles.mainDataSubView}>
           <ThemedText type="defaultSemiBold">Sets</ThemedText>
           <ThemedText>{stats.totalSets}</ThemedText>
-          <ThemedText lightColor="#20c74c" darkColor="#20c74c">
-            +25
-          </ThemedText>
+          <Delta value={stats.totalSets - previousStats.totalSets} />
         </View>
       </View>
     </SafeAreaView>
