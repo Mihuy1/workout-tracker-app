@@ -1,29 +1,14 @@
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import { ThemedText } from "@/components/ui/ThemedText";
+import { APPEARANCE_OPTIONS } from "@/constants/theme";
+import { useThemeProvider } from "@/contexts/themeContext";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { useThemeColor } from "@/hooks/use-theme-color";
 import { useState } from "react";
-import {
-  Appearance,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  View,
-} from "react-native";
-
-const APPEARANCE_OPTIONS = ["System", "Light", "Dark"] as const;
-
-type AppearanceType = (typeof APPEARANCE_OPTIONS)[number];
-
-const COLOR_SCHEMES: Record<AppearanceType, "light" | "dark" | "unspecified"> =
-  {
-    System: "unspecified",
-    Light: "light",
-    Dark: "dark",
-  };
+import { Pressable, ScrollView, StyleSheet, View } from "react-native";
 
 export default function TabThreeScreen() {
-  const [appearance, setAppearance] = useState<AppearanceType>("System");
+  const { appearance, setTheme } = useThemeProvider();
   const [appearanceOpen, setAppearanceOpen] = useState(false);
 
   const colorScheme = useColorScheme();
@@ -39,8 +24,7 @@ export default function TabThreeScreen() {
         style={[
           styles.header,
           {
-            backgroundColor:
-              colorScheme === "dark" ? "#353636" : "#D0D0D0",
+            backgroundColor: colorScheme === "dark" ? "#353636" : "#D0D0D0",
           },
         ]}
       >
@@ -92,10 +76,9 @@ export default function TabThreeScreen() {
                   return (
                     <Pressable
                       key={option}
-                      onPress={() => {
-                        setAppearance(option);
+                      onPress={async () => {
+                        setTheme(option);
                         setAppearanceOpen(false);
-                        Appearance.setColorScheme(COLOR_SCHEMES[option]);
                       }}
                       style={({ pressed }) => [
                         styles.dropdownOption,
