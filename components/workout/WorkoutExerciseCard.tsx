@@ -153,7 +153,7 @@ export const WorkoutExerciseCard = memo(function WorkoutExerciseCard({
       <View style={styles.titleRow}>
         <ThemedText type="defaultSemiBold">{workoutName}</ThemedText>
 
-        <Pressable onPress={() => setConfirmVisible(true)}>
+        <Pressable hitSlop={10} onPress={() => setConfirmVisible(true)}>
           <IconSymbol name="x.circle" size={24} color="red" />
         </Pressable>
       </View>

@@ -1,3 +1,4 @@
+import { IconSymbol } from "@/components/ui/IconSymbol";
 import { Colors } from "@/constants/theme";
 import { useThemeColor } from "@/hooks/use-theme-color";
 import * as Haptics from "expo-haptics";
@@ -12,7 +13,6 @@ import {
   useColorScheme,
   View,
 } from "react-native";
-import { IconSymbol } from "@/components/ui/IconSymbol";
 
 interface RestTimePickerProps {
   restTime: number;
@@ -66,7 +66,7 @@ export const RestTimePicker = ({
         justifyContent: "center",
       }}
     >
-      <Pressable onPress={handleOpen}>
+      <Pressable hitSlop={10} onPress={handleOpen}>
         <IconSymbol name="timer" color={useThemeColor({}, "iconColor")} />
       </Pressable>
       <Modal
@@ -163,5 +163,11 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0,0,0,0.35)",
     justifyContent: "center",
     alignItems: "center",
+  },
+  iconButton: {
+    width: 44,
+    height: 44,
+    alignItems: "center",
+    justifyContent: "center",
   },
 });
