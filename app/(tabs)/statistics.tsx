@@ -44,7 +44,7 @@ const DEFAULT_STATS: WorkoutStats = {
 export default function Statistics() {
   const db = useSQLiteContext();
 
-  const [range, setRange] = useState<Range>(RANGES[0]);
+  const [range] = useState<Range>(RANGES[0]);
 
   const { data } = useQuery({
     queryKey: ["statisticsData", range],
