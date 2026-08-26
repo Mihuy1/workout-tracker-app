@@ -18,8 +18,11 @@ export const COLOR_SCHEMES: Record<
   Dark: "dark",
 };
 
-const tintColorLight = "#0a7ea4";
-const tintColorDark = "#fff";
+// const tintColorLight = "#0a7ea4";
+// const tintColorDark = "#fff";
+
+const tintColorLight = "#007AFF";
+const tintColorDark = "#0A84FF";
 
 export const Colors = {
   light: {
