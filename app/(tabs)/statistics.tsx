@@ -1,9 +1,15 @@
+import { IconSymbol } from "@/components/ui/IconSymbol";
 import { ThemedText } from "@/components/ui/ThemedText";
-import { getWorkoutStats, WorkoutStats } from "@/storage/workoutRepository";
+import { useThemeColor } from "@/hooks/use-theme-color";
+import {
+  getLatestExercises,
+  getWorkoutStats,
+  WorkoutStats,
+} from "@/storage/workoutRepository";
 import { useQuery } from "@tanstack/react-query";
 import { useSQLiteContext } from "expo-sqlite";
 import { useState } from "react";
-import { StyleSheet, View } from "react-native";
+import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 type DeltaProps = {
@@ -42,6 +48,8 @@ const DEFAULT_STATS: WorkoutStats = {
 };
 
 export default function Statistics() {
+  const tintColor = useThemeColor({}, "tint");
+
   const db = useSQLiteContext();
 
   const [range] = useState<Range>(RANGES[0]);
@@ -49,15 +57,20 @@ export default function Statistics() {
   const { data } = useQuery({
     queryKey: ["statisticsData", range],
     queryFn: async () => {
-      const now = Date.now();
-      const windowMs = range.days * 86_400_000;
+      try {
+        const now = Date.now();
+        const windowMs = range.days * 86_400_000;
 
-      const [current, previous] = await Promise.all([
-        getWorkoutStats(db, now - windowMs, now),
-        getWorkoutStats(db, now - 2 * windowMs, now - windowMs),
-      ]);
+        const [current, previous, exercises] = await Promise.all([
+          getWorkoutStats(db, now - windowMs, now),
+          getWorkoutStats(db, now - 2 * windowMs, now - windowMs),
+          getLatestExercises(db),
+        ]);
 
-      return { current, previous };
+        return { current, previous, exercises };
+      } catch (error) {
+        console.error("error:", error);
+      }
     },
   });
 
@@ -74,8 +87,7 @@ export default function Statistics() {
     return `${minutes}m`;
   }
 
-  console.log("statistics:", stats);
-  console.log("previous stats:", previousStats);
+  if (!data) return <Text>Loading...</Text>;
 
   const formattedDuration = formatDuration(stats.totalDuration);
   return (
@@ -109,6 +121,29 @@ export default function Statistics() {
           <Delta value={stats.totalSets - previousStats.totalSets} />
         </View>
       </View>
+      <View style={styles.exerciseList}>
+        <FlatList
+          data={data.exercises}
+          keyExtractor={(item) => item.exercise_id}
+          renderItem={({ item }) => (
+            <Pressable style={styles.row}>
+              <View style={styles.exerciseListView}>
+                <ThemedText type="defaultSemiBold">
+                  {item.exercise_name}
+                </ThemedText>
+                <ThemedText numberOfLines={1}>{item.mechanic}</ThemedText>
+              </View>
+              <View accessible={false}>
+                <IconSymbol
+                  style={styles.arrowIcon}
+                  name="arrowshape.right.fill"
+                  color={tintColor}
+                />
+              </View>
+            </Pressable>
+          )}
+        ></FlatList>
+      </View>
     </SafeAreaView>
   );
 }
@@ -118,6 +153,7 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 10,
   },
+
   mainDataView: {
     display: "flex",
     flexDirection: "row",
@@ -131,5 +167,27 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     width: "48%",
     padding: 10,
+  },
+  row: {
+    display: "flex",
+    flexDirection: "row",
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "gray",
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    marginBottom: 10,
+  },
+  exerciseList: { paddingTop: 10 },
+  exerciseListView: {
+    flex: 1,
+    minWidth: 0,
+  },
+  arrowIcon: {
+    width: 32,
+    height: 40,
+    alignItems: "center",
+    justifyContent: "center",
   },
 });
