@@ -59,6 +59,22 @@ export type WorkoutStats = {
   totalVolume: number;
 };
 
+type LatestExerciseType = {
+  exercise_id: string;
+  exercise_name: string;
+  mechanic: string;
+};
+
+export async function getLatestExercises(db: SQLiteDatabase) {
+  const rows = await db.getAllAsync<LatestExerciseType>(
+    `SELECT DISTINCT exercise_id, exercise_name, mechanic FROM workout_exercises`,
+  );
+
+  console.log("Rows:", rows);
+
+  return rows;
+}
+
 export async function getWorkoutStats(
   db: SQLiteDatabase,
   fromMs?: number,
