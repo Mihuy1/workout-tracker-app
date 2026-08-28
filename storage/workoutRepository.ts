@@ -1,5 +1,5 @@
 import { Exercise, ExercisePrBaseline, SetRow } from "@/types/workout";
-import type { SQLiteDatabase } from "expo-sqlite";
+import { SQLiteDatabase } from "expo-sqlite";
 
 type HistoryRow = {
   workout_id: string;
@@ -25,12 +25,6 @@ type HistoryRow = {
   new_best_value: number | null;
 };
 
-export type LatestExercisePerformance = {
-  exerciseId: string;
-  restTime: number;
-  sets: SetRow[];
-};
-
 type LatestPerformanceRow = {
   exercise_id: string;
   rest_seconds: number;
@@ -52,6 +46,31 @@ type WorkoutStatsRow = {
   total_volume: number;
 };
 
+type LatestExerciseType = {
+  exercise_id: string;
+  exercise_name: string;
+  mechanic: string;
+};
+
+type ExerciseStatsType = {
+  completed_at: number;
+  exercise_id: string;
+  reps: number;
+  weight_grams: number;
+};
+
+type ChartArrayType = {
+  value: number;
+  label: string;
+  dataPointText: string;
+};
+
+export type LatestExercisePerformance = {
+  exerciseId: string;
+  restTime: number;
+  sets: SetRow[];
+};
+
 export type WorkoutStats = {
   workoutCount: number;
   totalSets: number;
@@ -59,18 +78,14 @@ export type WorkoutStats = {
   totalVolume: number;
 };
 
-type LatestExerciseType = {
-  exercise_id: string;
-  exercise_name: string;
-  mechanic: string;
-};
+export type ExercisePrBaselines = Partial<Record<string, ExercisePrBaseline>>;
 
 export async function getLatestExercises(db: SQLiteDatabase) {
   const rows = await db.getAllAsync<LatestExerciseType>(
     `SELECT DISTINCT exercise_id, exercise_name, mechanic FROM workout_exercises`,
   );
 
-  console.log("Rows:", rows);
+  console.log("rows:", rows);
 
   return rows;
 }
@@ -119,7 +134,86 @@ export async function getWorkoutStats(
   };
 }
 
-export type ExercisePrBaselines = Partial<Record<string, ExercisePrBaseline>>;
+export async function getExerciseStats(db: SQLiteDatabase, exerciseId: string) {
+  const rows = await db.getAllAsync<ExerciseStatsType>(
+    `
+    SELECT 
+
+    w.completed_at,
+
+    we.exercise_id,
+    ws.weight_grams,
+    ws.reps
+
+    FROM workouts w
+
+    LEFT JOIN workout_exercises we ON we.workout_id = w.id
+
+    LEFT JOIN workout_sets ws ON ws.workout_exercise_id = we.id
+
+    WHERE we.exercise_id = ?
+
+    ORDER BY w.completed_at ASC
+    `,
+    [exerciseId],
+  );
+
+  const heaviestWeightMap = new Map<number, number>();
+  const oneRepMaxMap = new Map<number, number>();
+
+  for (const row of rows) {
+    const weightKg = row.weight_grams / 1000;
+    const oneRepMax = weightKg * (1 + row.reps / 30);
+
+    const prevHeaviestWeight = heaviestWeightMap.get(row.completed_at) ?? 0;
+    const prevOneRepMax = oneRepMaxMap.get(row.completed_at) ?? 0;
+
+    heaviestWeightMap.set(
+      row.completed_at,
+      Math.max(prevHeaviestWeight, weightKg),
+    );
+
+    oneRepMaxMap.set(row.completed_at, Math.max(prevOneRepMax, oneRepMax));
+  }
+
+  const heaviestWeights: ChartArrayType[] = [];
+  const oneRepMaxes: ChartArrayType[] = [];
+
+  heaviestWeightMap.forEach((value, key) => {
+    const date = new Date(key);
+    const text = value.toString();
+    heaviestWeights.push({
+      value: value,
+      label: new Date(date).toLocaleDateString("en-GB", {
+        day: "numeric",
+        month: "short",
+      }),
+      dataPointText: `${text} kg`,
+    });
+  });
+
+  oneRepMaxMap.forEach((value, key) => {
+    const date = new Date(key);
+    const text = value.toFixed(2).toString();
+
+    oneRepMaxes.push({
+      value: Number(value.toFixed(2)),
+      label: new Date(date).toLocaleDateString("en-GB", {
+        day: "numeric",
+        month: "short",
+      }),
+      dataPointText: `${text} kg`,
+    });
+  });
+
+  console.log("HeaviestWeight:", heaviestWeights);
+  console.log("OneRepMaxes:", oneRepMaxes);
+
+  return {
+    heaviestWeight: heaviestWeights,
+    oneRepMax: oneRepMaxes,
+  };
+}
 
 export async function getWorkoutHistory(db: SQLiteDatabase, sinceMs?: number) {
   const rows = await db.getAllAsync<HistoryRow>(

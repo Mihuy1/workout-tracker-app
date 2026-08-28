@@ -2,11 +2,13 @@ import { IconSymbol } from "@/components/ui/IconSymbol";
 import { ThemedText } from "@/components/ui/ThemedText";
 import { useThemeColor } from "@/hooks/use-theme-color";
 import {
+  getExerciseStats,
   getLatestExercises,
   getWorkoutStats,
   WorkoutStats,
 } from "@/storage/workoutRepository";
 import { useQuery } from "@tanstack/react-query";
+import { router } from "expo-router";
 import { useSQLiteContext } from "expo-sqlite";
 import { useState } from "react";
 import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
@@ -61,10 +63,11 @@ export default function Statistics() {
         const now = Date.now();
         const windowMs = range.days * 86_400_000;
 
-        const [current, previous, exercises] = await Promise.all([
+        const [current, previous, exercises, test] = await Promise.all([
           getWorkoutStats(db, now - windowMs, now),
           getWorkoutStats(db, now - 2 * windowMs, now - windowMs),
           getLatestExercises(db),
+          getExerciseStats(db, "Dumbbell_Bench_Press"),
         ]);
 
         return { current, previous, exercises };
@@ -126,7 +129,18 @@ export default function Statistics() {
           data={data.exercises}
           keyExtractor={(item) => item.exercise_id}
           renderItem={({ item }) => (
-            <Pressable style={styles.row}>
+            <Pressable
+              style={styles.row}
+              onPress={() =>
+                router.push({
+                  pathname: "../exercise-progress",
+                  params: {
+                    exerciseId: item.exercise_id,
+                    exerciseName: item.exercise_name,
+                  },
+                })
+              }
+            >
               <View style={styles.exerciseListView}>
                 <ThemedText type="defaultSemiBold">
                   {item.exercise_name}
