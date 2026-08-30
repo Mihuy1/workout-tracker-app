@@ -2,7 +2,6 @@ import { IconSymbol } from "@/components/ui/IconSymbol";
 import { ThemedText } from "@/components/ui/ThemedText";
 import { useThemeColor } from "@/hooks/use-theme-color";
 import {
-  getExerciseStats,
   getLatestExercises,
   getWorkoutStats,
   WorkoutStats,
@@ -63,11 +62,10 @@ export default function Statistics() {
         const now = Date.now();
         const windowMs = range.days * 86_400_000;
 
-        const [current, previous, exercises, test] = await Promise.all([
+        const [current, previous, exercises] = await Promise.all([
           getWorkoutStats(db, now - windowMs, now),
           getWorkoutStats(db, now - 2 * windowMs, now - windowMs),
           getLatestExercises(db),
-          getExerciseStats(db, "Dumbbell_Bench_Press"),
         ]);
 
         return { current, previous, exercises };
@@ -126,6 +124,7 @@ export default function Statistics() {
       </View>
       <View style={styles.exerciseList}>
         <FlatList
+          contentContainerStyle={styles.listContent}
           data={data.exercises}
           keyExtractor={(item) => item.exercise_id}
           renderItem={({ item }) => (
@@ -193,7 +192,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     marginBottom: 10,
   },
-  exerciseList: { paddingTop: 10 },
+  exerciseList: { flex: 1, paddingTop: 10 },
   exerciseListView: {
     flex: 1,
     minWidth: 0,
@@ -203,5 +202,8 @@ const styles = StyleSheet.create({
     height: 40,
     alignItems: "center",
     justifyContent: "center",
+  },
+  listContent: {
+    paddingBottom: 20,
   },
 });
