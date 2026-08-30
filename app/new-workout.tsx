@@ -150,12 +150,15 @@ export default function NewWorkoutScreen() {
 
       return true;
     },
-    onSuccess: (didChangePresets) => {
+    onSuccess: (_data, variables) => {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
 
-      if (didChangePresets) {
+      queryClient.invalidateQueries({ queryKey: ["exerciseProgress"] });
+      queryClient.invalidateQueries({ queryKey: ["statisticsData"] });
+      queryClient.invalidateQueries({ queryKey: ["history"] });
+
+      if (variables.presetName && variables.shouldUpdatePreset) {
         queryClient.invalidateQueries({ queryKey: ["presets"] });
-        queryClient.invalidateQueries({ queryKey: ["history"] });
       }
 
       beginExit();
