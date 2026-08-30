@@ -36,6 +36,22 @@ export function ExerciseProgressChart({
     return <ThemedText>No exercise history yet.</ThemedText>;
   }
 
+  const data = dataType === "Heaviest Weight" ? heaviestWeight : oneRepMax;
+  const yAxisLabelWidth = 55;
+  const chartWidth = Math.max(0, containerWidth - yAxisLabelWidth);
+
+  const initialSpacing = data.length === 1 ? chartWidth / 2 : 25;
+  const endSpacing = 25;
+  const minSpacing = 50;
+
+  const calculatedSpacing =
+    data.length > 1
+      ? (chartWidth - initialSpacing - endSpacing) / (data.length - 1)
+      : 0;
+
+  const spacing = Math.max(minSpacing, calculatedSpacing);
+  const shouldScroll = data.length > 1 && calculatedSpacing < minSpacing;
+
   return (
     <View
       style={[
@@ -53,11 +69,6 @@ export function ExerciseProgressChart({
           />
           <ThemedText>{dataType}</ThemedText>
         </View>
-
-        {/* <View style={styles.legendItem}>
-          <View style={[styles.legendColor, { backgroundColor: "#f59e0b" }]} />
-          <ThemedText>Estimated 1RM</ThemedText>
-        </View> */}
       </View>
 
       <View
@@ -67,18 +78,20 @@ export function ExerciseProgressChart({
       >
         {containerWidth > 0 && (
           <LineChart
-            data={dataType === "Heaviest Weight" ? heaviestWeight : oneRepMax}
+            data={data}
             height={220}
-            width={containerWidth - 55}
-            color1={primaryColor}
+            width={chartWidth}
+            rulesLength={chartWidth}
+            color={primaryColor}
             dataPointsColor1={primaryColor}
-            thickness1={3}
-            adjustToWidth
-            disableScroll
-            initialSpacing={10}
-            endSpacing={0}
+            thickness={3}
+            spacing={spacing}
+            initialSpacing={initialSpacing}
+            endSpacing={endSpacing}
+            disableScroll={!shouldScroll}
+            scrollToEnd={shouldScroll}
             yAxisLabelSuffix=" kg"
-            yAxisLabelWidth={55}
+            yAxisLabelWidth={yAxisLabelWidth}
             yAxisTextStyle={{ color: textColor }}
             xAxisLabelTextStyle={{ color: textColor }}
             rulesColor={borderColor}
