@@ -327,7 +327,7 @@ export const WorkoutExerciseCard = memo(function WorkoutExerciseCard({
                 size={24}
                 color={
                   item.achievements.length > 0
-                    ? "#D4AF37"
+                    ? "#f5cc46"
                     : item.complete
                       ? successColor
                       : iconColor

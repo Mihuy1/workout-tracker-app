@@ -1,7 +1,8 @@
 import { useThemeColor } from "@/hooks/use-theme-color";
 import { useState } from "react";
-import { StyleSheet, View } from "react-native";
+import { Platform, PlatformColor, StyleSheet, View } from "react-native";
 import { LineChart } from "react-native-gifted-charts";
+import { CustomButton } from "../ui/CustomButton";
 import { ThemedText } from "../ui/ThemedText";
 
 type ExerciseProgressProps = {
@@ -28,6 +29,10 @@ export function ExerciseProgressChart({
   const textColor = useThemeColor({}, "mutedText");
   const borderColor = useThemeColor({}, "border");
   const surfaceColor = useThemeColor({}, "surface");
+  const buttonBackground = useThemeColor({}, "surfaceMuted");
+  const tintColor = useThemeColor({}, "tint");
+  const buttonTextColor =
+    Platform.OS === "ios" ? PlatformColor("systemBlue") : tintColor;
 
   const [dataType, setDataType] = useState<ExerciseDataType>("Heaviest Weight");
   const [containerWidth, setContainerWidth] = useState(0);
@@ -83,7 +88,7 @@ export function ExerciseProgressChart({
             width={chartWidth}
             rulesLength={chartWidth}
             color={primaryColor}
-            dataPointsColor1={primaryColor}
+            dataPointsColor={primaryColor}
             thickness={3}
             spacing={spacing}
             initialSpacing={initialSpacing}
@@ -105,6 +110,28 @@ export function ExerciseProgressChart({
             isAnimated
           />
         )}
+      </View>
+      <View style={styles.buttonRow}>
+        <CustomButton
+          title="Heaviest Weight"
+          onPress={() => setDataType("Heaviest Weight")}
+          backgroundColor={
+            dataType && dataType === "Heaviest Weight"
+              ? primaryColor
+              : buttonBackground
+          }
+          textColor={dataType === "Heaviest Weight" ? "white" : buttonTextColor}
+        />
+        <CustomButton
+          title="One Rep Max"
+          onPress={() => setDataType("One Rep Max")}
+          backgroundColor={
+            dataType && dataType === "One Rep Max"
+              ? primaryColor
+              : buttonBackground
+          }
+          textColor={dataType === "One Rep Max" ? "white" : buttonTextColor}
+        />
       </View>
     </View>
   );
@@ -133,5 +160,12 @@ const styles = StyleSheet.create({
     width: 12,
     height: 12,
     borderRadius: 6,
+  },
+  buttonRow: {
+    display: "flex",
+    flexDirection: "row",
+    columnGap: 20,
+    marginLeft: 12,
+    marginTop: 12,
   },
 });

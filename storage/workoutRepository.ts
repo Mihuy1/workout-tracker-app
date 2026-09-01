@@ -80,12 +80,27 @@ export type WorkoutStats = {
 
 export type ExercisePrBaselines = Partial<Record<string, ExercisePrBaseline>>;
 
+export type CompletedExercise = {
+  exerciseId: string;
+  name: string;
+  mechanic: string | null;
+  sets: SetRow[];
+};
+
+export type CompletedWorkout = {
+  id: string;
+  workoutName: string;
+  date: string;
+  workoutDurationMs: number;
+  totalVolumeGrams: number;
+  prCount: number;
+  exercises: CompletedExercise[];
+};
+
 export async function getLatestExercises(db: SQLiteDatabase) {
   const rows = await db.getAllAsync<LatestExerciseType>(
     `SELECT DISTINCT exercise_id, exercise_name, mechanic FROM workout_exercises`,
   );
-
-  console.log("rows:", rows);
 
   return rows;
 }
@@ -206,19 +221,18 @@ export async function getExerciseStats(db: SQLiteDatabase, exerciseId: string) {
     });
   });
 
-  console.log("HeaviestWeight:", heaviestWeights);
-  console.log("OneRepMaxes:", oneRepMaxes);
-
   return {
     heaviestWeight: heaviestWeights,
     oneRepMax: oneRepMaxes,
   };
 }
 
-export async function getWorkoutHistory(db: SQLiteDatabase, sinceMs?: number) {
+export async function getWorkoutHistory(
+  db: SQLiteDatabase,
+  sinceMs?: number,
+): Promise<CompletedWorkout[]> {
   const rows = await db.getAllAsync<HistoryRow>(
     `
-
     SELECT
       w.id AS workout_id,
       w.name AS workout_name,
@@ -264,8 +278,8 @@ export async function getWorkoutHistory(db: SQLiteDatabase, sinceMs?: number) {
     [sinceMs ?? 0],
   );
 
-  const workouts = new Map<string, any>();
-  const exerciseRows = new Map<number, any>();
+  const workouts = new Map<string, CompletedWorkout>();
+  const exerciseRows = new Map<number, CompletedExercise>();
   const setRows = new Map<number, SetRow>();
 
   for (const row of rows) {
@@ -277,6 +291,8 @@ export async function getWorkoutHistory(db: SQLiteDatabase, sinceMs?: number) {
         workoutName: row.workout_name,
         date: new Date(row.completed_at).toISOString(),
         workoutDurationMs: row.duration_ms,
+        totalVolumeGrams: 0,
+        prCount: 0,
         exercises: [],
       };
 
@@ -326,6 +342,8 @@ export async function getWorkoutHistory(db: SQLiteDatabase, sinceMs?: number) {
 
       setRows.set(row.set_id, set);
       exercise.sets.push(set);
+
+      workout.totalVolumeGrams = row.weight_grams * row.reps;
     }
 
     if (
@@ -339,6 +357,7 @@ export async function getWorkoutHistory(db: SQLiteDatabase, sinceMs?: number) {
         previousBestValue: row.previous_best,
         newBestValue: row.new_best_value,
       });
+      workout.prCount += set.achievements.length;
     }
   }
 

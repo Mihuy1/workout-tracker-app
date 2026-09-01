@@ -1,8 +1,8 @@
 import { CompletedWorkout } from "@/app/(tabs)/history";
+import { IconSymbol } from "@/components/ui/IconSymbol";
+import { ThemedText } from "@/components/ui/ThemedText";
 import { useThemeColor } from "@/hooks/use-theme-color";
 import { StyleSheet, View } from "react-native";
-import { ThemedText } from "@/components/ui/ThemedText";
-import { IconSymbol } from "@/components/ui/IconSymbol";
 
 type WorkoutHistoryCardProps = {
   exercises: CompletedWorkout["exercises"];
@@ -101,7 +101,7 @@ export function WorkoutHistoryCard({
                         <IconSymbol
                           name="trophy.fill"
                           size={18}
-                          color="#D4AF37"
+                          color="#f5cc46"
                         />
                       )}
                     </View>
