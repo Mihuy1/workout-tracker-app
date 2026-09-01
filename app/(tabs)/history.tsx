@@ -1,16 +1,15 @@
-import { ThemedText } from "@/components/ui/ThemedText";
-import { CustomModal } from "@/components/ui/CustomModal";
-import { IconSymbol } from "@/components/ui/IconSymbol";
 import { WorkoutHistoryCard } from "@/components/history/WorkoutHistoryCard";
 import { WorkoutTimer } from "@/components/timer/WorkoutTimer";
+import { CustomModal } from "@/components/ui/CustomModal";
+import { IconSymbol } from "@/components/ui/IconSymbol";
+import { ThemedText } from "@/components/ui/ThemedText";
 import { useThemeColor } from "@/hooks/use-theme-color";
 import { deleteWorkout, getWorkoutHistory } from "@/storage/workoutRepository";
 import { SetRow } from "@/types/workout";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSQLiteContext } from "expo-sqlite";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
-import Animated, { LinearTransition } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export type CompletedWorkout = {
@@ -54,14 +53,6 @@ export default function TabTwoScreen() {
     queryFn: fetchHistory,
   });
 
-  const orderedHistory = useMemo(
-    () =>
-      [...historyData].sort(
-        (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
-      ),
-    [historyData],
-  );
-
   const deleteMutation = useMutation({
     mutationFn: (id: string) => deleteWorkout(db, id),
     onSuccess: () => {
@@ -93,14 +84,13 @@ export default function TabTwoScreen() {
       />
 
       <FlatList
-        data={orderedHistory}
+        data={historyData}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => {
           const isExpanded = expandedId === item.id;
           return (
             <>
-              <Animated.View
-                layout={LinearTransition.duration(220)}
+              <View
                 style={[
                   styles.card,
                   {
@@ -117,10 +107,6 @@ export default function TabTwoScreen() {
                   }}
                 >
                   <View style={styles.titleContainer}>
-                    <ThemedText type="default" style={styles.title}>
-                      {item.workoutName}
-                    </ThemedText>
-                    <WorkoutTimer elapsedTimeMs={item.workoutDurationMs} />
                     <View style={styles.removeView}>
                       <Pressable
                         onPress={(e) => {
@@ -132,13 +118,44 @@ export default function TabTwoScreen() {
                       </Pressable>
                     </View>
                   </View>
+                  <ThemedText type="default" style={styles.title}>
+                    {item.workoutName}
+                  </ThemedText>
+                  <View style={styles.statsRow}>
+                    <View style={styles.statColumn}>
+                      <ThemedText type="small">Duration</ThemedText>
+                      <WorkoutTimer elapsedTimeMs={item.workoutDurationMs} />
+                    </View>
+
+                    <View style={styles.statColumn}>
+                      <ThemedText type="small">Volume</ThemedText>
+                      <ThemedText>{item.totalVolumeGrams / 1000} kg</ThemedText>
+                    </View>
+
+                    {item.prCount > 0 && (
+                      <View style={styles.statColumn}>
+                        <ThemedText type="small">Records</ThemedText>
+                        <View style={styles.recordContainer}>
+                          <IconSymbol
+                            name="trophy.fill"
+                            color="#f5cc46"
+                            size={18}
+                          />
+                          <ThemedText>{item.prCount}</ThemedText>
+                        </View>
+                      </View>
+                    )}
+                  </View>
+                  <View
+                    style={[styles.separator, { backgroundColor: cardBorder }]}
+                  />
                   <WorkoutHistoryCard
                     exercises={item.exercises}
                     expandId={expandedId}
                     itemId={item.id}
                   />
                 </Pressable>
-              </Animated.View>
+              </View>
             </>
           );
         }}
@@ -166,6 +183,7 @@ const styles = StyleSheet.create({
     marginVertical: 8,
     borderRadius: 12,
     borderWidth: 1,
+
     // Add shadow for depth
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -180,16 +198,28 @@ const styles = StyleSheet.create({
   subtitle: {
     opacity: 0.7,
   },
-  headerImage: {
-    color: "#808080",
-    bottom: -90,
-    left: -35,
-    position: "absolute",
-  },
+
   titleContainer: {
-    position: "relative",
+    display: "flex",
     flexDirection: "row",
     gap: 4,
     alignItems: "center",
+  },
+  recordContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+  },
+  statsRow: {
+    flexDirection: "row",
+    columnGap: 28,
+    alignItems: "flex-start",
+  },
+  statColumn: {
+    minWidth: 72,
+  },
+  separator: {
+    height: StyleSheet.hairlineWidth,
+    marginVertical: 12,
   },
 });

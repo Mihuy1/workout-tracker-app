@@ -150,12 +150,15 @@ export default function NewWorkoutScreen() {
 
       return true;
     },
-    onSuccess: (didChangePresets) => {
+    onSuccess: (_data, variables) => {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
 
-      if (didChangePresets) {
+      queryClient.invalidateQueries({ queryKey: ["exerciseProgress"] });
+      queryClient.invalidateQueries({ queryKey: ["statisticsData"] });
+      queryClient.invalidateQueries({ queryKey: ["history"] });
+
+      if (variables.presetName && variables.shouldUpdatePreset) {
         queryClient.invalidateQueries({ queryKey: ["presets"] });
-        queryClient.invalidateQueries({ queryKey: ["history"] });
       }
 
       beginExit();
@@ -353,12 +356,12 @@ export default function NewWorkoutScreen() {
 
       <CustomModal
         visible={saveAsPresetVisible}
-        title="Save As Preset?"
+        title="Save As Preset"
         message="Would you like to save this workout as preset?"
         primaryButtonText="Save Preset"
         secondaryButtonText="Skip"
+        secondaryButtonRed
         prompt
-        defaultValue="Leg Day"
         placeHolderText="Preset Name"
         onRequestClose={() => setSaveAsPresetVisible(false)}
         onPrimary={(name) => {

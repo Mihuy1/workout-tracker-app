@@ -1,5 +1,3 @@
-import { ThemedText } from "./ThemedText";
-import React from "react";
 import {
   Platform,
   Pressable,
@@ -10,6 +8,7 @@ import {
   type TextStyle,
   type ViewStyle,
 } from "react-native";
+import { ThemedText } from "./ThemedText";
 
 export type CustomButtonProps = {
   title: string;

@@ -29,6 +29,7 @@ const MAPPING = {
   "clock.arrow.circlepath": "history",
   "chart.bar.fill": "bar-chart",
   "moon.fill": "dark-mode",
+  "arrowshape.right.fill": "arrow-right",
 } as const satisfies IconMapping;
 
 type IconSymbolName = keyof typeof MAPPING;

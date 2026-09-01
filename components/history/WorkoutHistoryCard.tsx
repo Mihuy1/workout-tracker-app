@@ -1,13 +1,8 @@
 import { CompletedWorkout } from "@/app/(tabs)/history";
+import { IconSymbol } from "@/components/ui/IconSymbol";
+import { ThemedText } from "@/components/ui/ThemedText";
 import { useThemeColor } from "@/hooks/use-theme-color";
 import { StyleSheet, View } from "react-native";
-import Animated, {
-  FadeIn,
-  FadeOut,
-  LinearTransition,
-} from "react-native-reanimated";
-import { ThemedText } from "@/components/ui/ThemedText";
-import { IconSymbol } from "@/components/ui/IconSymbol";
 
 type WorkoutHistoryCardProps = {
   exercises: CompletedWorkout["exercises"];
@@ -29,26 +24,17 @@ export function WorkoutHistoryCard({
   const rowEven = useThemeColor({}, "surface");
 
   return (
-    <Animated.View layout={LinearTransition.duration(220)}>
+    <View>
       {exercises.map((exercise, index) => (
-        <Animated.View
-          key={`${exercise.name}-${index}`}
-          layout={LinearTransition.duration(220)}
-        >
+        <View key={`${exercise.name}-${index}`}>
           {!isExpanded ? (
-            <Animated.View
-              entering={FadeIn.duration(150)}
-              exiting={FadeOut.duration(120)}
-            >
+            <View>
               <ThemedText type="default" style={styles.summaryRow}>
                 {exercise.sets.length} sets of {exercise.name}
               </ThemedText>
-            </Animated.View>
+            </View>
           ) : (
-            <Animated.View
-              entering={FadeIn.duration(150)}
-              exiting={FadeOut.duration(120)}
-              layout={LinearTransition.duration(220)}
+            <View
               style={[
                 styles.exerciseWrapper,
                 {
@@ -115,18 +101,18 @@ export function WorkoutHistoryCard({
                         <IconSymbol
                           name="trophy.fill"
                           size={18}
-                          color="#D4AF37"
+                          color="#f5cc46"
                         />
                       )}
                     </View>
                   </View>
                 ))}
               </View>
-            </Animated.View>
+            </View>
           )}
-        </Animated.View>
+        </View>
       ))}
-    </Animated.View>
+    </View>
   );
 }
 

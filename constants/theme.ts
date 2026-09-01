@@ -5,8 +5,24 @@
 
 import { Platform } from "react-native";
 
-const tintColorLight = "#0a7ea4";
-const tintColorDark = "#fff";
+export const APPEARANCE_OPTIONS = ["System", "Light", "Dark"] as const;
+
+export type AppearanceType = (typeof APPEARANCE_OPTIONS)[number];
+
+export const COLOR_SCHEMES: Record<
+  AppearanceType,
+  "light" | "dark" | "unspecified"
+> = {
+  System: "unspecified",
+  Light: "light",
+  Dark: "dark",
+};
+
+// const tintColorLight = "#0a7ea4";
+// const tintColorDark = "#fff";
+
+const tintColorLight = "#007AFF";
+const tintColorDark = "#0A84FF";
 
 export const Colors = {
   light: {
