@@ -356,12 +356,12 @@ export default function NewWorkoutScreen() {
 
       <CustomModal
         visible={saveAsPresetVisible}
-        title="Save As Preset?"
+        title="Save As Preset"
         message="Would you like to save this workout as preset?"
         primaryButtonText="Save Preset"
         secondaryButtonText="Skip"
+        secondaryButtonRed
         prompt
-        defaultValue="Leg Day"
         placeHolderText="Preset Name"
         onRequestClose={() => setSaveAsPresetVisible(false)}
         onPrimary={(name) => {

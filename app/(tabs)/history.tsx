@@ -1,14 +1,14 @@
-import { ThemedText } from "@/components/ui/ThemedText";
-import { CustomModal } from "@/components/ui/CustomModal";
-import { IconSymbol } from "@/components/ui/IconSymbol";
 import { WorkoutHistoryCard } from "@/components/history/WorkoutHistoryCard";
 import { WorkoutTimer } from "@/components/timer/WorkoutTimer";
+import { CustomModal } from "@/components/ui/CustomModal";
+import { IconSymbol } from "@/components/ui/IconSymbol";
+import { ThemedText } from "@/components/ui/ThemedText";
 import { useThemeColor } from "@/hooks/use-theme-color";
 import { deleteWorkout, getWorkoutHistory } from "@/storage/workoutRepository";
 import { SetRow } from "@/types/workout";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSQLiteContext } from "expo-sqlite";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -53,14 +53,6 @@ export default function TabTwoScreen() {
     queryFn: fetchHistory,
   });
 
-  const orderedHistory = useMemo(
-    () =>
-      [...historyData].sort(
-        (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
-      ),
-    [historyData],
-  );
-
   const deleteMutation = useMutation({
     mutationFn: (id: string) => deleteWorkout(db, id),
     onSuccess: () => {
@@ -92,7 +84,7 @@ export default function TabTwoScreen() {
       />
 
       <FlatList
-        data={orderedHistory}
+        data={historyData}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => {
           const isExpanded = expandedId === item.id;
@@ -115,10 +107,6 @@ export default function TabTwoScreen() {
                   }}
                 >
                   <View style={styles.titleContainer}>
-                    <ThemedText type="default" style={styles.title}>
-                      {item.workoutName}
-                    </ThemedText>
-                    <WorkoutTimer elapsedTimeMs={item.workoutDurationMs} />
                     <View style={styles.removeView}>
                       <Pressable
                         onPress={(e) => {
@@ -129,6 +117,17 @@ export default function TabTwoScreen() {
                         <IconSymbol name={"x.circle"} size={24} color={"red"} />
                       </Pressable>
                     </View>
+                  </View>
+                  <ThemedText type="default" style={styles.title}>
+                    {item.workoutName}
+                  </ThemedText>
+                  <View style={styles.subTitleContainer}>
+                    <ThemedText type="default">Duration</ThemedText>
+                    <ThemedText type="default">Volume</ThemedText>
+                    <ThemedText type="default">Records</ThemedText>
+                  </View>
+                  <View style={styles.subTextContainer}>
+                    <WorkoutTimer elapsedTimeMs={item.workoutDurationMs} />
                   </View>
                   <WorkoutHistoryCard
                     exercises={item.exercises}
@@ -178,16 +177,17 @@ const styles = StyleSheet.create({
   subtitle: {
     opacity: 0.7,
   },
-  headerImage: {
-    color: "#808080",
-    bottom: -90,
-    left: -35,
-    position: "absolute",
-  },
+
   titleContainer: {
-    position: "relative",
+    display: "flex",
     flexDirection: "row",
     gap: 4,
     alignItems: "center",
+  },
+  subTitleContainer: {
+    display: "flex",
+    flexDirection: "row",
+    justifyContent: "flex-start",
+    gap: 12,
   },
 });
