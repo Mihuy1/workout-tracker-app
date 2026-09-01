@@ -51,6 +51,8 @@ const DEFAULT_STATS: WorkoutStats = {
 export default function Statistics() {
   const tintColor = useThemeColor({}, "tint");
   const screenBackground = useThemeColor({}, "background");
+  const cardBg = useThemeColor({}, "surface");
+  const cardBorder = useThemeColor({}, "border");
 
   const db = useSQLiteContext();
 
@@ -107,12 +109,22 @@ export default function Statistics() {
     >
       <ThemedText type="title">Statistics</ThemedText>
       <View style={styles.mainDataView}>
-        <View style={styles.mainDataSubView}>
+        <View
+          style={[
+            styles.mainDataSubView,
+            { backgroundColor: cardBg, borderColor: cardBorder },
+          ]}
+        >
           <ThemedText type="defaultSemiBold">Workouts</ThemedText>
           <ThemedText>{stats.workoutCount}</ThemedText>
           <Delta value={stats.workoutCount - previousStats.workoutCount} />
         </View>
-        <View style={styles.mainDataSubView}>
+        <View
+          style={[
+            styles.mainDataSubView,
+            { backgroundColor: cardBg, borderColor: cardBorder },
+          ]}
+        >
           <ThemedText type="defaultSemiBold">Duration</ThemedText>
           <ThemedText>{formattedDuration}</ThemedText>
           <Delta
@@ -120,7 +132,12 @@ export default function Statistics() {
             formatValue={formatDuration}
           />
         </View>
-        <View style={styles.mainDataSubView}>
+        <View
+          style={[
+            styles.mainDataSubView,
+            { backgroundColor: cardBg, borderColor: cardBorder },
+          ]}
+        >
           <ThemedText type="defaultSemiBold">Volume</ThemedText>
           <ThemedText>{stats.totalVolume / 1000} kg</ThemedText>
           <Delta
@@ -128,7 +145,12 @@ export default function Statistics() {
             suffix="kg"
           />
         </View>
-        <View style={styles.mainDataSubView}>
+        <View
+          style={[
+            styles.mainDataSubView,
+            { backgroundColor: cardBg, borderColor: cardBorder },
+          ]}
+        >
           <ThemedText type="defaultSemiBold">Sets</ThemedText>
           <ThemedText>{stats.totalSets}</ThemedText>
           <Delta value={stats.totalSets - previousStats.totalSets} />
@@ -141,7 +163,10 @@ export default function Statistics() {
           keyExtractor={(item) => item.exercise_id}
           renderItem={({ item }) => (
             <Pressable
-              style={styles.row}
+              style={[
+                styles.row,
+                { backgroundColor: cardBg, borderColor: cardBorder },
+              ]}
               onPress={() =>
                 router.push({
                   pathname: "../exercise-progress",
@@ -198,7 +223,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     borderWidth: 1,
-    borderColor: "gray",
+    // borderColor: "gray",
     borderRadius: 10,
     paddingHorizontal: 12,
     paddingVertical: 10,
