@@ -9,7 +9,7 @@ import { SetRow } from "@/types/workout";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSQLiteContext } from "expo-sqlite";
 import { useState } from "react";
-import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
+import { FlatList, Pressable, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export type CompletedWorkout = {
@@ -65,10 +65,21 @@ export default function TabTwoScreen() {
     deleteMutation.mutate(id);
   };
 
-  if (isLoading) return <Text>Loaidng...</Text>;
+  if (isLoading)
+    return (
+      <SafeAreaView
+        edges={["top", "left", "right"]}
+        style={{ flex: 1, backgroundColor: screenBg }}
+      >
+        <ThemedText>Loading...</ThemedText>
+      </SafeAreaView>
+    );
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: screenBg }}>
+    <SafeAreaView
+      edges={["top", "left", "right"]}
+      style={{ flex: 1, backgroundColor: screenBg }}
+    >
       <CustomModal
         visible={selectedWorkoutId !== null}
         title="Delete Workout?"

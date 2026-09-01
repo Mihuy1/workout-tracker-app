@@ -10,6 +10,7 @@ import { FlatList, Pressable, StyleSheet, TextInput, View } from "react-native";
 import { ThemedText } from "@/components/ui/ThemedText";
 import { ExercisePickerRow, ExercisePickerRowItem } from "./ExercisePickerRow";
 import { IconSymbol } from "@/components/ui/IconSymbol";
+import { ThemedView } from "@/components/ui/ThemedView";
 
 const FILTERS = ["All", "Strength", "Stretch", "Cardio"] as const;
 type ExerciseFilter = (typeof FILTERS)[number];
@@ -109,7 +110,7 @@ export function ExerciseList() {
   };
 
   return (
-    <View style={styles.container}>
+    <ThemedView style={styles.container}>
       <View
         style={[styles.searchBar, { backgroundColor: surface, borderColor }]}
       >
@@ -189,7 +190,7 @@ export function ExerciseList() {
           </View>
         }
       />
-    </View>
+    </ThemedView>
   );
 }
 

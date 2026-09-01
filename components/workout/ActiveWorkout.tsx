@@ -1,5 +1,6 @@
 import { LiveWorkoutTimer } from "@/components/timer/LiveWorkoutTimer";
 import { RestTimer } from "@/components/timer/RestTimer";
+import { ThemedView } from "@/components/ui/ThemedView";
 import { useWorkoutState } from "@/contexts/workoutStateContext";
 import {
   getBaselines,
@@ -37,7 +38,7 @@ export function ActiveWorkout({ routineId, startedAt }: ActiveWorkoutProps) {
   });
 
   return (
-    <View style={styles.container}>
+    <ThemedView style={styles.container}>
       <View style={styles.content}>
         <LiveWorkoutTimer startedAt={startedAt} />
 
@@ -72,7 +73,7 @@ export function ActiveWorkout({ routineId, startedAt }: ActiveWorkoutProps) {
         />
       </View>
       <RestTimer />
-    </View>
+    </ThemedView>
   );
 }
 

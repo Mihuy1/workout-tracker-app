@@ -10,7 +10,7 @@ import { useQuery } from "@tanstack/react-query";
 import { router } from "expo-router";
 import { useSQLiteContext } from "expo-sqlite";
 import { useState } from "react";
-import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
+import { FlatList, Pressable, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 type DeltaProps = {
@@ -50,6 +50,7 @@ const DEFAULT_STATS: WorkoutStats = {
 
 export default function Statistics() {
   const tintColor = useThemeColor({}, "tint");
+  const screenBackground = useThemeColor({}, "background");
 
   const db = useSQLiteContext();
 
@@ -88,11 +89,22 @@ export default function Statistics() {
     return `${minutes}m`;
   }
 
-  if (!data) return <Text>Loading...</Text>;
+  if (!data)
+    return (
+      <SafeAreaView
+        edges={["top", "left", "right"]}
+        style={[styles.container, { backgroundColor: screenBackground }]}
+      >
+        <ThemedText>Loading...</ThemedText>
+      </SafeAreaView>
+    );
 
   const formattedDuration = formatDuration(stats.totalDuration);
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView
+      edges={["top", "left", "right"]}
+      style={[styles.container, { backgroundColor: screenBackground }]}
+    >
       <ThemedText type="title">Statistics</ThemedText>
       <View style={styles.mainDataView}>
         <View style={styles.mainDataSubView}>

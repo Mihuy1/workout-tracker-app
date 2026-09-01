@@ -54,7 +54,7 @@ export const Colors = {
   },
   dark: {
     text: "#ECEDEE",
-    background: "#151718",
+    background: "#000000",
     surface: "#1c1c1e",
     surfaceMuted: "#2c2c2e",
     border: "#3a3a3c",

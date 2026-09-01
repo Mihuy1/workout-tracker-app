@@ -1,10 +1,11 @@
 import { ExerciseProgressChart } from "@/components/exercises/ExerciseProgressChart";
 import { ThemedText } from "@/components/ui/ThemedText";
+import { ThemedView } from "@/components/ui/ThemedView";
 import { getExerciseStats } from "@/storage/workoutRepository";
 import { useQuery } from "@tanstack/react-query";
 import { Stack, useLocalSearchParams } from "expo-router";
 import { useSQLiteContext } from "expo-sqlite";
-import { StyleSheet, View } from "react-native";
+import { StyleSheet } from "react-native";
 
 export default function ExerciseProgressScreen() {
   const db = useSQLiteContext();
@@ -30,7 +31,7 @@ export default function ExerciseProgressScreen() {
         }}
       />
 
-      <View style={styles.container}>
+      <ThemedView style={styles.container}>
         {isPending && <ThemedText>Loading exercise data...</ThemedText>}
 
         {error && <ThemedText>Could not load exercise data.</ThemedText>}
@@ -41,7 +42,7 @@ export default function ExerciseProgressScreen() {
             oneRepMax={data.oneRepMax}
           />
         )}
-      </View>
+      </ThemedView>
     </>
   );
 }

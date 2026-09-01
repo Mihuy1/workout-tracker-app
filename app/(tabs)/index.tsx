@@ -21,6 +21,7 @@ export default function HomeScreen() {
   const queryClient = useQueryClient();
   const db = useSQLiteContext();
   const cardBackground = useThemeColor({}, "surface");
+  const screenBackground = useThemeColor({}, "background");
   const cardBorder = useThemeColor({}, "border");
   const buttonBackground = useThemeColor({}, "surfaceMuted");
   const tintColor = useThemeColor({}, "tint");
@@ -67,13 +68,18 @@ export default function HomeScreen() {
 
   if (isLoading)
     return (
-      <View style={styles.container}>
+      <View
+        style={[styles.container, { backgroundColor: screenBackground }]}
+      >
         <ThemedText type="title">Loading...</ThemedText>
       </View>
     );
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView
+      edges={["top", "left", "right"]}
+      style={[styles.container, { backgroundColor: screenBackground }]}
+    >
       <CustomModal
         visible={modalVisible}
         title={`Remove ${deleteRoutineName} ?`}
