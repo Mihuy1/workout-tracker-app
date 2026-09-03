@@ -50,6 +50,7 @@ export function ActiveWorkout({ routineId, startedAt }: ActiveWorkoutProps) {
           keyboardDismissMode="interactive"
           keyboardShouldPersistTaps="always"
           contentContainerStyle={styles.exerciseListContent}
+          showsVerticalScrollIndicator={false}
           renderItem={({ item }) => (
             <View style={{ marginBottom: 5 }}>
               <WorkoutExerciseCard
@@ -89,7 +90,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   exerciseListContent: {
-    paddingBottom: 16,
+    paddingBottom: 200,
   },
   headerRow: {
     flexDirection: "row",

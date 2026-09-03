@@ -159,6 +159,7 @@ export default function Statistics() {
       <View style={styles.exerciseList}>
         <FlatList
           contentContainerStyle={styles.listContent}
+          showsVerticalScrollIndicator={false}
           data={data.exercises}
           keyExtractor={(item) => item.exercise_id}
           renderItem={({ item }) => (
