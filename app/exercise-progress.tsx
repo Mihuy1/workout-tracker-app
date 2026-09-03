@@ -28,6 +28,7 @@ export default function ExerciseProgressScreen() {
           title: exerciseName,
           headerBackTitle: "Back",
           headerRight: () => null,
+          gestureEnabled: false,
         }}
       />
 
@@ -38,6 +39,7 @@ export default function ExerciseProgressScreen() {
 
         {data && (
           <ExerciseProgressChart
+            exerciseName={exerciseName}
             heaviestWeight={data.heaviestWeight}
             oneRepMax={data.oneRepMax}
           />

@@ -6,6 +6,8 @@ import { CustomButton } from "../ui/CustomButton";
 import { ThemedText } from "../ui/ThemedText";
 
 type ExerciseProgressProps = {
+  exerciseName: string;
+
   heaviestWeight: {
     value: number;
     label: string;
@@ -22,6 +24,7 @@ type ExerciseProgressProps = {
 type ExerciseDataType = "Heaviest Weight" | "One Rep Max";
 
 export function ExerciseProgressChart({
+  exerciseName,
   heaviestWeight,
   oneRepMax,
 }: ExerciseProgressProps) {
@@ -35,6 +38,12 @@ export function ExerciseProgressChart({
     Platform.OS === "ios" ? PlatformColor("systemBlue") : tintColor;
 
   const [dataType, setDataType] = useState<ExerciseDataType>("Heaviest Weight");
+  const [selectedLabel, setSelectedLabel] = useState<string>(
+    heaviestWeight[heaviestWeight.length - 1].label,
+  );
+  const [selectedValue, setSelectedValue] = useState<string>(
+    heaviestWeight[heaviestWeight.length - 1].dataPointText,
+  );
   const [containerWidth, setContainerWidth] = useState(0);
 
   if (heaviestWeight.length === 0) {
@@ -42,20 +51,20 @@ export function ExerciseProgressChart({
   }
 
   const data = dataType === "Heaviest Weight" ? heaviestWeight : oneRepMax;
-  const yAxisLabelWidth = 55;
+
+  const yAxisLabelWidth = 45;
   const chartWidth = Math.max(0, containerWidth - yAxisLabelWidth);
 
-  const initialSpacing = data.length === 1 ? chartWidth / 2 : 25;
-  const endSpacing = 25;
-  const minSpacing = 50;
+  const initialSpacing = data.length === 1 ? chartWidth / 2 : 18;
+  const endSpacing = data.length === 1 ? chartWidth / 2 : 25;
 
-  const calculatedSpacing =
+  const spacing =
     data.length > 1
-      ? (chartWidth - initialSpacing - endSpacing) / (data.length - 1)
+      ? Math.max(
+          0,
+          (chartWidth - initialSpacing - endSpacing) / (data.length - 1),
+        )
       : 0;
-
-  const spacing = Math.max(minSpacing, calculatedSpacing);
-  const shouldScroll = data.length > 1 && calculatedSpacing < minSpacing;
 
   return (
     <View
@@ -67,13 +76,15 @@ export function ExerciseProgressChart({
         },
       ]}
     >
-      <View style={styles.legend}>
-        <View style={styles.legendItem}>
-          <View
-            style={[styles.legendColor, { backgroundColor: primaryColor }]}
-          />
-          <ThemedText>{dataType}</ThemedText>
+      <View style={styles.infoView}>
+        <ThemedText type="subtitle">{exerciseName}</ThemedText>
+        <View style={styles.statsView}>
+          <ThemedText type="defaultSemiBold">{selectedValue}</ThemedText>
+          <ThemedText type="default">{selectedLabel}</ThemedText>
         </View>
+      </View>
+      <View style={styles.legend}>
+        <View style={styles.legendItem}></View>
       </View>
 
       <View
@@ -93,12 +104,12 @@ export function ExerciseProgressChart({
             spacing={spacing}
             initialSpacing={initialSpacing}
             endSpacing={endSpacing}
-            disableScroll={!shouldScroll}
-            scrollToEnd={shouldScroll}
+            disableScroll
+            formatYLabel={(label) => Number(label).toFixed(1)}
             yAxisLabelSuffix=" kg"
             yAxisLabelWidth={yAxisLabelWidth}
-            yAxisTextStyle={{ color: textColor }}
-            xAxisLabelTextStyle={{ color: textColor }}
+            yAxisTextStyle={{ color: textColor, fontSize: 10 }}
+            xAxisLabelTextStyle={{ color: textColor, fontSize: 10 }}
             rulesColor={borderColor}
             xAxisColor={borderColor}
             yAxisColor={borderColor}
@@ -108,13 +119,29 @@ export function ExerciseProgressChart({
             showVerticalLines
             verticalLinesColor={borderColor}
             isAnimated
+            showDataPointLabelOnFocus
+            pointerConfig={{}}
+            getPointerProps={({ pointerIndex }: { pointerIndex: number }) => {
+              const point = data[pointerIndex];
+
+              if (point) {
+                setSelectedLabel(point.label);
+                setSelectedValue(point.dataPointText);
+              }
+            }}
           />
         )}
       </View>
       <View style={styles.buttonRow}>
         <CustomButton
           title="Heaviest Weight"
-          onPress={() => setDataType("Heaviest Weight")}
+          onPress={() => {
+            setDataType("Heaviest Weight");
+            setSelectedLabel(heaviestWeight[heaviestWeight.length - 1].label);
+            setSelectedValue(
+              heaviestWeight[heaviestWeight.length - 1].dataPointText,
+            );
+          }}
           backgroundColor={
             dataType && dataType === "Heaviest Weight"
               ? primaryColor
@@ -124,7 +151,11 @@ export function ExerciseProgressChart({
         />
         <CustomButton
           title="One Rep Max"
-          onPress={() => setDataType("One Rep Max")}
+          onPress={() => {
+            setDataType("One Rep Max");
+            setSelectedLabel(oneRepMax[oneRepMax.length - 1].label);
+            setSelectedValue(oneRepMax[oneRepMax.length - 1].dataPointText);
+          }}
           backgroundColor={
             dataType && dataType === "One Rep Max"
               ? primaryColor
@@ -143,6 +174,13 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     paddingVertical: 16,
     overflow: "hidden",
+  },
+  infoView: { padding: 8 },
+  statsView: {
+    display: "flex",
+    flexDirection: "row",
+    gap: 8,
+    paddingTop: 10,
   },
   legend: {
     flexDirection: "row",
