@@ -19,11 +19,12 @@ An iOS-first workout tracker built with React Native and Expo. Create reusable r
 - Highlight new weight and repetition personal records
 - Save completed workouts locally with SQLite
 - Review, expand, and delete entries from workout history
+- Review workout statistics and exercise progress charts
 - Follow the device's light or dark color scheme
 
 ## Status
 
-The app is currently focused on iOS and has not yet been tested on Android. The Statistics and Settings screens are still under development.
+The app is currently focused on iOS and has not yet been tested on Android.
 
 ## Run locally
 

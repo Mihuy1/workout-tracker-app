@@ -33,7 +33,7 @@ export default function TabThreeScreen() {
 
         <View style={styles.dropdowns}>
           <View style={styles.dropdown}>
-            <ThemedText>Appearance</ThemedText>
+            <ThemedText type="defaultSemiBold">Appearance</ThemedText>
             <CustomDropdown
               value={appearance}
               options={APPEARANCE_OPTIONS.map((value) => ({
@@ -48,7 +48,7 @@ export default function TabThreeScreen() {
             />
           </View>
           <View style={styles.dropdown}>
-            <ThemedText>Weight Unit</ThemedText>
+            <ThemedText type="defaultSemiBold">Weight Unit</ThemedText>
             <CustomDropdown
               value={weightUnit}
               options={WEIGHT_UNIT_OPTIONS}
