@@ -1,22 +1,17 @@
+import CustomDropDown from "@/components/dropdown";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import { ThemedText } from "@/components/ui/ThemedText";
 import { APPEARANCE_OPTIONS } from "@/constants/theme";
 import { useThemeProvider } from "@/contexts/themeContext";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { useThemeColor } from "@/hooks/use-theme-color";
-import { useState } from "react";
-import { Pressable, ScrollView, StyleSheet, View } from "react-native";
+import { ScrollView, StyleSheet, View } from "react-native";
 
 export default function TabThreeScreen() {
   const { appearance, setTheme } = useThemeProvider();
-  const [appearanceOpen, setAppearanceOpen] = useState(false);
 
   const colorScheme = useColorScheme();
   const background = useThemeColor({}, "background");
-  const surface = useThemeColor({}, "surface");
-  const border = useThemeColor({}, "border");
-  const iconColor = useThemeColor({}, "icon");
-  const selectedBackground = useThemeColor({}, "surfaceMuted");
 
   return (
     <ScrollView style={[styles.container, { backgroundColor: background }]}>
@@ -44,68 +39,11 @@ export default function TabThreeScreen() {
           </View>
 
           <View style={styles.dropdown}>
-            <Pressable
-              accessibilityRole="button"
-              accessibilityState={{ expanded: appearanceOpen }}
-              onPress={() => setAppearanceOpen((open) => !open)}
-              style={[styles.dropdownTrigger, { borderColor: border }]}
-            >
-              <ThemedText>{appearance}</ThemedText>
-              <IconSymbol
-                name="chevron.right"
-                size={18}
-                color={iconColor}
-                style={{
-                  transform: [{ rotate: appearanceOpen ? "90deg" : "0deg" }],
-                }}
-              />
-            </Pressable>
-            {appearanceOpen && (
-              <View
-                style={[
-                  styles.dropdownMenu,
-                  {
-                    backgroundColor: surface,
-                    borderColor: border,
-                  },
-                ]}
-              >
-                {APPEARANCE_OPTIONS.map((option) => {
-                  const selected = option === appearance;
-
-                  return (
-                    <Pressable
-                      key={option}
-                      onPress={async () => {
-                        setTheme(option);
-                        setAppearanceOpen(false);
-                      }}
-                      style={({ pressed }) => [
-                        styles.dropdownOption,
-                        selected && {
-                          backgroundColor: selectedBackground,
-                        },
-                        pressed &&
-                          !selected && {
-                            backgroundColor: selectedBackground,
-                            opacity: 0.7,
-                          },
-                      ]}
-                    >
-                      <ThemedText>{option}</ThemedText>
-
-                      {selected && (
-                        <IconSymbol
-                          name="checkmark"
-                          size={18}
-                          color={iconColor}
-                        />
-                      )}
-                    </Pressable>
-                  );
-                })}
-              </View>
-            )}
+            <CustomDropDown
+              value={appearance}
+              options={APPEARANCE_OPTIONS}
+              onSelect={setTheme}
+            />
           </View>
         </View>
       </View>
