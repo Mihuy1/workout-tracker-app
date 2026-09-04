@@ -1,40 +1,35 @@
 import CustomDropdown from "@/components/CustomDropdown";
-import { IconSymbol } from "@/components/ui/IconSymbol";
 import { ThemedText } from "@/components/ui/ThemedText";
 import { APPEARANCE_OPTIONS } from "@/constants/theme";
 import { useThemeProvider } from "@/contexts/themeContext";
 import { useWeightUnit } from "@/contexts/weightUnitContext";
-import { useColorScheme } from "@/hooks/use-color-scheme";
 import { useThemeColor } from "@/hooks/use-theme-color";
 import { WEIGHT_UNIT_OPTIONS } from "@/utils/weightUnits";
+import { useState } from "react";
 import { ScrollView, StyleSheet, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+
+type OpenDropdown = "appearance" | "weightUnit" | null;
 
 export default function TabThreeScreen() {
   const { appearance, setTheme } = useThemeProvider();
   const { weightUnit, setWeightUnit } = useWeightUnit();
-  const colorScheme = useColorScheme();
 
   const background = useThemeColor({}, "background");
 
+  const [openDropdown, setOpenDropdown] = useState<OpenDropdown>(null);
+
   return (
-    <ScrollView style={[styles.container, { backgroundColor: background }]}>
-      <View
-        style={[
-          styles.header,
-          {
-            backgroundColor: colorScheme === "dark" ? "#353636" : "#D0D0D0",
-          },
-        ]}
+    <SafeAreaView
+      edges={["top", "left", "right"]}
+      style={[styles.safeArea, { backgroundColor: background }]}
+    >
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={styles.content}
+        onTouchStart={() => setOpenDropdown(null)}
       >
-        <IconSymbol
-          size={310}
-          color="#808080"
-          name="chevron.left.forwardslash.chevron.right"
-          style={styles.headerImage}
-        />
-      </View>
-      <View style={styles.content}>
-        <ThemedText>Settings Screen</ThemedText>
+        <ThemedText type="subtitle">Settings Screen</ThemedText>
 
         <View style={styles.dropdowns}>
           <View style={styles.dropdown}>
@@ -45,6 +40,10 @@ export default function TabThreeScreen() {
                 value,
                 label: value,
               }))}
+              open={openDropdown === "appearance"}
+              onOpenChange={(open) =>
+                setOpenDropdown(open ? "appearance" : null)
+              }
               onSelect={setTheme}
             />
           </View>
@@ -53,41 +52,23 @@ export default function TabThreeScreen() {
             <CustomDropdown
               value={weightUnit}
               options={WEIGHT_UNIT_OPTIONS}
+              open={openDropdown === "weightUnit"}
               onSelect={setWeightUnit}
+              onOpenChange={(open) =>
+                setOpenDropdown(open ? "weightUnit" : null)
+              }
             />
           </View>
         </View>
-
-        {/* <View style={styles.dropdownRow}>
-          <View style={styles.dropdownLabel}>
-            <ThemedText>Appearance</ThemedText>
-          </View>
-          <CustomDropDown
-            value={appearance}
-            options={APPEARANCE_OPTIONS.map((value) => ({
-              value,
-              label: value,
-            }))}
-            onSelect={setTheme}
-          />
-        </View>
-        <View style={styles.dropdownRow}>
-          <View style={styles.dropdownLabel}>
-            <ThemedText>Weight Unit</ThemedText>
-          </View>
-
-          <CustomDropDown
-            value={weightUnit}
-            options={WEIGHT_UNIT_OPTIONS}
-            onSelect={setWeightUnit}
-          />
-        </View> */}
-      </View>
-    </ScrollView>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+  },
   container: {
     flex: 1,
   },

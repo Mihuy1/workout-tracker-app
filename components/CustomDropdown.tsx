@@ -1,5 +1,4 @@
 import { useThemeColor } from "@/hooks/use-theme-color";
-import { useState } from "react";
 import { Pressable, StyleSheet, View } from "react-native";
 import { IconSymbol } from "./ui/IconSymbol";
 import { ThemedText } from "./ui/ThemedText";
@@ -12,30 +11,34 @@ interface DropdownOption<T extends string> {
 interface CustomDropDownProps<T extends string> {
   options: readonly DropdownOption<T>[];
   value: T;
-  onSelect: (option: T) => void;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onSelect: (option: T) => void | Promise<void>;
 }
 
 export default function CustomDropdown<T extends string>({
   options,
   value,
+  open,
+  onOpenChange,
   onSelect,
 }: CustomDropDownProps<T>) {
   const border = useThemeColor({}, "border");
   const iconColor = useThemeColor({}, "iconColor");
   const surface = useThemeColor({}, "surface");
   const selectedBackground = useThemeColor({}, "surfaceMuted");
-
-  const [open, setOpen] = useState(false);
-
   const selectedLabel =
     options.find((option) => option.value === value)?.label ?? value;
 
   return (
-    <View style={styles.dropdown}>
+    <View
+      style={[styles.dropdown, open && styles.dropDownOpen]}
+      onTouchStart={(event) => event.stopPropagation()}
+    >
       <Pressable
         accessibilityRole="button"
         accessibilityState={{ expanded: open }}
-        onPress={() => setOpen((open) => !open)}
+        onPress={() => onOpenChange(!open)}
         style={[styles.dropdownTrigger, { borderColor: border }]}
       >
         <ThemedText>{selectedLabel}</ThemedText>
@@ -65,9 +68,8 @@ export default function CustomDropdown<T extends string>({
               <Pressable
                 key={option.value}
                 onPress={async () => {
-                  //   setTheme(option);
                   await onSelect(option.value);
-                  setOpen(false);
+                  onOpenChange(false);
                 }}
                 style={({ pressed }) => [
                   styles.dropdownOption,
@@ -132,6 +134,10 @@ const styles = StyleSheet.create({
   dropdown: {
     position: "relative",
     width: 140,
+  },
+  dropDownOpen: {
+    zIndex: 100,
+    elevation: 100,
   },
   dropdownTrigger: {
     minHeight: 42,
