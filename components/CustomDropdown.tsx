@@ -4,13 +4,18 @@ import { Pressable, StyleSheet, View } from "react-native";
 import { IconSymbol } from "./ui/IconSymbol";
 import { ThemedText } from "./ui/ThemedText";
 
+interface DropdownOption<T extends string> {
+  value: T;
+  label: string;
+}
+
 interface CustomDropDownProps<T extends string> {
-  options: readonly T[];
+  options: readonly DropdownOption<T>[];
   value: T;
   onSelect: (option: T) => void;
 }
 
-export default function CustomDropDown<T extends string>({
+export default function CustomDropdown<T extends string>({
   options,
   value,
   onSelect,
@@ -22,6 +27,9 @@ export default function CustomDropDown<T extends string>({
 
   const [open, setOpen] = useState(false);
 
+  const selectedLabel =
+    options.find((option) => option.value === value)?.label ?? value;
+
   return (
     <View style={styles.dropdown}>
       <Pressable
@@ -30,7 +38,7 @@ export default function CustomDropDown<T extends string>({
         onPress={() => setOpen((open) => !open)}
         style={[styles.dropdownTrigger, { borderColor: border }]}
       >
-        <ThemedText>{value}</ThemedText>
+        <ThemedText>{selectedLabel}</ThemedText>
         <IconSymbol
           name="chevron.right"
           size={18}
@@ -51,14 +59,14 @@ export default function CustomDropDown<T extends string>({
           ]}
         >
           {options.map((option) => {
-            const selected = option === value;
+            const selected = option.value === value;
 
             return (
               <Pressable
-                key={option}
-                onPress={() => {
+                key={option.value}
+                onPress={async () => {
                   //   setTheme(option);
-                  onSelect(option);
+                  await onSelect(option.value);
                   setOpen(false);
                 }}
                 style={({ pressed }) => [
@@ -73,7 +81,7 @@ export default function CustomDropDown<T extends string>({
                     },
                 ]}
               >
-                <ThemedText>{option}</ThemedText>
+                <ThemedText>{option.label}</ThemedText>
 
                 {selected && (
                   <IconSymbol name="checkmark" size={18} color={iconColor} />
@@ -135,6 +143,10 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   dropdownMenu: {
+    position: "absolute",
+    top: "100%",
+    left: 0,
+    right: 0,
     marginTop: 4,
     borderWidth: 1,
     borderRadius: 8,

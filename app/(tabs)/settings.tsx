@@ -1,16 +1,19 @@
-import CustomDropDown from "@/components/dropdown";
+import CustomDropdown from "@/components/CustomDropdown";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import { ThemedText } from "@/components/ui/ThemedText";
 import { APPEARANCE_OPTIONS } from "@/constants/theme";
 import { useThemeProvider } from "@/contexts/themeContext";
+import { useWeightUnit } from "@/contexts/weightUnitContext";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { useThemeColor } from "@/hooks/use-theme-color";
+import { WEIGHT_UNIT_OPTIONS } from "@/utils/weightUnits";
 import { ScrollView, StyleSheet, View } from "react-native";
 
 export default function TabThreeScreen() {
   const { appearance, setTheme } = useThemeProvider();
-
+  const { weightUnit, setWeightUnit } = useWeightUnit();
   const colorScheme = useColorScheme();
+
   const background = useThemeColor({}, "background");
 
   return (
@@ -32,20 +35,53 @@ export default function TabThreeScreen() {
       </View>
       <View style={styles.content}>
         <ThemedText>Settings Screen</ThemedText>
-        <View style={styles.appearanceRow}>
-          <View style={styles.appearanceLabel}>
-            <IconSymbol name="moon.fill" color={"#353636"} />
-            <ThemedText>Appearance</ThemedText>
-          </View>
 
+        <View style={styles.dropdowns}>
           <View style={styles.dropdown}>
-            <CustomDropDown
+            <ThemedText>Appearance</ThemedText>
+            <CustomDropdown
               value={appearance}
-              options={APPEARANCE_OPTIONS}
+              options={APPEARANCE_OPTIONS.map((value) => ({
+                value,
+                label: value,
+              }))}
               onSelect={setTheme}
             />
           </View>
+          <View style={styles.dropdown}>
+            <ThemedText>Weight Unit</ThemedText>
+            <CustomDropdown
+              value={weightUnit}
+              options={WEIGHT_UNIT_OPTIONS}
+              onSelect={setWeightUnit}
+            />
+          </View>
         </View>
+
+        {/* <View style={styles.dropdownRow}>
+          <View style={styles.dropdownLabel}>
+            <ThemedText>Appearance</ThemedText>
+          </View>
+          <CustomDropDown
+            value={appearance}
+            options={APPEARANCE_OPTIONS.map((value) => ({
+              value,
+              label: value,
+            }))}
+            onSelect={setTheme}
+          />
+        </View>
+        <View style={styles.dropdownRow}>
+          <View style={styles.dropdownLabel}>
+            <ThemedText>Weight Unit</ThemedText>
+          </View>
+
+          <CustomDropDown
+            value={weightUnit}
+            options={WEIGHT_UNIT_OPTIONS}
+            onSelect={setWeightUnit}
+          />
+        </View> */}
       </View>
     </ScrollView>
   );
@@ -73,21 +109,21 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     gap: 8,
   },
-  appearanceRow: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    justifyContent: "space-between",
-    zIndex: 10,
+  dropdowns: {
+    flexDirection: "column",
+    width: "100%",
+    gap: 16,
   },
-  appearanceLabel: {
+  dropdown: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    width: "100%",
+  },
+  dropdownLabel: {
     minHeight: 42,
     flexDirection: "row",
     alignItems: "center",
-    gap: 10,
-  },
-  dropdown: {
-    position: "relative",
-    width: 140,
   },
   dropdownTrigger: {
     minHeight: 42,
@@ -112,5 +148,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
+  },
+  separator: {
+    height: StyleSheet.hairlineWidth,
   },
 });
