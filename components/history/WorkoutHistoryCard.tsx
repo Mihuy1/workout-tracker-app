@@ -1,21 +1,21 @@
 import { CompletedWorkout } from "@/app/(tabs)/history";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import { ThemedText } from "@/components/ui/ThemedText";
+import { useWeightUnit } from "@/contexts/weightUnitContext";
 import { useThemeColor } from "@/hooks/use-theme-color";
 import { StyleSheet, View } from "react-native";
 
 type WorkoutHistoryCardProps = {
   exercises: CompletedWorkout["exercises"];
-  expandId: string | null;
-  itemId: string;
+  isExpanded: boolean;
 };
 
 export function WorkoutHistoryCard({
   exercises,
-  expandId,
-  itemId,
+
+  isExpanded,
 }: WorkoutHistoryCardProps) {
-  const isExpanded = expandId === itemId;
+  const { weightUnit } = useWeightUnit();
 
   const surfaceMuted = useThemeColor({}, "surfaceMuted");
   const border = useThemeColor({}, "border");
@@ -58,7 +58,11 @@ export function WorkoutHistoryCard({
                 </ThemedText>
                 <ThemedText
                   type="defaultSemiBold"
-                  style={[styles.cell, styles.kgCol, { color: mutedText }]}
+                  style={[
+                    styles.cell,
+                    styles.weightUnitCol,
+                    { color: mutedText },
+                  ]}
                 >
                   WEIGHT & REPS
                 </ThemedText>
@@ -92,9 +96,9 @@ export function WorkoutHistoryCard({
                     </ThemedText>
                     <ThemedText
                       type="default"
-                      style={[styles.cell, styles.kgCol]}
+                      style={[styles.cell, styles.weightUnitCol]}
                     >
-                      {set.weight} kg x {set.reps} reps
+                      {set.weight} {weightUnit} x {set.reps} reps
                     </ThemedText>
                     <View style={styles.prCol}>
                       {set.achievements.length > 0 && (
@@ -146,7 +150,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   setCol: { width: 50, textAlign: "center" },
-  kgCol: { flex: 1, textAlign: "left", paddingLeft: 12 },
+  weightUnitCol: { flex: 1, textAlign: "left", paddingLeft: 12 },
   repsCol: { width: 70 },
   actionCol: { flex: 1, alignItems: "flex-end", paddingRight: 4 },
   staticText: {

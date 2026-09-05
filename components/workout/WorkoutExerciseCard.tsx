@@ -3,6 +3,7 @@ import { CustomModal } from "@/components/ui/CustomModal";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import { ThemedText } from "@/components/ui/ThemedText";
 import { useRestTimer } from "@/contexts/restTimerContext";
+import { useWeightUnit } from "@/contexts/weightUnitContext";
 import { useWorkoutActions } from "@/contexts/workoutActionsContext";
 import { useThemeColor } from "@/hooks/use-theme-color";
 import {
@@ -11,6 +12,7 @@ import {
   SetAchievement,
   SetRow,
 } from "@/types/workout";
+import { formatWeightValue, weightToGrams } from "@/utils/weightUnits";
 import * as Haptics from "expo-haptics";
 import { memo, useState } from "react";
 import {
@@ -45,6 +47,7 @@ export const WorkoutExerciseCard = memo(function WorkoutExerciseCard({
   } = useWorkoutActions();
 
   const { triggerRestTimer, clearRestTimer } = useRestTimer();
+  const { weightUnit } = useWeightUnit();
 
   const { name: workoutName, mechanic: workoutMechanic } = exercise;
 
@@ -78,17 +81,17 @@ export const WorkoutExerciseCard = memo(function WorkoutExerciseCard({
     for (const set of sets) {
       if (!set.complete || set.id === candidateSetId) continue;
 
-      const setWeightGrams = Math.round(Number(set.weight) * 1000);
+      const setWeightUnit = weightToGrams(Number(set.weight), weightUnit);
       const setReps = Number(set.reps);
 
-      if (!Number.isFinite(setWeightGrams) || !Number.isFinite(setReps))
+      if (!Number.isFinite(setWeightUnit) || !Number.isFinite(setReps))
         continue;
 
-      if (bestWeightGrams === null || bestWeightGrams < setWeightGrams) {
-        bestWeightGrams = setWeightGrams;
+      if (bestWeightGrams === null || bestWeightGrams < setWeightUnit) {
+        bestWeightGrams = setWeightUnit;
       }
 
-      if (setWeightGrams === weightGrams) {
+      if (setWeightUnit === weightGrams) {
         if (bestRepsAtWeight === undefined || bestRepsAtWeight < setReps) {
           bestRepsAtWeight = setReps;
         }
@@ -172,8 +175,11 @@ export const WorkoutExerciseCard = memo(function WorkoutExerciseCard({
         <ThemedText type="defaultSemiBold" style={[styles.cell, styles.setCol]}>
           SET
         </ThemedText>
-        <ThemedText type="defaultSemiBold" style={[styles.cell, styles.kgCol]}>
-          KG
+        <ThemedText
+          type="defaultSemiBold"
+          style={[styles.cell, styles.weightUnitCol]}
+        >
+          {weightUnit.toUpperCase()}
         </ThemedText>
         <ThemedText
           type="defaultSemiBold"
@@ -194,6 +200,12 @@ export const WorkoutExerciseCard = memo(function WorkoutExerciseCard({
       {exercise.sets.map((item, index) => {
         const suggestedSet = getSuggestionSet(index);
         const suggestedWeight = suggestedSet?.weight ?? "";
+        const suggestedWeightPlaceholder = suggestedWeight
+          ? formatWeightValue(
+              weightToGrams(Number(suggestedWeight), weightUnit),
+              weightUnit,
+            )
+          : "0";
         const suggestedReps = suggestedSet?.reps ?? "";
         return (
           <View
@@ -219,7 +231,7 @@ export const WorkoutExerciseCard = memo(function WorkoutExerciseCard({
             <TextInput
               style={[
                 styles.input,
-                styles.kgCol,
+                styles.weightUnitCol,
                 { borderColor, color: textColor, backgroundColor: surface },
               ]}
               value={item.weight}
@@ -230,7 +242,7 @@ export const WorkoutExerciseCard = memo(function WorkoutExerciseCard({
                   complete: item.complete,
                 })
               }
-              placeholder={suggestedWeight || "0"}
+              placeholder={suggestedWeightPlaceholder}
               placeholderTextColor={placeholderColor}
               keyboardType="numeric"
             />
@@ -280,8 +292,9 @@ export const WorkoutExerciseCard = memo(function WorkoutExerciseCard({
                   triggerRestTimer(restTime);
                 }
 
-                const weightGramsNumber = Math.round(
-                  Number(finalWeight) * 1000,
+                const weightUnitNumber = weightToGrams(
+                  Number(finalWeight),
+                  weightUnit,
                 );
 
                 const achievements: SetAchievement[] = willBeCompleted
@@ -289,7 +302,7 @@ export const WorkoutExerciseCard = memo(function WorkoutExerciseCard({
                       prBaseline,
                       item.id,
                       exercise.sets,
-                      weightGramsNumber,
+                      weightUnitNumber,
                       Number(finalReps),
                     )
                   : [];
@@ -412,7 +425,7 @@ const styles = StyleSheet.create({
   },
 
   setCol: { width: 50 },
-  kgCol: { width: 90 },
+  weightUnitCol: { width: 90 },
   repsCol: { width: 90 },
   actionCol: { flex: 1, alignItems: "flex-end" },
 

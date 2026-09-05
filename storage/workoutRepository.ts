@@ -1,4 +1,10 @@
 import { Exercise, ExercisePrBaseline, SetRow } from "@/types/workout";
+import {
+  formatWeightValue,
+  gramsToWeight,
+  weightToGrams,
+  WeightUnit,
+} from "@/utils/weightUnits";
 import { SQLiteDatabase } from "expo-sqlite";
 
 type HistoryRow = {
@@ -149,7 +155,11 @@ export async function getWorkoutStats(
   };
 }
 
-export async function getExerciseStats(db: SQLiteDatabase, exerciseId: string) {
+export async function getExerciseStats(
+  db: SQLiteDatabase,
+  exerciseId: string,
+  weightUnit: WeightUnit,
+) {
   const rows = await db.getAllAsync<ExerciseStatsType>(
     `
     SELECT 
@@ -177,15 +187,15 @@ export async function getExerciseStats(db: SQLiteDatabase, exerciseId: string) {
   const oneRepMaxMap = new Map<number, number>();
 
   for (const row of rows) {
-    const weightKg = row.weight_grams / 1000;
-    const oneRepMax = weightKg * (1 + row.reps / 30);
+    const weight = gramsToWeight(row.weight_grams, weightUnit);
+    const oneRepMax = weight * (1 + row.reps / 30);
 
     const prevHeaviestWeight = heaviestWeightMap.get(row.completed_at) ?? 0;
     const prevOneRepMax = oneRepMaxMap.get(row.completed_at) ?? 0;
 
     heaviestWeightMap.set(
       row.completed_at,
-      Math.max(prevHeaviestWeight, weightKg),
+      Math.max(prevHeaviestWeight, weight),
     );
 
     oneRepMaxMap.set(row.completed_at, Math.max(prevOneRepMax, oneRepMax));
@@ -203,7 +213,7 @@ export async function getExerciseStats(db: SQLiteDatabase, exerciseId: string) {
         day: "numeric",
         month: "short",
       }),
-      dataPointText: `${text} kg`,
+      dataPointText: `${text} ${weightUnit}`,
     });
   });
 
@@ -217,7 +227,7 @@ export async function getExerciseStats(db: SQLiteDatabase, exerciseId: string) {
         day: "numeric",
         month: "short",
       }),
-      dataPointText: `${text} kg`,
+      dataPointText: `${text} ${weightUnit}`,
     });
   });
 
@@ -229,6 +239,7 @@ export async function getExerciseStats(db: SQLiteDatabase, exerciseId: string) {
 
 export async function getWorkoutHistory(
   db: SQLiteDatabase,
+  weightUnit: WeightUnit,
   sinceMs?: number,
 ): Promise<CompletedWorkout[]> {
   const rows = await db.getAllAsync<HistoryRow>(
@@ -335,7 +346,7 @@ export async function getWorkoutHistory(
       set = {
         id: row.set_number,
         complete: true,
-        weight: String(row.weight_grams / 1000),
+        weight: formatWeightValue(row.weight_grams, weightUnit),
         reps: String(row.reps),
         achievements: [],
       };
@@ -371,6 +382,7 @@ export async function saveWorkout(
   date: string,
   exercises: Exercise[],
   workoutDurationMs: number,
+  weightUnit: WeightUnit,
 ) {
   const completedAt = new Date(date).getTime();
   await db.withTransactionAsync(async () => {
@@ -411,7 +423,7 @@ export async function saveWorkout(
       const workoutExerciseId = exerciseResult.lastInsertRowId;
 
       for (const [setPosition, set] of exercise.sets.entries()) {
-        const weightGrams = Math.round(Number(set.weight) * 1000);
+        const weight = weightToGrams(Number(set.weight), weightUnit);
 
         const setResult = await db.runAsync(
           `
@@ -423,7 +435,7 @@ export async function saveWorkout(
             )
             VALUES (?, ?, ?, ?)
             `,
-          [workoutExerciseId, setPosition + 1, weightGrams, Number(set.reps)],
+          [workoutExerciseId, setPosition + 1, weight, Number(set.reps)],
         );
 
         const workoutSetId = setResult.lastInsertRowId;
@@ -457,6 +469,7 @@ export async function saveWorkout(
 export async function getLatestExercisePerformances(
   db: SQLiteDatabase,
   exerciseIds: string[],
+  weightUnit: WeightUnit,
 ): Promise<Partial<Record<string, LatestExercisePerformance>>> {
   const uniqueExerciseIds = [...new Set(exerciseIds)];
 
@@ -509,7 +522,7 @@ export async function getLatestExercisePerformances(
     result[row.exercise_id].sets.push({
       id: row.set_number,
       complete: false,
-      weight: String(row.weight_grams / 1000),
+      weight: String(gramsToWeight(row.weight_grams, weightUnit)),
       reps: String(row.reps),
       achievements: [],
     });

@@ -1,3 +1,4 @@
+import { useWeightUnit } from "@/contexts/weightUnitContext";
 import { useThemeColor } from "@/hooks/use-theme-color";
 import { useState } from "react";
 import { Platform, PlatformColor, StyleSheet, View } from "react-native";
@@ -28,6 +29,8 @@ export function ExerciseProgressChart({
   heaviestWeight,
   oneRepMax,
 }: ExerciseProgressProps) {
+  const { weightUnit } = useWeightUnit();
+
   const primaryColor = useThemeColor({}, "barColor");
   const textColor = useThemeColor({}, "mutedText");
   const borderColor = useThemeColor({}, "border");
@@ -106,7 +109,7 @@ export function ExerciseProgressChart({
             endSpacing={endSpacing}
             disableScroll
             formatYLabel={(label) => Number(label).toFixed(1)}
-            yAxisLabelSuffix=" kg"
+            yAxisLabelSuffix={` ${weightUnit}`}
             yAxisLabelWidth={yAxisLabelWidth}
             yAxisTextStyle={{ color: textColor, fontSize: 10 }}
             xAxisLabelTextStyle={{ color: textColor, fontSize: 10 }}

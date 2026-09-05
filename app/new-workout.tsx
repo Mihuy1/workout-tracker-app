@@ -1,6 +1,7 @@
 import { CustomModal } from "@/components/ui/CustomModal";
 import { ActiveWorkout } from "@/components/workout/ActiveWorkout";
 import { useRestTimer } from "@/contexts/restTimerContext";
+import { useWeightUnit } from "@/contexts/weightUnitContext";
 import { useWorkoutActions } from "@/contexts/workoutActionsContext";
 import { useWorkoutState } from "@/contexts/workoutStateContext";
 import {
@@ -41,6 +42,7 @@ const isValidCompletedSet = (set: SetRow): boolean => {
 
 export default function NewWorkoutScreen() {
   const db = useSQLiteContext();
+  const { weightUnit } = useWeightUnit();
   const queryClient = useQueryClient();
   const { presetTitle, routineId } = useLocalSearchParams<{
     presetTitle?: string;
@@ -127,6 +129,7 @@ export default function NewWorkoutScreen() {
         new Date().toISOString(),
         completedExercises,
         workoutDurMs,
+        weightUnit,
       );
 
       if (presetName && shouldUpdatePreset) {

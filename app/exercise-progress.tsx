@@ -1,6 +1,7 @@
 import { ExerciseProgressChart } from "@/components/exercises/ExerciseProgressChart";
 import { ThemedText } from "@/components/ui/ThemedText";
 import { ThemedView } from "@/components/ui/ThemedView";
+import { useWeightUnit } from "@/contexts/weightUnitContext";
 import { getExerciseStats } from "@/storage/workoutRepository";
 import { useQuery } from "@tanstack/react-query";
 import { Stack, useLocalSearchParams } from "expo-router";
@@ -9,6 +10,7 @@ import { StyleSheet } from "react-native";
 
 export default function ExerciseProgressScreen() {
   const db = useSQLiteContext();
+  const { weightUnit } = useWeightUnit();
 
   const { exerciseId, exerciseName } = useLocalSearchParams<{
     exerciseId: string;
@@ -16,8 +18,8 @@ export default function ExerciseProgressScreen() {
   }>();
 
   const { data, isPending, error } = useQuery({
-    queryKey: ["exerciseProgress", exerciseId],
-    queryFn: () => getExerciseStats(db, exerciseId),
+    queryKey: ["exerciseProgress", exerciseId, weightUnit],
+    queryFn: () => getExerciseStats(db, exerciseId, weightUnit),
     enabled: Boolean(exerciseId),
   });
 

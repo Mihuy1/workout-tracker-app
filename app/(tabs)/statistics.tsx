@@ -1,11 +1,13 @@
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import { ThemedText } from "@/components/ui/ThemedText";
+import { useWeightUnit } from "@/contexts/weightUnitContext";
 import { useThemeColor } from "@/hooks/use-theme-color";
 import {
   getLatestExercises,
   getWorkoutStats,
   WorkoutStats,
 } from "@/storage/workoutRepository";
+import { formatWeight, formatWeightValue } from "@/utils/weightUnits";
 import { useQuery } from "@tanstack/react-query";
 import { router } from "expo-router";
 import { useSQLiteContext } from "expo-sqlite";
@@ -55,6 +57,8 @@ export default function Statistics() {
   const cardBorder = useThemeColor({}, "border");
 
   const db = useSQLiteContext();
+
+  const { weightUnit } = useWeightUnit();
 
   const [range] = useState<Range>(RANGES[0]);
 
@@ -139,10 +143,11 @@ export default function Statistics() {
           ]}
         >
           <ThemedText type="defaultSemiBold">Volume</ThemedText>
-          <ThemedText>{stats.totalVolume / 1000} kg</ThemedText>
+          <ThemedText>{formatWeight(stats.totalVolume, weightUnit)}</ThemedText>
           <Delta
-            value={(stats.totalVolume - previousStats.totalVolume) / 1000}
-            suffix="kg"
+            value={stats.totalVolume - previousStats.totalVolume}
+            formatValue={(grams) => formatWeightValue(grams, weightUnit)}
+            suffix={weightUnit}
           />
         </View>
         <View

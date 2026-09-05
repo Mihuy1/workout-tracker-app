@@ -3,9 +3,11 @@ import { WorkoutTimer } from "@/components/timer/WorkoutTimer";
 import { CustomModal } from "@/components/ui/CustomModal";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import { ThemedText } from "@/components/ui/ThemedText";
+import { useWeightUnit } from "@/contexts/weightUnitContext";
 import { useThemeColor } from "@/hooks/use-theme-color";
 import { deleteWorkout, getWorkoutHistory } from "@/storage/workoutRepository";
 import { SetRow } from "@/types/workout";
+import { formatWeight } from "@/utils/weightUnits";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSQLiteContext } from "expo-sqlite";
 import { useState } from "react";
@@ -26,6 +28,7 @@ export type CompletedWorkout = {
 
 export default function TabTwoScreen() {
   const db = useSQLiteContext();
+  const { weightUnit } = useWeightUnit();
   const queryClient = useQueryClient();
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [selectedWorkoutId, setSelectedWorkoutId] = useState<string | null>(
@@ -39,7 +42,7 @@ export default function TabTwoScreen() {
 
   const fetchHistory = async () => {
     try {
-      const data = await getWorkoutHistory(db);
+      const data = await getWorkoutHistory(db, weightUnit);
 
       return data;
     } catch (error) {
@@ -49,7 +52,7 @@ export default function TabTwoScreen() {
   };
 
   const { data: historyData = [], isLoading } = useQuery({
-    queryKey: ["history"],
+    queryKey: ["history", weightUnit],
     queryFn: fetchHistory,
   });
 
@@ -140,7 +143,9 @@ export default function TabTwoScreen() {
 
                     <View style={styles.statColumn}>
                       <ThemedText type="small">Volume</ThemedText>
-                      <ThemedText>{item.totalVolumeGrams / 1000} kg</ThemedText>
+                      <ThemedText>
+                        {formatWeight(item.totalVolumeGrams, weightUnit)}
+                      </ThemedText>
                     </View>
 
                     {item.prCount > 0 && (
@@ -162,8 +167,7 @@ export default function TabTwoScreen() {
                   />
                   <WorkoutHistoryCard
                     exercises={item.exercises}
-                    expandId={expandedId}
-                    itemId={item.id}
+                    isExpanded={isExpanded}
                   />
                 </Pressable>
               </View>

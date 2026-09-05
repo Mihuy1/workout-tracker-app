@@ -1,6 +1,7 @@
 import { LiveWorkoutTimer } from "@/components/timer/LiveWorkoutTimer";
 import { RestTimer } from "@/components/timer/RestTimer";
 import { ThemedView } from "@/components/ui/ThemedView";
+import { useWeightUnit } from "@/contexts/weightUnitContext";
 import { useWorkoutState } from "@/contexts/workoutStateContext";
 import {
   getBaselines,
@@ -23,6 +24,7 @@ type ActiveWorkoutProps = {
 export function ActiveWorkout({ routineId, startedAt }: ActiveWorkoutProps) {
   const db = useSQLiteContext();
   const { exercises } = useWorkoutState();
+  const { weightUnit } = useWeightUnit();
   const exerciseIds = exercises.map((ex) => ex.exerciseId);
 
   const { data: baselines = {} } = useQuery({
@@ -32,8 +34,8 @@ export function ActiveWorkout({ routineId, startedAt }: ActiveWorkoutProps) {
   });
 
   const { data: historyExerciseMap = {} } = useQuery({
-    queryKey: ["historyExerciseMap", exerciseIds],
-    queryFn: () => getLatestExercisePerformances(db, exerciseIds),
+    queryKey: ["historyExerciseMap", exerciseIds, weightUnit],
+    queryFn: () => getLatestExercisePerformances(db, exerciseIds, weightUnit),
     enabled: exerciseIds.length > 0,
   });
 
