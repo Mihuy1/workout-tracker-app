@@ -1,5 +1,5 @@
 import { useThemeColor } from "@/hooks/use-theme-color";
-import { Pressable, StyleSheet, View } from "react-native";
+import { Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { IconSymbol } from "./ui/IconSymbol";
 import { ThemedText } from "./ui/ThemedText";
 
@@ -14,6 +14,7 @@ interface CustomDropDownProps<T extends string | number> {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSelect: (option: T) => void | Promise<void>;
+  width?: number;
 }
 
 export default function CustomDropdown<T extends string | number>({
@@ -22,6 +23,7 @@ export default function CustomDropdown<T extends string | number>({
   open,
   onOpenChange,
   onSelect,
+  width = 140,
 }: CustomDropDownProps<T>) {
   const border = useThemeColor({}, "border");
   const iconColor = useThemeColor({}, "iconColor");
@@ -32,7 +34,7 @@ export default function CustomDropdown<T extends string | number>({
 
   return (
     <View
-      style={[styles.dropdown, open && styles.dropDownOpen]}
+      style={[styles.dropdown, { width }, open && styles.dropDownOpen]}
       onTouchStart={(event) => event.stopPropagation()}
     >
       <Pressable
@@ -61,36 +63,43 @@ export default function CustomDropdown<T extends string | number>({
             },
           ]}
         >
-          {options.map((option) => {
-            const selected = option.value === value;
+          <ScrollView
+            nestedScrollEnabled
+            bounces={false}
+            showsVerticalScrollIndicator={true}
+            keyboardShouldPersistTaps="handled"
+          >
+            {options.map((option) => {
+              const selected = option.value === value;
 
-            return (
-              <Pressable
-                key={option.value}
-                onPress={async () => {
-                  await onSelect(option.value);
-                  onOpenChange(false);
-                }}
-                style={({ pressed }) => [
-                  styles.dropdownOption,
-                  selected && {
-                    backgroundColor: selectedBackground,
-                  },
-                  pressed &&
-                    !selected && {
+              return (
+                <Pressable
+                  key={option.value}
+                  onPress={async () => {
+                    await onSelect(option.value);
+                    onOpenChange(false);
+                  }}
+                  style={({ pressed }) => [
+                    styles.dropdownOption,
+                    selected && {
                       backgroundColor: selectedBackground,
-                      opacity: 0.7,
                     },
-                ]}
-              >
-                <ThemedText>{option.label}</ThemedText>
+                    pressed &&
+                      !selected && {
+                        backgroundColor: selectedBackground,
+                        opacity: 0.7,
+                      },
+                  ]}
+                >
+                  <ThemedText>{option.label}</ThemedText>
 
-                {selected && (
-                  <IconSymbol name="checkmark" size={18} color={iconColor} />
-                )}
-              </Pressable>
-            );
-          })}
+                  {selected && (
+                    <IconSymbol name="checkmark" size={18} color={iconColor} />
+                  )}
+                </Pressable>
+              );
+            })}
+          </ScrollView>
         </View>
       )}
     </View>
@@ -159,6 +168,7 @@ const styles = StyleSheet.create({
     overflow: "hidden",
     zIndex: 20,
     elevation: 4,
+    maxHeight: 200,
   },
   dropdownOption: {
     minHeight: 42,
