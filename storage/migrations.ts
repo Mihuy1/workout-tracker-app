@@ -1,6 +1,6 @@
 import type { SQLiteDatabase } from "expo-sqlite";
 
-const DATABASE_VERSION = 3;
+const DATABASE_VERSION = 4;
 
 export async function migrateDatabase(db: SQLiteDatabase) {
   // These settings are applied whenever the database is opened.
@@ -128,5 +128,58 @@ export async function migrateDatabase(db: SQLiteDatabase) {
 
       await db.execAsync("PRAGMA user_version = 3");
     });
+  }
+
+  if (currentVersion < 4) {
+    // Foreign keys must be OFF while dropping and replacing referenced tables
+    await db.execAsync("PRAGMA foreign_keys = OFF;");
+
+    await db.withTransactionAsync(async () => {
+      await db.execAsync(`
+        -- 1. workout_exercises (allow NULL rest_seconds)
+        CREATE TABLE workout_exercises_new (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          workout_id TEXT NOT NULL,
+          exercise_id TEXT NOT NULL,
+          exercise_name TEXT NOT NULL,
+          mechanic TEXT,
+          rest_seconds INTEGER,
+          position INTEGER NOT NULL,
+          FOREIGN KEY (workout_id) REFERENCES workouts(id) ON DELETE CASCADE
+        );
+
+        INSERT INTO workout_exercises_new (id, workout_id, exercise_id, exercise_name, mechanic, rest_seconds, position)
+        SELECT id, workout_id, exercise_id, exercise_name, mechanic, rest_seconds, position FROM workout_exercises;
+
+        DROP TABLE workout_exercises;
+        ALTER TABLE workout_exercises_new RENAME TO workout_exercises;
+
+        CREATE INDEX idx_workout_exercises_exercise ON workout_exercises(exercise_id);
+        CREATE INDEX idx_workout_exercises_workout ON workout_exercises(workout_id);
+
+        -- 2. routine_exercises (allow NULL rest_seconds)
+        CREATE TABLE routine_exercises_new (
+          routine_id TEXT NOT NULL,
+          exercise_id TEXT NOT NULL,
+          rest_seconds INTEGER,
+          set_count INTEGER NOT NULL DEFAULT 1,
+          position INTEGER NOT NULL,
+          PRIMARY KEY (routine_id, exercise_id),
+          FOREIGN KEY (routine_id) REFERENCES routines(id) ON DELETE CASCADE
+        );
+
+        INSERT INTO routine_exercises_new (routine_id, exercise_id, rest_seconds, set_count, position)
+        SELECT routine_id, exercise_id, rest_seconds, set_count, position FROM routine_exercises;
+
+        DROP TABLE routine_exercises;
+        ALTER TABLE routine_exercises_new RENAME TO routine_exercises;
+
+        CREATE INDEX idx_routine_exercises_position ON routine_exercises(routine_id, position);
+      `);
+
+      await db.execAsync("PRAGMA user_version = 4;");
+    });
+
+    await db.execAsync("PRAGMA foreign_keys = ON;");
   }
 }

@@ -1,16 +1,16 @@
-import exercises from "@/data/exercises.json";
+import { IconSymbol } from "@/components/ui/IconSymbol";
+import { ThemedText } from "@/components/ui/ThemedText";
+import { ThemedView } from "@/components/ui/ThemedView";
 import { useWorkoutActions } from "@/contexts/workoutActionsContext";
 import { useWorkoutState } from "@/contexts/workoutStateContext";
+import exercises from "@/data/exercises.json";
 import { useThemeColor } from "@/hooks/use-theme-color";
 import { Exercise } from "@/types/workout";
 import { router } from "expo-router";
 import Fuse from "fuse.js";
 import { useMemo, useRef, useState } from "react";
 import { FlatList, Pressable, StyleSheet, TextInput, View } from "react-native";
-import { ThemedText } from "@/components/ui/ThemedText";
 import { ExercisePickerRow, ExercisePickerRowItem } from "./ExercisePickerRow";
-import { IconSymbol } from "@/components/ui/IconSymbol";
-import { ThemedView } from "@/components/ui/ThemedView";
 
 const FILTERS = ["All", "Strength", "Stretch", "Cardio"] as const;
 type ExerciseFilter = (typeof FILTERS)[number];
@@ -93,7 +93,7 @@ export function ExerciseList() {
       exerciseId: item.id,
       name: item.name,
       mechanic: item.mechanic,
-      restTime: 0,
+      restTime: null,
       sets: [
         {
           id: 1,
@@ -175,11 +175,7 @@ export function ExerciseList() {
         keyboardShouldPersistTaps="handled"
         keyboardDismissMode="on-drag"
         renderItem={({ item }) => (
-          <ExercisePickerRow
-            item={item}
-            onAdd={onAdd}
-            disabled={addInFlight}
-          />
+          <ExercisePickerRow item={item} onAdd={onAdd} disabled={addInFlight} />
         )}
         ListEmptyComponent={
           <View style={styles.emptyState}>

@@ -1,6 +1,7 @@
 import { LiveWorkoutTimer } from "@/components/timer/LiveWorkoutTimer";
 import { RestTimer } from "@/components/timer/RestTimer";
 import { ThemedView } from "@/components/ui/ThemedView";
+import { useDefaultRestTime } from "@/contexts/restTimePreferenceContext";
 import { useWeightUnit } from "@/contexts/weightUnitContext";
 import { useWorkoutState } from "@/contexts/workoutStateContext";
 import {
@@ -25,6 +26,7 @@ export function ActiveWorkout({ routineId, startedAt }: ActiveWorkoutProps) {
   const db = useSQLiteContext();
   const { exercises } = useWorkoutState();
   const { weightUnit } = useWeightUnit();
+  const { defaultRestTime } = useDefaultRestTime();
   const exerciseIds = exercises.map((ex) => ex.exerciseId);
 
   const { data: baselines = {} } = useQuery({
@@ -62,7 +64,8 @@ export function ActiveWorkout({ routineId, startedAt }: ActiveWorkoutProps) {
                   EMPTY_PREFILLED_SETS
                 }
                 fallbackRestTime={
-                  historyExerciseMap[item.exerciseId]?.restTime ?? 120
+                  historyExerciseMap[item.exerciseId]?.restTime ??
+                  defaultRestTime
                 }
                 prBaseline={baselines[item.exerciseId]}
               />

@@ -61,7 +61,7 @@ export const WorkoutProvider: React.FC<React.PropsWithChildren> = ({
     const exerciseWithSets = {
       ...exercise,
       sets: exercise.sets,
-      restTime: exercise.restTime ?? 0,
+      restTime: exercise.restTime,
     };
 
     setExercises((prevExercises) => [...prevExercises, exerciseWithSets]);

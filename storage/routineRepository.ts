@@ -37,7 +37,7 @@ type RoutineRow = {
 type RoutineExerciseRow = {
   routine_id: string;
   exercise_id: string;
-  rest_seconds: number;
+  rest_seconds: number | null;
   set_count: number;
   position: number;
 };
@@ -78,7 +78,7 @@ export async function getAllRoutines(db: SQLiteDatabase) {
           exerciseId: catalogueExericse.id,
           name: catalogueExericse.name,
           mechanic: catalogueExericse.mechanic,
-          restTime: row.rest_seconds ?? 0,
+          restTime: row.rest_seconds ?? null,
           sets: Array.from({ length: setCount }, (_, index) => ({
             id: index + 1,
             complete: false,
@@ -222,7 +222,7 @@ export async function getRoutine(db: SQLiteDatabase, routineId: string) {
       exerciseId: catalogueExercise.id,
       name: catalogueExercise.name,
       mechanic: catalogueExercise.mechanic,
-      restTime: row.rest_seconds ?? 0,
+      restTime: row.rest_seconds ?? null,
       sets: Array.from({ length: setCount }, (_, index) => ({
         id: index + 1,
         complete: false,

@@ -33,7 +33,7 @@ type HistoryRow = {
 
 type LatestPerformanceRow = {
   exercise_id: string;
-  rest_seconds: number;
+  rest_seconds: number | null;
   set_number: number;
   weight_grams: number;
   reps: number;
@@ -73,7 +73,7 @@ type ChartArrayType = {
 
 export type LatestExercisePerformance = {
   exerciseId: string;
-  restTime: number;
+  restTime: number | null;
   sets: SetRow[];
 };
 

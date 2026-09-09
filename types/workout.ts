@@ -16,7 +16,7 @@ export type Exercise = {
   exerciseId: string;
   name: string;
   mechanic: string | null | undefined;
-  restTime: number;
+  restTime: number | null;
   sets: SetRow[];
 };
 
