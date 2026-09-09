@@ -1,6 +1,10 @@
 import CustomDropdown from "@/components/CustomDropdown";
 import { ThemedText } from "@/components/ui/ThemedText";
 import { APPEARANCE_OPTIONS } from "@/constants/theme";
+import {
+  DEFAULT_REST_TIME_OPTIONS,
+  useDefaultRestTime,
+} from "@/contexts/restTimePreferenceContext";
 import { useThemeProvider } from "@/contexts/themeContext";
 import { useWeightUnit } from "@/contexts/weightUnitContext";
 import { useThemeColor } from "@/hooks/use-theme-color";
@@ -9,11 +13,12 @@ import { useState } from "react";
 import { ScrollView, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-type OpenDropdown = "appearance" | "weightUnit" | null;
+type OpenDropdown = "appearance" | "weightUnit" | "defaultRestTime" | null;
 
 export default function TabThreeScreen() {
   const { appearance, setTheme } = useThemeProvider();
   const { weightUnit, setWeightUnit } = useWeightUnit();
+  const { defaultRestTime, setDefaultRestTime } = useDefaultRestTime();
 
   const background = useThemeColor({}, "background");
 
@@ -58,6 +63,20 @@ export default function TabThreeScreen() {
                 setOpenDropdown(open ? "weightUnit" : null)
               }
             />
+          </View>
+          <View>
+            <View style={styles.dropdown}>
+              <ThemedText type="defaultSemiBold">Default Rest</ThemedText>
+              <CustomDropdown
+                value={defaultRestTime}
+                options={DEFAULT_REST_TIME_OPTIONS}
+                open={openDropdown === "defaultRestTime"}
+                onSelect={setDefaultRestTime}
+                onOpenChange={(open) =>
+                  setOpenDropdown(open ? "defaultRestTime" : null)
+                }
+              />
+            </View>
           </View>
         </View>
       </ScrollView>

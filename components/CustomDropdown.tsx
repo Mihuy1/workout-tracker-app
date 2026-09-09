@@ -3,12 +3,12 @@ import { Pressable, StyleSheet, View } from "react-native";
 import { IconSymbol } from "./ui/IconSymbol";
 import { ThemedText } from "./ui/ThemedText";
 
-interface DropdownOption<T extends string> {
+interface DropdownOption<T extends string | number> {
   value: T;
   label: string;
 }
 
-interface CustomDropDownProps<T extends string> {
+interface CustomDropDownProps<T extends string | number> {
   options: readonly DropdownOption<T>[];
   value: T;
   open: boolean;
@@ -16,7 +16,7 @@ interface CustomDropDownProps<T extends string> {
   onSelect: (option: T) => void | Promise<void>;
 }
 
-export default function CustomDropdown<T extends string>({
+export default function CustomDropdown<T extends string | number>({
   options,
   value,
   open,
@@ -28,7 +28,7 @@ export default function CustomDropdown<T extends string>({
   const surface = useThemeColor({}, "surface");
   const selectedBackground = useThemeColor({}, "surfaceMuted");
   const selectedLabel =
-    options.find((option) => option.value === value)?.label ?? value;
+    options.find((option) => option.value === value)?.label ?? String(value);
 
   return (
     <View

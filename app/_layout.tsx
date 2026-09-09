@@ -7,6 +7,7 @@ import {
 } from "expo-router/react-navigation";
 import { StatusBar } from "expo-status-bar";
 
+import { RestTimePreferenceProvider } from "@/contexts/restTimePreferenceContext";
 import { RestTimerProvider } from "@/contexts/restTimerContext";
 import { ThemeContextProvider } from "@/contexts/themeContext";
 import { WeightUnitProvider } from "@/contexts/weightUnitContext";
@@ -28,29 +29,34 @@ export default function RootLayout() {
   return (
     <QueryClientProvider client={queryClient}>
       <WeightUnitProvider>
-        <ThemeProvider
-          value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
-        >
-          <SQLiteProvider databaseName={DATABASE_NAME} onInit={migrateDatabase}>
-            <WorkoutProvider>
-              <RestTimerProvider>
-                <ThemeContextProvider>
-                  <Stack>
-                    <Stack.Screen
-                      name="(tabs)"
-                      options={{ headerShown: false }}
-                    />
-                    <Stack.Screen
-                      name="modal"
-                      options={{ presentation: "modal", title: "Modal" }}
-                    />
-                  </Stack>
-                  <StatusBar style="auto" />
-                </ThemeContextProvider>
-              </RestTimerProvider>
-            </WorkoutProvider>
-          </SQLiteProvider>
-        </ThemeProvider>
+        <RestTimePreferenceProvider>
+          <ThemeProvider
+            value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
+          >
+            <SQLiteProvider
+              databaseName={DATABASE_NAME}
+              onInit={migrateDatabase}
+            >
+              <WorkoutProvider>
+                <RestTimerProvider>
+                  <ThemeContextProvider>
+                    <Stack>
+                      <Stack.Screen
+                        name="(tabs)"
+                        options={{ headerShown: false }}
+                      />
+                      <Stack.Screen
+                        name="modal"
+                        options={{ presentation: "modal", title: "Modal" }}
+                      />
+                    </Stack>
+                    <StatusBar style="auto" />
+                  </ThemeContextProvider>
+                </RestTimerProvider>
+              </WorkoutProvider>
+            </SQLiteProvider>
+          </ThemeProvider>
+        </RestTimePreferenceProvider>
       </WeightUnitProvider>
     </QueryClientProvider>
   );
