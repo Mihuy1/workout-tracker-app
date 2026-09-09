@@ -1,11 +1,13 @@
-import { View, type TextStyle } from "react-native";
 import { ThemedText } from "@/components/ui/ThemedText";
+import { timerSeconds } from "@/utils/restTimer";
+import { View, type TextStyle } from "react-native";
 
 type WorkoutTimerProps = {
   fontSize?: number;
   fontWeight?: TextStyle["fontWeight"];
   lineHeight?: number;
   elapsedTimeMs: number;
+  countdown?: boolean;
 };
 
 export function WorkoutTimer({
@@ -13,9 +15,10 @@ export function WorkoutTimer({
   fontWeight = "400",
   lineHeight = 24,
   elapsedTimeMs,
+  countdown = false,
 }: WorkoutTimerProps) {
   const formatElapsed = (ms: number) => {
-    let totalSeconds: number = Math.floor(ms / 1000);
+    let totalSeconds: number = timerSeconds(ms, countdown);
 
     const hours: number = Math.floor(totalSeconds / 3600);
     totalSeconds %= 3600;

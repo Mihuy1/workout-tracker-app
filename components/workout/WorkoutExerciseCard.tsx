@@ -2,7 +2,7 @@ import { RestTimePicker } from "@/components/timer/RestTimePicker";
 import { CustomModal } from "@/components/ui/CustomModal";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import { ThemedText } from "@/components/ui/ThemedText";
-import { useRestTimer } from "@/contexts/restTimerContext";
+import { useRestTimerActions } from "@/contexts/restTimerContext";
 import { useWeightUnit } from "@/contexts/weightUnitContext";
 import { useWorkoutActions } from "@/contexts/workoutActionsContext";
 import { useThemeColor } from "@/hooks/use-theme-color";
@@ -46,7 +46,7 @@ export const WorkoutExerciseCard = memo(function WorkoutExerciseCard({
     setRestTime,
   } = useWorkoutActions();
 
-  const { triggerRestTimer, clearRestTimer } = useRestTimer();
+  const { triggerRestTimer } = useRestTimerActions();
   const { weightUnit } = useWeightUnit();
 
   const { name: workoutName, mechanic: workoutMechanic } = exercise;
@@ -353,8 +353,6 @@ export const WorkoutExerciseCard = memo(function WorkoutExerciseCard({
                 onPress={() => {
                   Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
                   removeSet(workoutName, item.id);
-
-                  clearRestTimer();
                 }}
               >
                 <IconSymbol name="minus.circle" size={24} color="red" />

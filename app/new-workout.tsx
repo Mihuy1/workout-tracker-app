@@ -1,6 +1,6 @@
 import { CustomModal } from "@/components/ui/CustomModal";
 import { ActiveWorkout } from "@/components/workout/ActiveWorkout";
-import { useRestTimer } from "@/contexts/restTimerContext";
+import { useRestTimerActions } from "@/contexts/restTimerContext";
 import { useWeightUnit } from "@/contexts/weightUnitContext";
 import { useWorkoutActions } from "@/contexts/workoutActionsContext";
 import { useWorkoutState } from "@/contexts/workoutStateContext";
@@ -51,7 +51,7 @@ export default function NewWorkoutScreen() {
 
   const { exercises } = useWorkoutState();
   const { clearWorkout } = useWorkoutActions();
-  const { clearRestTimer } = useRestTimer();
+  const { clearRestTimer } = useRestTimerActions();
   const navigation = useNavigation();
   const [isFinishing, setIsFinishing] = useState(false);
   const [isExiting, setIsExiting] = useState(false);

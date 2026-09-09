@@ -1,9 +1,11 @@
 import { Colors } from "@/constants/theme";
-import { useRestTimer } from "@/contexts/restTimerContext";
+import { useRestTimer, useRestTimerActions } from "@/contexts/restTimerContext";
+import { remainingRestMs } from "@/utils/restTimer";
 import * as Haptics from "expo-haptics";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Animated,
+  AppState,
   Button,
   Easing,
   StyleSheet,
@@ -12,229 +14,139 @@ import {
 } from "react-native";
 import { WorkoutTimer } from "./WorkoutTimer";
 
-type TimerStatus = "idle" | "running" | "paused";
-
 export const RestTimer = () => {
   const { restTimerRun } = useRestTimer();
-  const [restTimerStatus, setRestTimerStatus] = useState<TimerStatus>("idle");
-  const [timeLeft, setTimeLeft] = useState<number>(0);
-  const [animatedProgress] = useState<Animated.Value>(
-    () => new Animated.Value(1),
-  );
-
-  const endTimeRef = useRef<number | null>(null);
-  const intervalRef = useRef<number | undefined>(undefined);
+  const { pauseRestTimer, resumeRestTimer, adjustRestTimer, clearRestTimer } =
+    useRestTimerActions();
+  const [now, setNow] = useState(Date.now);
+  const [animatedProgress] = useState(() => new Animated.Value(0));
 
   const theme = useColorScheme() === "dark" ? "dark" : "light";
   const colors = Colors[theme];
 
-  const start = useCallback(
-    (initialTimeLeft: number) => {
-      if (initialTimeLeft <= 0) return;
-
-      setRestTimerStatus("running");
-
-      if (intervalRef.current) clearInterval(intervalRef.current);
-
-      setTimeLeft(initialTimeLeft);
-      endTimeRef.current = Date.now() + initialTimeLeft;
-
-      Animated.timing(animatedProgress, {
-        toValue: 0,
-        duration: initialTimeLeft,
-        easing: Easing.linear,
-        useNativeDriver: true,
-      }).start();
-
-      intervalRef.current = setInterval(() => {
-        if (!endTimeRef.current) return;
-
-        const remaining = Math.max(0, endTimeRef.current - Date.now());
-
-        setTimeLeft(remaining);
-
-        if (remaining === 0) {
-          if (intervalRef.current) {
-            clearInterval(intervalRef.current);
-            intervalRef.current = undefined;
-          }
-
-          setRestTimerStatus("idle");
-          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-        }
-      }, 1000);
-    },
-    [animatedProgress],
-  );
-
-  const resume = () => {
-    if (restTimerStatus !== "paused" || timeLeft <= 0) return;
-
-    start(timeLeft);
-  };
-
-  const pause = () => {
-    if (!endTimeRef.current) return;
-
-    const remaining = Math.max(0, endTimeRef.current - Date.now());
-
-    setTimeLeft(remaining);
-    setRestTimerStatus("paused");
-
-    if (intervalRef.current) {
-      clearInterval(intervalRef.current);
-      intervalRef.current = undefined;
-    }
-
-    animatedProgress.stopAnimation();
-  };
-
-  const stop = useCallback(() => {
-    if (intervalRef.current) {
-      clearInterval(intervalRef.current);
-      intervalRef.current = undefined;
-    }
-
-    animatedProgress.stopAnimation();
-    endTimeRef.current = null;
-  }, [animatedProgress]);
-
-  const adjustByMs = (delta: number) => {
-    if (
-      restTimerStatus !== "running" ||
-      !restTimerRun ||
-      endTimeRef.current === null
-    )
-      return;
-
-    const now = Date.now();
-    const previousTimeLeft = Math.max(0, endTimeRef.current - now);
-
-    const nextTimeLeft = Math.max(0, previousTimeLeft + delta);
-
-    endTimeRef.current = now + nextTimeLeft;
-    setTimeLeft(nextTimeLeft);
-
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-
-    animatedProgress.stopAnimation((currentProgress) => {
-      const nextProgress =
-        previousTimeLeft > 0
-          ? currentProgress * (nextTimeLeft / previousTimeLeft)
-          : nextTimeLeft / restTimerRun.durationMs;
-
-      animatedProgress.setValue(Math.max(0, Math.min(1, nextProgress)));
-
-      if (nextTimeLeft > 0) {
-        Animated.timing(animatedProgress, {
-          toValue: 0,
-          duration: nextTimeLeft,
-          easing: Easing.linear,
-          useNativeDriver: true,
-        }).start();
-      }
-    });
-
-    if (nextTimeLeft === 0) {
-      if (intervalRef.current !== undefined) {
-        clearInterval(intervalRef.current);
-        intervalRef.current = undefined;
-      }
-
-      setRestTimerStatus("idle");
-    }
-  };
-
-  const decreaseBy15 = () => {
-    adjustByMs(-15000);
-  };
-
-  const increaseBy15 = () => {
-    adjustByMs(15000);
-  };
+  const timeLeft = restTimerRun
+    ? Math.min(restTimerRun.durationMs, remainingRestMs(restTimerRun, now))
+    : 0;
 
   useEffect(() => {
-    if (!restTimerRun) return;
+    let timeout: ReturnType<typeof setTimeout> | undefined;
+    const stop = () => {
+      if (timeout !== undefined) clearTimeout(timeout);
+      animatedProgress.stopAnimation();
+    };
 
-    const timeLeft = Math.max(0, restTimerRun.endsAt - Date.now());
+    const tick = () => {
+      const currentTime = Date.now();
+      setNow(currentTime);
+      if (restTimerRun?.status !== "running") return;
+      const remaining = remainingRestMs(restTimerRun, currentTime);
+      if (remaining > 0) timeout = setTimeout(tick, remaining % 1000 || 1000);
+    };
 
-    animatedProgress.setValue(1);
+    const sync = () => {
+      stop();
+      if (!restTimerRun || AppState.currentState !== "active") return;
 
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    start(timeLeft);
+      const remaining = remainingRestMs(restTimerRun, Date.now());
+      animatedProgress.setValue(
+        Math.min(1, remaining / restTimerRun.durationMs),
+      );
+      if (restTimerRun.status === "running" && remaining > 0) {
+        Animated.timing(animatedProgress, {
+          toValue: 0,
+          duration: remaining,
+          easing: Easing.linear,
+          useNativeDriver: true,
+          isInteraction: false,
+        }).start();
+      }
+      tick();
+    };
+
+    sync();
+
+    const subscription = AppState.addEventListener("change", sync);
 
     return () => {
       stop();
+      subscription.remove();
     };
-  }, [restTimerRun, animatedProgress, start, stop]);
+  }, [restTimerRun, animatedProgress]);
+
+  const adjust = (deltaMs: number) => {
+    adjustRestTimer(deltaMs);
+    void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(
+      console.warn,
+    );
+  };
 
   return (
     <>
-      {restTimerRun &&
-        (restTimerStatus === "running" || restTimerStatus === "paused") && (
+      {restTimerRun && (
+        <View
+          style={[
+            styles.container,
+            {
+              backgroundColor: colors.restTimeBackground,
+              borderColor: colors.restTimeBorder,
+            },
+          ]}
+        >
+          <View style={styles.restTimeText}>
+            <WorkoutTimer
+              fontSize={30}
+              fontWeight={600}
+              lineHeight={58}
+              elapsedTimeMs={timeLeft}
+              countdown
+            />
+          </View>
+          <View style={styles.timeAdjustRow}>
+            <Button
+              title="-15"
+              onPress={() => adjust(-15000)}
+              disabled={restTimerRun.status === "paused"}
+            />
+            <Button
+              title="+15"
+              onPress={() => adjust(15000)}
+              disabled={restTimerRun.status === "paused"}
+            />
+          </View>
+
           <View
             style={[
-              styles.container,
-              {
-                backgroundColor: colors.restTimeBackground,
-                borderColor: colors.restTimeBorder,
-              },
+              styles.barTrack,
+              { backgroundColor: colors.restTimeBorder },
             ]}
           >
-            <View style={styles.restTimeText}>
-              <WorkoutTimer
-                fontSize={30}
-                fontWeight={600}
-                lineHeight={58}
-                elapsedTimeMs={timeLeft}
-              />
-            </View>
-            <View style={styles.timeAdjustRow}>
-              <Button
-                title="-15"
-                onPress={decreaseBy15}
-                disabled={restTimerStatus === "paused"}
-              />
-              <Button
-                title="+15"
-                onPress={increaseBy15}
-                disabled={restTimerStatus === "paused"}
-              />
-            </View>
-
-            <View
+            <Animated.View
               style={[
-                styles.barTrack,
-                { backgroundColor: colors.restTimeBorder },
+                styles.barFill,
+                {
+                  backgroundColor: colors.barColor,
+                  transformOrigin: "left center",
+                  transform: [{ scaleX: animatedProgress }],
+                },
               ]}
-            >
-              <Animated.View
-                style={[
-                  styles.barFill,
-                  {
-                    backgroundColor: colors.barColor,
-                    transformOrigin: "left center",
-                    transform: [{ scaleX: animatedProgress }],
-                  },
-                ]}
-              />
-            </View>
-
-            <View style={styles.buttonRow}>
-              <Button
-                title="Resume"
-                onPress={() => resume()}
-                disabled={restTimerStatus === "running"}
-              />
-              <Button
-                title="Pause"
-                onPress={pause}
-                disabled={restTimerStatus !== "running"}
-              />
-              {/* <Button title="Restart" onPress={restart} /> */}
-            </View>
+            />
           </View>
-        )}
+
+          <View style={styles.buttonRow}>
+            <Button
+              title="Resume"
+              onPress={resumeRestTimer}
+              disabled={restTimerRun.status === "running"}
+            />
+            <Button
+              title="Pause"
+              onPress={pauseRestTimer}
+              disabled={restTimerRun.status !== "running"}
+            />
+            <Button title="Skip" onPress={clearRestTimer} />
+          </View>
+        </View>
+      )}
     </>
   );
 };
