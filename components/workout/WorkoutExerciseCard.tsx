@@ -70,13 +70,15 @@ export const WorkoutExerciseCard = memo(function WorkoutExerciseCard({
     prBaseline: ExercisePrBaseline,
     candidateSetId: number,
     sets: SetRow[],
-    weightGrams: number,
-    reps: number,
+    candidateWeightGrams: number,
+    candidateReps: number,
   ) {
     if (prBaseline.bestWeightGrams === null) return [];
 
     let bestWeightGrams = prBaseline.bestWeightGrams;
-    let bestRepsAtWeight = prBaseline.bestRepsByWeight[String(weightGrams)];
+    let bestRepsAtWeight =
+      prBaseline.bestRepsByWeight[String(candidateWeightGrams)];
+    let bestOneRepMax = prBaseline.bestOneRepMax;
 
     for (const set of sets) {
       if (!set.complete || set.id === candidateSetId) continue;
@@ -91,28 +93,43 @@ export const WorkoutExerciseCard = memo(function WorkoutExerciseCard({
         bestWeightGrams = setWeightUnit;
       }
 
-      if (setWeightUnit === weightGrams) {
+      if (setWeightUnit === candidateWeightGrams) {
         if (bestRepsAtWeight === undefined || bestRepsAtWeight < setReps) {
           bestRepsAtWeight = setReps;
         }
       }
+
+      const set1RM = Math.round(setWeightUnit * (1 + setReps / 30));
+      if (bestOneRepMax === null || set1RM > bestOneRepMax)
+        bestOneRepMax = set1RM;
     }
 
     const achievements: SetAchievement[] = [];
 
-    if (bestWeightGrams !== null && weightGrams > bestWeightGrams) {
+    if (bestWeightGrams !== null && candidateWeightGrams > bestWeightGrams) {
       achievements.push({
         type: "new_weight_pr",
         previousBestValue: bestWeightGrams,
-        newBestValue: weightGrams,
+        newBestValue: candidateWeightGrams,
       });
     }
 
-    if (bestRepsAtWeight !== undefined && reps > bestRepsAtWeight) {
+    if (bestRepsAtWeight !== undefined && candidateReps > bestRepsAtWeight) {
       achievements.push({
         type: "new_reps_pr",
         previousBestValue: bestRepsAtWeight,
-        newBestValue: reps,
+        newBestValue: candidateReps,
+      });
+    }
+
+    const candidate1RM = Math.round(
+      candidateWeightGrams * (1 + candidateReps / 30),
+    );
+    if (bestOneRepMax !== null && candidate1RM > bestOneRepMax) {
+      achievements.push({
+        type: "new_one_rep_max",
+        previousBestValue: bestOneRepMax,
+        newBestValue: candidate1RM,
       });
     }
 

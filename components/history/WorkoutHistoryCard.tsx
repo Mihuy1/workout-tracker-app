@@ -1,5 +1,4 @@
 import { CompletedWorkout } from "@/app/(tabs)/history";
-import { IconSymbol } from "@/components/ui/IconSymbol";
 import { ThemedText } from "@/components/ui/ThemedText";
 import { useWeightUnit } from "@/contexts/weightUnitContext";
 import { useThemeColor } from "@/hooks/use-theme-color";
@@ -10,9 +9,14 @@ type WorkoutHistoryCardProps = {
   isExpanded: boolean;
 };
 
+const ACHIEVEMENT_TYPE_LABELS: Record<string, string> = {
+  new_weight_pr: "Weight",
+  new_reps_pr: "Reps",
+  new_one_rep_max: "1RM",
+};
+
 export function WorkoutHistoryCard({
   exercises,
-
   isExpanded,
 }: WorkoutHistoryCardProps) {
   const { weightUnit } = useWeightUnit();
@@ -100,14 +104,22 @@ export function WorkoutHistoryCard({
                     >
                       {set.weight} {weightUnit} x {set.reps} reps
                     </ThemedText>
+
                     <View style={styles.prCol}>
-                      {set.achievements.length > 0 && (
+                      {/* {set.achievements.length > 0 && (
                         <IconSymbol
                           name="trophy.fill"
                           size={18}
                           color="#f5cc46"
                         />
-                      )}
+                      )} */}
+                      {set.achievements.map((achievement, index) => {
+                        return (
+                          <ThemedText type="small" key={index}>
+                            {ACHIEVEMENT_TYPE_LABELS[achievement.type]}
+                          </ThemedText>
+                        );
+                      })}
                     </View>
                   </View>
                 ))}

@@ -354,7 +354,7 @@ export async function getWorkoutHistory(
       setRows.set(row.set_id, set);
       exercise.sets.push(set);
 
-      workout.totalVolumeGrams = row.weight_grams * row.reps;
+      workout.totalVolumeGrams += row.weight_grams * row.reps;
     }
 
     if (
@@ -368,7 +368,7 @@ export async function getWorkoutHistory(
         previousBestValue: row.previous_best,
         newBestValue: row.new_best_value,
       });
-      workout.prCount += set.achievements.length;
+      workout.prCount += 1;
     }
   }
 
@@ -552,7 +552,6 @@ export async function getBaselines(
       ON we.id = ws.workout_exercise_id
     WHERE we.exercise_id IN (${placeholders})
     GROUP BY we.exercise_id, ws.weight_grams
-
     `,
     uniqueIds,
   );
@@ -563,6 +562,7 @@ export async function getBaselines(
     result[exerciseId] = {
       bestWeightGrams: null,
       bestRepsByWeight: {},
+      bestOneRepMax: null,
     };
   }
 
@@ -579,6 +579,16 @@ export async function getBaselines(
     ) {
       baseline.bestWeightGrams = row.weight_grams;
     }
+
+    const calculatedOne1RM = Math.round(
+      row.weight_grams * (1 + row.best_reps / 30),
+    );
+
+    if (
+      baseline.bestOneRepMax === null ||
+      calculatedOne1RM > baseline.bestOneRepMax
+    )
+      baseline.bestOneRepMax = calculatedOne1RM;
   }
 
   return result;

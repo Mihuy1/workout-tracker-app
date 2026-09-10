@@ -31,4 +31,5 @@ export type Workout = {
 export type ExercisePrBaseline = {
   bestWeightGrams: number | null;
   bestRepsByWeight: Record<string, number>;
+  bestOneRepMax: number | null;
 };
