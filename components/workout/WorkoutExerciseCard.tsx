@@ -12,6 +12,7 @@ import {
   SetAchievement,
   SetRow,
 } from "@/types/workout";
+import { estimateOneRepMax } from "@/utils/oneRepMax";
 import { formatWeightValue, weightToGrams } from "@/utils/weightUnits";
 import * as Haptics from "expo-haptics";
 import { memo, useState } from "react";
@@ -99,7 +100,7 @@ export const WorkoutExerciseCard = memo(function WorkoutExerciseCard({
         }
       }
 
-      const set1RM = Math.round(setWeightUnit * (1 + setReps / 30));
+      const set1RM = Math.round(estimateOneRepMax(setWeightUnit, setReps));
       if (bestOneRepMax === null || set1RM > bestOneRepMax)
         bestOneRepMax = set1RM;
     }
@@ -123,7 +124,7 @@ export const WorkoutExerciseCard = memo(function WorkoutExerciseCard({
     }
 
     const candidate1RM = Math.round(
-      candidateWeightGrams * (1 + candidateReps / 30),
+      estimateOneRepMax(candidateWeightGrams, candidateReps),
     );
     if (bestOneRepMax !== null && candidate1RM > bestOneRepMax) {
       achievements.push({

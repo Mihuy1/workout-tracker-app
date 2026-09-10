@@ -1,4 +1,5 @@
 import { Exercise, ExercisePrBaseline, SetRow } from "@/types/workout";
+import { estimateOneRepMax } from "@/utils/oneRepMax";
 import {
   formatWeightValue,
   gramsToWeight,
@@ -188,7 +189,7 @@ export async function getExerciseStats(
 
   for (const row of rows) {
     const weight = gramsToWeight(row.weight_grams, weightUnit);
-    const oneRepMax = weight * (1 + row.reps / 30);
+    const oneRepMax = estimateOneRepMax(weight, row.reps);
 
     const prevHeaviestWeight = heaviestWeightMap.get(row.completed_at) ?? 0;
     const prevOneRepMax = oneRepMaxMap.get(row.completed_at) ?? 0;
@@ -581,7 +582,7 @@ export async function getBaselines(
     }
 
     const calculatedOne1RM = Math.round(
-      row.weight_grams * (1 + row.best_reps / 30),
+      estimateOneRepMax(row.weight_grams, row.best_reps),
     );
 
     if (
