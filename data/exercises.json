@@ -623,6 +623,10 @@
   },
   {
     "name": "Arnold Dumbbell Press",
+    "aliases": [
+      "Arnold Press",
+      "Dumbbell Arnold Press"
+    ],
     "force": "push",
     "level": "intermediate",
     "mechanic": "compound",
@@ -1024,6 +1028,9 @@
   },
   {
     "name": "Band Skull Crusher",
+    "aliases": [
+      "Band Skullcrusher"
+    ],
     "force": "push",
     "level": "beginner",
     "mechanic": "isolation",
@@ -1097,7 +1104,14 @@
     "id": "Barbell_Ab_Rollout_-_On_Knees"
   },
   {
-    "name": "Barbell Bench Press - Medium Grip",
+    "name": "Barbell Bench Press",
+    "aliases": [
+      "Bench",
+      "Bench Press",
+      "Flat Bench",
+      "BP",
+      "Barbell Bench"
+    ],
     "force": "push",
     "level": "beginner",
     "mechanic": "compound",
@@ -1125,6 +1139,11 @@
   },
   {
     "name": "Barbell Curl",
+    "aliases": [
+      "BB Curl",
+      "Bicep Curl",
+      "Barbell Bicep Curl"
+    ],
     "force": "pull",
     "level": "beginner",
     "mechanic": "isolation",
@@ -1174,6 +1193,11 @@
   },
   {
     "name": "Barbell Deadlift",
+    "aliases": [
+      "Deadlift",
+      "Conventional Deadlift",
+      "DL"
+    ],
     "force": "pull",
     "level": "intermediate",
     "mechanic": "compound",
@@ -1340,7 +1364,12 @@
     "id": "Barbell_Hip_Thrust"
   },
   {
-    "name": "Barbell Incline Bench Press - Medium Grip",
+    "name": "Barbell Incline Bench Press",
+    "aliases": [
+      "Incline Bench",
+      "Incline Barbell Bench",
+      "Incline BP"
+    ],
     "force": "push",
     "level": "beginner",
     "mechanic": "compound",
@@ -1501,6 +1530,11 @@
   },
   {
     "name": "Barbell Shoulder Press",
+    "aliases": [
+      "OHP",
+      "Overhead Press",
+      "Barbell OHP"
+    ],
     "force": "push",
     "level": "intermediate",
     "mechanic": "compound",
@@ -1629,6 +1663,11 @@
   },
   {
     "name": "Barbell Squat",
+    "aliases": [
+      "Squat",
+      "Back Squat",
+      "Barbell Back Squat"
+    ],
     "force": "push",
     "level": "beginner",
     "mechanic": "compound",
@@ -2069,6 +2108,11 @@
   },
   {
     "name": "Bent Over Barbell Row",
+    "aliases": [
+      "Barbell Row",
+      "BB Row",
+      "Bent Over Row"
+    ],
     "force": "pull",
     "level": "beginner",
     "mechanic": "compound",
@@ -2839,6 +2883,12 @@
   },
   {
     "name": "Butterfly",
+    "aliases": [
+      "Pec Deck",
+      "Pec Fly",
+      "Machine Fly",
+      "Chest Fly Machine"
+    ],
     "force": "pull",
     "level": "beginner",
     "mechanic": "isolation",
@@ -2889,6 +2939,11 @@
   },
   {
     "name": "Cable Crossover",
+    "aliases": [
+      "Cable Fly",
+      "Cable Flyes",
+      "Cable Chest Fly"
+    ],
     "force": "push",
     "level": "beginner",
     "mechanic": "isolation",
@@ -4111,6 +4166,11 @@
   },
   {
     "name": "Chin-Up",
+    "aliases": [
+      "Chinup",
+      "Chin-Ups",
+      "Underhand Pullup"
+    ],
     "force": "pull",
     "level": "beginner",
     "mechanic": "compound",
@@ -4435,6 +4495,11 @@
   },
   {
     "name": "Close-Grip Barbell Bench Press",
+    "aliases": [
+      "CGBP",
+      "Close Grip Bench",
+      "Close Grip Barbell Bench"
+    ],
     "force": "push",
     "level": "beginner",
     "mechanic": "compound",
@@ -4568,6 +4633,11 @@
   },
   {
     "name": "Close-Grip Front Lat Pulldown",
+    "aliases": [
+      "Lat Pulldown",
+      "Lat Pull Down",
+      "Close Grip Lat Pulldown"
+    ],
     "force": "pull",
     "level": "beginner",
     "mechanic": "compound",
@@ -5781,6 +5851,11 @@
   },
   {
     "name": "Dumbbell Bench Press",
+    "aliases": [
+      "DB Bench",
+      "Dumbbell Flat Bench",
+      "DB Flat Bench"
+    ],
     "force": "push",
     "level": "beginner",
     "mechanic": "compound",
@@ -5834,6 +5909,11 @@
   },
   {
     "name": "Dumbbell Bicep Curl",
+    "aliases": [
+      "DB Curl",
+      "Bicep Curl",
+      "Dumbbell Curl"
+    ],
     "force": "pull",
     "level": "beginner",
     "mechanic": "isolation",
@@ -5916,6 +5996,11 @@
   },
   {
     "name": "Dumbbell Flyes",
+    "aliases": [
+      "DB Flyes",
+      "DB Fly",
+      "Dumbbell Fly"
+    ],
     "force": "push",
     "level": "beginner",
     "mechanic": "isolation",
@@ -6353,6 +6438,11 @@
   },
   {
     "name": "Dumbbell Shoulder Press",
+    "aliases": [
+      "DB Shoulder Press",
+      "Dumbbell Overhead Press",
+      "DB OHP"
+    ],
     "force": "push",
     "level": "intermediate",
     "mechanic": "compound",
@@ -6602,6 +6692,12 @@
   },
   {
     "name": "EZ-Bar Skullcrusher",
+    "aliases": [
+      "Skull Crusher",
+      "Skull Crushers",
+      "Skullcrusher",
+      "Lying Triceps Extension"
+    ],
     "force": "push",
     "level": "beginner",
     "mechanic": "isolation",
@@ -6921,6 +7017,10 @@
   },
   {
     "name": "Face Pull",
+    "aliases": [
+      "Facepull",
+      "Cable Face Pull"
+    ],
     "force": "pull",
     "level": "intermediate",
     "mechanic": "compound",
@@ -7381,6 +7481,9 @@
   },
   {
     "name": "Front Barbell Squat",
+    "aliases": [
+      "Front Squat"
+    ],
     "force": "push",
     "level": "expert",
     "mechanic": "compound",
@@ -7716,6 +7819,11 @@
   },
   {
     "name": "Full Range-Of-Motion Lat Pulldown",
+    "aliases": [
+      "Lat Pulldown",
+      "Lat Pull Down",
+      "Pulldown"
+    ],
     "force": "pull",
     "level": "intermediate",
     "mechanic": "compound",
@@ -7769,6 +7877,9 @@
   },
   {
     "name": "Glute Ham Raise",
+    "aliases": [
+      "GHR"
+    ],
     "force": "pull",
     "level": "intermediate",
     "mechanic": "compound",
@@ -8574,6 +8685,11 @@
   },
   {
     "name": "Hyperextensions (Back Extensions)",
+    "aliases": [
+      "Hyperextension",
+      "Back Extension",
+      "Back Extensions"
+    ],
     "force": "pull",
     "level": "beginner",
     "mechanic": "isolation",
@@ -8910,6 +9026,11 @@
   },
   {
     "name": "Incline Dumbbell Press",
+    "aliases": [
+      "Incline DB Press",
+      "Incline Dumbbell Bench",
+      "Incline DB Bench"
+    ],
     "force": "push",
     "level": "beginner",
     "mechanic": "compound",
@@ -11714,6 +11835,10 @@
   },
   {
     "name": "Lying T-Bar Row",
+    "aliases": [
+      "T-Bar Row",
+      "T Bar Row"
+    ],
     "force": "pull",
     "level": "intermediate",
     "mechanic": "compound",
@@ -14497,6 +14622,12 @@
   },
   {
     "name": "Pullups",
+    "aliases": [
+      "Pull-Up",
+      "Pull Up",
+      "Pull-Ups",
+      "Overhand Pullup"
+    ],
     "force": "pull",
     "level": "beginner",
     "mechanic": "compound",
@@ -15386,6 +15517,10 @@
   },
   {
     "name": "Reverse Machine Flyes",
+    "aliases": [
+      "Reverse Pec Deck",
+      "Rear Delt Machine Fly"
+    ],
     "force": "pull",
     "level": "beginner",
     "mechanic": "isolation",
@@ -15649,6 +15784,10 @@
   },
   {
     "name": "Romanian Deadlift",
+    "aliases": [
+      "RDL",
+      "Romanian Dead Lift"
+    ],
     "force": "pull",
     "level": "intermediate",
     "mechanic": "compound",
@@ -15677,6 +15816,10 @@
   },
   {
     "name": "Romanian Deadlift from Deficit",
+    "aliases": [
+      "Deficit RDL",
+      "Deficit Romanian Deadlift"
+    ],
     "force": "pull",
     "level": "intermediate",
     "mechanic": "compound",
@@ -16270,6 +16413,9 @@
   },
   {
     "name": "Seated Calf Raise",
+    "aliases": [
+      "Seated Calf Raises"
+    ],
     "force": "push",
     "level": "beginner",
     "mechanic": "isolation",
@@ -17163,6 +17309,12 @@
   },
   {
     "name": "Side Lateral Raise",
+    "aliases": [
+      "Lateral Raise",
+      "Lat Raise",
+      "Side Raise",
+      "DB Lateral Raise"
+    ],
     "force": "push",
     "level": "beginner",
     "mechanic": "isolation",
@@ -18463,6 +18615,10 @@
   },
   {
     "name": "Smith Single-Leg Split Squat",
+    "aliases": [
+      "Smith Machine Bulgarian Split Squat",
+      "Smith BSS"
+    ],
     "force": "push",
     "level": "beginner",
     "mechanic": "compound",
@@ -18982,6 +19138,13 @@
   },
   {
     "name": "Split Squat with Dumbbells",
+    "aliases": [
+      "Bulgarian Split Squat",
+      "BSS",
+      "Rear Foot Elevated Split Squat",
+      "RFESS",
+      "Dumbbell Split Squat"
+    ],
     "force": "push",
     "level": "beginner",
     "mechanic": "compound",
@@ -19492,6 +19655,11 @@
   },
   {
     "name": "Standing Calf Raises",
+    "aliases": [
+      "Calf Raise",
+      "Calf Raises",
+      "Standing Calf Raise"
+    ],
     "force": "push",
     "level": "beginner",
     "mechanic": "isolation",
@@ -19979,6 +20147,11 @@
   },
   {
     "name": "Standing Military Press",
+    "aliases": [
+      "OHP",
+      "Overhead Press",
+      "Military Press"
+    ],
     "force": "push",
     "level": "beginner",
     "mechanic": "compound",
@@ -20429,6 +20602,11 @@
   },
   {
     "name": "Stiff-Legged Barbell Deadlift",
+    "aliases": [
+      "SLDL",
+      "Stiff Leg Deadlift",
+      "Stiff Legged Deadlift"
+    ],
     "force": "pull",
     "level": "intermediate",
     "mechanic": "compound",
@@ -20456,6 +20634,11 @@
   },
   {
     "name": "Stiff-Legged Dumbbell Deadlift",
+    "aliases": [
+      "DB SLDL",
+      "Dumbbell SLDL",
+      "Dumbbell Stiff Leg Deadlift"
+    ],
     "force": "pull",
     "level": "beginner",
     "mechanic": "compound",
@@ -20666,6 +20849,9 @@
   },
   {
     "name": "Sumo Deadlift",
+    "aliases": [
+      "Sumo DL"
+    ],
     "force": "pull",
     "level": "intermediate",
     "mechanic": "compound",
@@ -21025,6 +21211,10 @@
   },
   {
     "name": "T-Bar Row with Handle",
+    "aliases": [
+      "T-Bar Row",
+      "T Bar Row"
+    ],
     "force": "pull",
     "level": "beginner",
     "mechanic": "compound",
@@ -21257,6 +21447,10 @@
   },
   {
     "name": "Trap Bar Deadlift",
+    "aliases": [
+      "Hex Bar Deadlift",
+      "Trap Bar DL"
+    ],
     "force": "pull",
     "level": "beginner",
     "mechanic": "compound",
@@ -21351,6 +21545,11 @@
   },
   {
     "name": "Triceps Pushdown",
+    "aliases": [
+      "Cable Pushdown",
+      "Tricep Pushdown",
+      "Pushdown"
+    ],
     "force": "push",
     "level": "beginner",
     "mechanic": "isolation",
@@ -21375,6 +21574,10 @@
   },
   {
     "name": "Triceps Pushdown - Rope Attachment",
+    "aliases": [
+      "Rope Pushdown",
+      "Rope Tricep Pushdown"
+    ],
     "force": "push",
     "level": "beginner",
     "mechanic": "isolation",
