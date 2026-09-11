@@ -7,6 +7,7 @@ import { Pressable, StyleSheet, View } from "react-native";
 export interface ExercisePickerRowItem {
   id: string;
   name: string;
+  aliases?: string[];
   mechanic: string | null;
   equipment: string | null;
   primaryMuscles: string[];

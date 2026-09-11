@@ -47,12 +47,13 @@ export function ExerciseList() {
     () =>
       new Fuse(exercises, {
         keys: [
-          { name: "name" },
-          { name: "primaryMuscles" },
-          { name: "secondaryMuscles" },
-          { name: "equipment" },
-          { name: "mechanic" },
-          { name: "category" },
+          { name: "name", weight: 2.0 },
+          { name: "aliases", weight: 1.8 },
+          { name: "primaryMuscles", weight: 1.0 },
+          { name: "secondaryMuscles", weight: 0.8 },
+          { name: "equipment", weight: 0.7 },
+          { name: "mechanic", weight: 0.5 },
+          { name: "category", weight: 0.5 },
         ],
         threshold: 0.35,
         ignoreLocation: true,
@@ -121,6 +122,9 @@ export function ExerciseList() {
           placeholder="Search exercises"
           placeholderTextColor={placeholderColor}
           autoFocus
+          autoCorrect={false}
+          spellCheck={false}
+          autoCapitalize="none"
           returnKeyType="search"
           clearButtonMode="while-editing"
           accessibilityLabel="Search exercises"
