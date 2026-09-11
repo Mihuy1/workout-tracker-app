@@ -7,6 +7,12 @@ import {
   WeightUnit,
 } from "@/utils/weightUnits";
 import { SQLiteDatabase } from "expo-sqlite";
+import {
+  insertRoutine,
+  replaceRoutine,
+  type Routine,
+  type RoutineUpdate,
+} from "./routineRepository";
 
 type HistoryRow = {
   workout_id: string;
@@ -376,7 +382,7 @@ export async function getWorkoutHistory(
   return Array.from(workouts.values());
 }
 
-export async function saveWorkout(
+async function insertWorkout(
   db: SQLiteDatabase,
   id: string,
   workoutName: string,
@@ -386,9 +392,8 @@ export async function saveWorkout(
   weightUnit: WeightUnit,
 ) {
   const completedAt = new Date(date).getTime();
-  await db.withTransactionAsync(async () => {
-    await db.runAsync(
-      `
+  await db.runAsync(
+    `
         INSERT INTO workouts (
         id,
         name,
@@ -397,11 +402,11 @@ export async function saveWorkout(
         )
         VALUES (?, ?, ?, ?)
         `,
-      [id, workoutName, completedAt, workoutDurationMs],
-    );
-    for (const [exercisePosition, exercise] of exercises.entries()) {
-      const exerciseResult = await db.runAsync(
-        `
+    [id, workoutName, completedAt, workoutDurationMs],
+  );
+  for (const [exercisePosition, exercise] of exercises.entries()) {
+    const exerciseResult = await db.runAsync(
+      `
             INSERT INTO workout_exercises (
             workout_id,
             exercise_id,
@@ -412,22 +417,22 @@ export async function saveWorkout(
             )
             VALUES (?, ?, ?, ?, ?, ?)
             `,
-        [
-          id,
-          exercise.exerciseId,
-          exercise.name,
-          exercise.mechanic ?? null,
-          exercise.restTime,
-          exercisePosition,
-        ],
-      );
-      const workoutExerciseId = exerciseResult.lastInsertRowId;
+      [
+        id,
+        exercise.exerciseId,
+        exercise.name,
+        exercise.mechanic ?? null,
+        exercise.restTime,
+        exercisePosition,
+      ],
+    );
+    const workoutExerciseId = exerciseResult.lastInsertRowId;
 
-      for (const [setPosition, set] of exercise.sets.entries()) {
-        const weight = weightToGrams(Number(set.weight), weightUnit);
+    for (const [setPosition, set] of exercise.sets.entries()) {
+      const weight = weightToGrams(Number(set.weight), weightUnit);
 
-        const setResult = await db.runAsync(
-          `
+      const setResult = await db.runAsync(
+        `
             INSERT INTO workout_sets (
               workout_exercise_id,
               set_number,
@@ -436,14 +441,14 @@ export async function saveWorkout(
             )
             VALUES (?, ?, ?, ?)
             `,
-          [workoutExerciseId, setPosition + 1, weight, Number(set.reps)],
-        );
+        [workoutExerciseId, setPosition + 1, weight, Number(set.reps)],
+      );
 
-        const workoutSetId = setResult.lastInsertRowId;
+      const workoutSetId = setResult.lastInsertRowId;
 
-        for (const achievement of set.achievements) {
-          await db.runAsync(
-            `
+      for (const achievement of set.achievements) {
+        await db.runAsync(
+          `
               INSERT INTO workout_set_achievements (
                 workout_set_id,
                 achievement_type,
@@ -453,16 +458,60 @@ export async function saveWorkout(
               )
               VALUES (?, ?, ?, ?, ?)
               `,
-            [
-              workoutSetId,
-              achievement.type,
-              achievement.previousBestValue,
-              achievement.newBestValue,
-              completedAt,
-            ],
-          );
-        }
+          [
+            workoutSetId,
+            achievement.type,
+            achievement.previousBestValue,
+            achievement.newBestValue,
+            completedAt,
+          ],
+        );
       }
+    }
+  }
+}
+
+type SaveWorkoutAndMaybeRoutineInput = {
+  workout: {
+    id: string;
+    workoutName: string;
+    date: string;
+    exercises: Exercise[];
+    workoutDurationMs: number;
+    weightUnit: WeightUnit;
+  };
+  routineOperation:
+    | null
+    | { type: "create"; routine: Routine }
+    | { type: "update"; routine: RoutineUpdate };
+};
+
+export async function saveWorkoutAndMaybeRoutine(
+  db: SQLiteDatabase,
+  input: SaveWorkoutAndMaybeRoutineInput,
+) {
+  const { workout, routineOperation } = input;
+
+  await db.withTransactionAsync(async () => {
+    await insertWorkout(
+      db,
+      workout.id,
+      workout.workoutName,
+      workout.date,
+      workout.exercises,
+      workout.workoutDurationMs,
+      workout.weightUnit,
+    );
+
+    switch (routineOperation?.type) {
+      case "create":
+        await insertRoutine(db, routineOperation.routine);
+        break;
+      case "update":
+        await replaceRoutine(db, routineOperation.routine);
+        break;
+      case undefined:
+        break;
     }
   });
 }

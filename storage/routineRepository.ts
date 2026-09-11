@@ -10,17 +10,12 @@ export type Routine = {
   exercises: Exercise[];
 };
 
-type RoutineUpdate = {
+export type RoutineUpdate = {
   id: string;
   name: string;
   updatedAt: number;
   exercises: Exercise[];
 };
-
-type RoutineOperation =
-  | { type: "none" }
-  | { type: "create"; routine: Routine }
-  | { type: "update"; routineUpdate: RoutineUpdate };
 
 type RoutineRow = {
   routine_id: string;
@@ -94,78 +89,62 @@ export async function getAllRoutines(db: SQLiteDatabase) {
   return Array.from(routinesMap.values());
 }
 
-export async function saveRoutine(db: SQLiteDatabase, routine: Routine) {
-  await db.withTransactionAsync(async () => {
-    await db.runAsync(
-      `
+export async function insertRoutine(db: SQLiteDatabase, routine: Routine) {
+  await db.runAsync(
+    `
       INSERT INTO routines (id, name, created_at, updated_at) VALUES (?, ?, ?, ?)`,
-      [routine.id, routine.name, routine.createdAt, routine.updatedAt],
-    );
+    [routine.id, routine.name, routine.createdAt, routine.updatedAt],
+  );
 
-    for (const [index, exercise] of routine.exercises.entries()) {
-      const exerciseRow = await db.runAsync(
-        `
+  for (const [index, exercise] of routine.exercises.entries()) {
+    const exerciseRow = await db.runAsync(
+      `
           INSERT INTO routine_exercises (routine_id, exercise_id, rest_seconds, set_count, position) VALUES (?, ?, ?, ?, ?)
           `,
-        [
-          routine.id,
-          exercise.exerciseId,
-          exercise.restTime,
-          exercise.sets.length,
-          index,
-        ],
-      );
+      [
+        routine.id,
+        exercise.exerciseId,
+        exercise.restTime,
+        exercise.sets.length,
+        index,
+      ],
+    );
 
-      if (!exerciseRow) {
-        console.warn("Failed to create exercise:", exercise);
-      }
+    if (!exerciseRow) {
+      console.warn("Failed to create exercise:", exercise);
     }
-  });
+  }
 
   return routine;
 }
 
-export async function updateRoutine(
+export async function replaceRoutine(
   db: SQLiteDatabase,
   routine: RoutineUpdate,
 ) {
-  await db.withTransactionAsync(async () => {
+  await db.runAsync(
+    `UPDATE routines SET name = ?, updated_at = ? WHERE id = ?`,
+    [routine.name, routine.updatedAt, routine.id],
+  );
+
+  await db.runAsync(`DELETE FROM routine_exercises WHERE routine_id = ?`, [
+    routine.id,
+  ]);
+
+  for (const [position, exercise] of routine.exercises.entries()) {
     await db.runAsync(
-      `UPDATE routines SET name = ?, updated_at = ? WHERE id = ?`,
-      [routine.name, routine.updatedAt, routine.id],
-    );
-
-    await db.runAsync(`DELETE FROM routine_exercises WHERE routine_id = ?`, [
-      routine.id,
-    ]);
-
-    for (const [position, exercise] of routine.exercises.entries()) {
-      await db.runAsync(
-        `
+      `
         INSERT INTO routine_exercises (routine_id, exercise_id, rest_seconds, set_count, position) VALUES (?, ?, ?, ?, ?)
         `,
-        [
-          routine.id,
-          exercise.exerciseId,
-          exercise.restTime,
-          exercise.sets.length,
-          position,
-        ],
-      );
-    }
-  });
-}
-
-export async function saveWorkoutAndRoutine(
-  db: SQLiteDatabase,
-  workouts: Exercise[],
-  routineOperation: RoutineOperation,
-) {
-  await db.withTransactionAsync(async () => {
-    await db.runAsync(`
-      INSERT INTO workouts 
-      `);
-  });
+      [
+        routine.id,
+        exercise.exerciseId,
+        exercise.restTime,
+        exercise.sets.length,
+        position,
+      ],
+    );
+  }
 }
 
 export async function deleteRoutine(db: SQLiteDatabase, routineId: string) {

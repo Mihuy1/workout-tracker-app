@@ -4,12 +4,8 @@ import { useRestTimerActions } from "@/contexts/restTimerContext";
 import { useWeightUnit } from "@/contexts/weightUnitContext";
 import { useWorkoutActions } from "@/contexts/workoutActionsContext";
 import { useWorkoutState } from "@/contexts/workoutStateContext";
-import {
-  getRoutine,
-  saveRoutine,
-  updateRoutine,
-} from "@/storage/routineRepository";
-import { saveWorkout } from "@/storage/workoutRepository";
+import { getRoutine } from "@/storage/routineRepository";
+import { saveWorkoutAndMaybeRoutine } from "@/storage/workoutRepository";
 import type { Exercise, SetRow } from "@/types/workout";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import * as Crypto from "expo-crypto";
@@ -122,34 +118,42 @@ export default function NewWorkoutScreen() {
         }))
         .filter((exercise) => exercise.sets.length > 0);
 
-      await saveWorkout(
-        db,
-        Date.now().toString(),
-        presetName ?? "Workout " + new Date().toLocaleDateString(),
-        new Date().toISOString(),
-        completedExercises,
-        workoutDurMs,
-        weightUnit,
-      );
+      const routineOperation =
+        presetName && shouldUpdatePreset
+          ? routineId
+            ? {
+                type: "update" as const,
+                routine: {
+                  id: routineId,
+                  name: presetName,
+                  updatedAt: Date.now(),
+                  exercises,
+                },
+              }
+            : {
+                type: "create" as const,
+                routine: {
+                  id: Crypto.randomUUID(),
+                  name: presetName,
+                  createdAt: Date.now(),
+                  updatedAt: Date.now(),
+                  exercises,
+                },
+              }
+          : null;
 
-      if (presetName && shouldUpdatePreset) {
-        if (routineId) {
-          await updateRoutine(db, {
-            id: routineId,
-            name: presetName,
-            updatedAt: Date.now(),
-            exercises: exercises,
-          });
-        } else {
-          await saveRoutine(db, {
-            id: Crypto.randomUUID(),
-            name: presetName,
-            createdAt: Date.now(),
-            updatedAt: Date.now(),
-            exercises: exercises,
-          });
-        }
-      }
+      await saveWorkoutAndMaybeRoutine(db, {
+        workout: {
+          id: Date.now().toString(),
+          workoutName:
+            presetName ?? "Workout " + new Date().toLocaleDateString(),
+          date: new Date().toISOString(),
+          exercises: completedExercises,
+          workoutDurationMs: workoutDurMs,
+          weightUnit,
+        },
+        routineOperation,
+      });
 
       return true;
     },
