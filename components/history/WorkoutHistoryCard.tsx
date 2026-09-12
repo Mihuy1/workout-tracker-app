@@ -1,7 +1,7 @@
-import { CompletedWorkout } from "@/app/(tabs)/history";
 import { ThemedText } from "@/components/ui/ThemedText";
 import { useWeightUnit } from "@/contexts/weightUnitContext";
 import { useThemeColor } from "@/hooks/use-theme-color";
+import type { CompletedWorkout } from "@/storage/workoutRepository";
 import { StyleSheet, View } from "react-native";
 
 type WorkoutHistoryCardProps = {
@@ -106,13 +106,6 @@ export function WorkoutHistoryCard({
                     </ThemedText>
 
                     <View style={styles.prCol}>
-                      {/* {set.achievements.length > 0 && (
-                        <IconSymbol
-                          name="trophy.fill"
-                          size={18}
-                          color="#f5cc46"
-                        />
-                      )} */}
                       {set.achievements.map((achievement, index) => {
                         return (
                           <ThemedText type="small" key={index}>
