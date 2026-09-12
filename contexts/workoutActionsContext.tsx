@@ -19,7 +19,9 @@ type WorkoutActionsContextType = {
   updateSet: (
     exerciseName: string,
     setId: number,
-    patch: Partial<Pick<SetRow, "weight" | "reps" | "complete">>,
+    patch: Partial<
+      Pick<SetRow, "weight" | "reps" | "complete" | "achievements">
+    >,
   ) => void;
   handleCompleteSet: (
     exerciseName: string,
@@ -114,7 +116,9 @@ export const WorkoutProvider: React.FC<React.PropsWithChildren> = ({
     (
       exerciseName: string,
       setId: number,
-      patch: Partial<Pick<SetRow, "weight" | "reps" | "complete">>,
+      patch: Partial<
+        Pick<SetRow, "weight" | "reps" | "complete" | "achievements">
+      >,
     ) => {
       setExercises((prev) =>
         prev.map((ex) => {

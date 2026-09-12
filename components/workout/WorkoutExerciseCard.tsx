@@ -256,8 +256,8 @@ export const WorkoutExerciseCard = memo(function WorkoutExerciseCard({
               onChangeText={(text) =>
                 updateSet(workoutName, item.id, {
                   weight: text,
-                  reps: item.reps,
-                  complete: item.complete,
+                  complete: false,
+                  achievements: [],
                 })
               }
               placeholder={suggestedWeightPlaceholder}
@@ -274,9 +274,9 @@ export const WorkoutExerciseCard = memo(function WorkoutExerciseCard({
               value={item.reps}
               onChangeText={(text) =>
                 updateSet(workoutName, item.id, {
-                  weight: item.weight,
                   reps: text,
-                  complete: item.complete,
+                  complete: false,
+                  achievements: [],
                 })
               }
               placeholder={suggestedReps || "0"}
