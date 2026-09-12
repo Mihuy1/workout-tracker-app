@@ -260,7 +260,7 @@ export default function NewWorkoutScreen() {
     if (exercises.length > 0) {
       openDiscardModal();
     } else {
-      router.back();
+      beginExit();
     }
   };
 
