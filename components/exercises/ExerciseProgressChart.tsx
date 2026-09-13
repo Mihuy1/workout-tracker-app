@@ -41,11 +41,14 @@ export function ExerciseProgressChart({
     Platform.OS === "ios" ? PlatformColor("systemBlue") : tintColor;
 
   const [dataType, setDataType] = useState<ExerciseDataType>("Heaviest Weight");
-  const [selectedLabel, setSelectedLabel] = useState<string>(
-    heaviestWeight[heaviestWeight.length - 1].label,
+
+  const lastPoint = heaviestWeight[heaviestWeight.length - 1];
+
+  const [selectedLabel, setSelectedLabel] = useState<string | null>(
+    lastPoint?.label ?? null,
   );
-  const [selectedValue, setSelectedValue] = useState<string>(
-    heaviestWeight[heaviestWeight.length - 1].dataPointText,
+  const [selectedValue, setSelectedValue] = useState<string | null>(
+    lastPoint?.dataPointText ?? null,
   );
   const [containerWidth, setContainerWidth] = useState(0);
 
@@ -156,8 +159,16 @@ export function ExerciseProgressChart({
           title="One Rep Max"
           onPress={() => {
             setDataType("One Rep Max");
-            setSelectedLabel(oneRepMax[oneRepMax.length - 1].label);
-            setSelectedValue(oneRepMax[oneRepMax.length - 1].dataPointText);
+            setSelectedLabel(
+              oneRepMax.length > 0
+                ? oneRepMax[oneRepMax.length - 1].label
+                : null,
+            );
+            setSelectedValue(
+              oneRepMax.length > 0
+                ? oneRepMax[oneRepMax.length - 1].dataPointText
+                : null,
+            );
           }}
           backgroundColor={
             dataType && dataType === "One Rep Max"
