@@ -61,7 +61,11 @@ export default function TabTwoScreen() {
     mutationFn: (id: string) => deleteWorkout(db, id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["history"] });
+      queryClient.invalidateQueries({ queryKey: ["statisticsData"] });
       setSelectedWorkoutId(null);
+    },
+    onError: (error) => {
+      console.error("Workout deletion failed:", error);
     },
   });
 
