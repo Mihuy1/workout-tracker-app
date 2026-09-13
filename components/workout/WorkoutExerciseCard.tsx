@@ -14,6 +14,11 @@ import {
 } from "@/types/workout";
 import { estimateOneRepMax } from "@/utils/oneRepMax";
 import { formatWeightValue, weightToGrams } from "@/utils/weightUnits";
+import {
+  isRepsInput,
+  isWeightInput,
+  parseSetValues,
+} from "@/utils/workoutSetValidation";
 import * as Haptics from "expo-haptics";
 import { memo, useState } from "react";
 import {
@@ -66,6 +71,7 @@ export const WorkoutExerciseCard = memo(function WorkoutExerciseCard({
   const successColor = useThemeColor({}, "success");
 
   const [confirmVisible, setConfirmVisible] = useState(false);
+  const [invalidSetVisible, setInvalidSetVisible] = useState(false);
 
   function calculateSetAchievements(
     prBaseline: ExercisePrBaseline,
@@ -84,11 +90,10 @@ export const WorkoutExerciseCard = memo(function WorkoutExerciseCard({
     for (const set of sets) {
       if (!set.complete || set.id === candidateSetId) continue;
 
-      const setWeightUnit = weightToGrams(Number(set.weight), weightUnit);
-      const setReps = Number(set.reps);
-
-      if (!Number.isFinite(setWeightUnit) || !Number.isFinite(setReps))
-        continue;
+      const values = parseSetValues(set.weight, set.reps);
+      if (!values) continue;
+      const setWeightUnit = weightToGrams(values.weight, weightUnit);
+      const setReps = values.reps;
 
       if (bestWeightGrams === null || bestWeightGrams < setWeightUnit) {
         bestWeightGrams = setWeightUnit;
@@ -158,6 +163,14 @@ export const WorkoutExerciseCard = memo(function WorkoutExerciseCard({
   return (
     <View style={[styles.container, { borderColor, backgroundColor: surface }]}>
       <CustomModal
+        visible={invalidSetVisible}
+        title="Check weight and reps"
+        message="Enter a weight of 0 or more, using a dot or comma for decimals, and a whole-number rep count greater than 0."
+        primaryButtonText="OK"
+        onRequestClose={() => setInvalidSetVisible(false)}
+        onPrimary={() => setInvalidSetVisible(false)}
+      />
+      <CustomModal
         visible={confirmVisible}
         title="Remove Exercise? "
         message={`Are you sure you want to remove "${workoutName}"`}
@@ -220,7 +233,10 @@ export const WorkoutExerciseCard = memo(function WorkoutExerciseCard({
         const suggestedWeight = suggestedSet?.weight ?? "";
         const suggestedWeightPlaceholder = suggestedWeight
           ? formatWeightValue(
-              weightToGrams(Number(suggestedWeight), weightUnit),
+              weightToGrams(
+                Number(suggestedWeight.replace(",", ".")),
+                weightUnit,
+              ),
               weightUnit,
             )
           : "0";
@@ -253,16 +269,17 @@ export const WorkoutExerciseCard = memo(function WorkoutExerciseCard({
                 { borderColor, color: textColor, backgroundColor: surface },
               ]}
               value={item.weight}
-              onChangeText={(text) =>
+              onChangeText={(text) => {
+                if (!isWeightInput(text)) return;
                 updateSet(workoutName, item.id, {
                   weight: text,
                   complete: false,
                   achievements: [],
-                })
-              }
+                });
+              }}
               placeholder={suggestedWeightPlaceholder}
               placeholderTextColor={placeholderColor}
-              keyboardType="numeric"
+              keyboardType="decimal-pad"
             />
 
             <TextInput
@@ -272,16 +289,17 @@ export const WorkoutExerciseCard = memo(function WorkoutExerciseCard({
                 { borderColor, color: textColor, backgroundColor: surface },
               ]}
               value={item.reps}
-              onChangeText={(text) =>
+              onChangeText={(text) => {
+                if (!isRepsInput(text)) return;
                 updateSet(workoutName, item.id, {
                   reps: text,
                   complete: false,
                   achievements: [],
-                })
-              }
+                });
+              }}
               placeholder={suggestedReps || "0"}
               placeholderTextColor={placeholderColor}
-              keyboardType="numeric"
+              keyboardType="number-pad"
             />
 
             <Pressable
@@ -295,10 +313,12 @@ export const WorkoutExerciseCard = memo(function WorkoutExerciseCard({
 
                 const finalReps = item.reps !== "" ? item.reps : suggestedReps;
 
-                if (finalReps === "" || finalWeight === "") {
+                const values = parseSetValues(finalWeight, finalReps);
+                if (!values) {
                   Haptics.notificationAsync(
                     Haptics.NotificationFeedbackType.Warning,
                   );
+                  setInvalidSetVisible(true);
                   return;
                 }
 
@@ -311,7 +331,7 @@ export const WorkoutExerciseCard = memo(function WorkoutExerciseCard({
                 }
 
                 const weightUnitNumber = weightToGrams(
-                  Number(finalWeight),
+                  values.weight,
                   weightUnit,
                 );
 
@@ -321,7 +341,7 @@ export const WorkoutExerciseCard = memo(function WorkoutExerciseCard({
                       item.id,
                       exercise.sets,
                       weightUnitNumber,
-                      Number(finalReps),
+                      values.reps,
                     )
                   : [];
 
@@ -341,8 +361,8 @@ export const WorkoutExerciseCard = memo(function WorkoutExerciseCard({
                   workoutName,
                   item.id,
                   !item.complete,
-                  finalWeight,
-                  finalReps,
+                  finalWeight.trim().replace(",", "."),
+                  String(values.reps),
                   achievements,
                 );
               }}

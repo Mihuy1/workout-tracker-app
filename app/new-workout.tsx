@@ -6,7 +6,12 @@ import { useWorkoutActions } from "@/contexts/workoutActionsContext";
 import { useWorkoutState } from "@/contexts/workoutStateContext";
 import { getRoutine } from "@/storage/routineRepository";
 import { saveWorkoutAndMaybeRoutine } from "@/storage/workoutRepository";
-import type { Exercise, SetRow } from "@/types/workout";
+import type { Exercise } from "@/types/workout";
+import {
+  getCompletedExercises,
+  InvalidCompletedSetError,
+  isValidCompletedSet,
+} from "@/utils/workoutSetValidation";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import * as Crypto from "expo-crypto";
 import * as Haptics from "expo-haptics";
@@ -20,21 +25,6 @@ import { usePreventRemove } from "expo-router/react-navigation";
 import { useSQLiteContext } from "expo-sqlite";
 import { useRef, useState } from "react";
 import { Button } from "react-native";
-
-const isValidCompletedSet = (set: SetRow): boolean => {
-  const weight = Number(set.weight);
-  const reps = Number(set.reps);
-
-  return (
-    set.complete &&
-    set.weight.trim() !== "" &&
-    set.reps.trim() !== "" &&
-    Number.isFinite(weight) &&
-    weight >= 0 &&
-    Number.isInteger(reps) &&
-    reps > 0
-  );
-};
 
 export default function NewWorkoutScreen() {
   const db = useSQLiteContext();
@@ -65,6 +55,9 @@ export default function NewWorkoutScreen() {
   const [emptySetsVisible, setEmptySetsVisible] = useState(false);
 
   const [saveErrorVisible, setSaveErrorVisible] = useState(false);
+  const [invalidSetMessage, setInvalidSetMessage] = useState<string | null>(
+    null,
+  );
 
   const [saveAsPresetVisible, setSaveAsPresetVisible] = useState(false);
 
@@ -111,12 +104,7 @@ export default function NewWorkoutScreen() {
       shouldUpdatePreset: boolean;
     }) => {
       const workoutDurMs = Date.now() - startedAt;
-      const completedExercises = exercises
-        .map((exercise) => ({
-          ...exercise,
-          sets: exercise.sets.filter(isValidCompletedSet),
-        }))
-        .filter((exercise) => exercise.sets.length > 0);
+      const completedExercises = getCompletedExercises(exercises);
 
       const routineOperation =
         presetName && shouldUpdatePreset
@@ -174,6 +162,10 @@ export default function NewWorkoutScreen() {
       console.error("error finishWorkoutMutation:", error);
       finishInFlightRef.current = false;
       setIsFinishing(false);
+      if (error instanceof InvalidCompletedSetError) {
+        setInvalidSetMessage(error.message);
+        return;
+      }
       setSaveErrorVisible(true);
     },
   });
@@ -212,6 +204,15 @@ export default function NewWorkoutScreen() {
     if (exercises.length === 0) {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
       setInfoVisible(true);
+      return;
+    }
+
+    try {
+      getCompletedExercises(exercises);
+    } catch (error) {
+      if (!(error instanceof InvalidCompletedSetError)) throw error;
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+      setInvalidSetMessage(error.message);
       return;
     }
 
@@ -319,6 +320,15 @@ export default function NewWorkoutScreen() {
         onPrimary={() => setEmptySetsVisible(false)}
         onSecondary={() => setEmptySetsVisible(false)}
         dismissOnBackdropPress
+      />
+
+      <CustomModal
+        visible={invalidSetMessage !== null}
+        title="Check completed sets"
+        message={invalidSetMessage ?? ""}
+        primaryButtonText="OK"
+        onRequestClose={() => setInvalidSetMessage(null)}
+        onPrimary={() => setInvalidSetMessage(null)}
       />
 
       <CustomModal
