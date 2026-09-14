@@ -24,15 +24,22 @@ type DeltaProps = {
 
 function Delta({ value, formatValue = String, suffix = "" }: DeltaProps) {
   const color = value > 0 ? "#20c74c" : value < 0 ? "#e05555" : "#888";
-  const sign = value > 0 ? "+" : value < 0 ? "-" : "";
+  const sign = value > 0 ? "arrow.up" : value < 0 ? "arrow.down" : "minus";
   const formattedValue = formatValue(Math.abs(value));
 
   return (
-    <ThemedText lightColor={color} darkColor={color}>
-      {sign}
-      {formattedValue}
-      {suffix ? ` ${suffix}` : ""}
-    </ThemedText>
+    <View style={{ flexDirection: "row", alignItems: "center" }}>
+      <IconSymbol
+        name={sign}
+        color={color}
+        size={14}
+        style={{ lineHeight: 24 }}
+      />
+      <ThemedText lightColor={color} darkColor={color}>
+        {formattedValue}
+        {suffix ? ` ${suffix}` : ""}
+      </ThemedText>
+    </View>
   );
 }
 
