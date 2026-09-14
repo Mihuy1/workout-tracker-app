@@ -12,6 +12,7 @@ import {
   useColorScheme,
   View,
 } from "react-native";
+import { CustomButton } from "../ui/CustomButton";
 import { WorkoutTimer } from "./WorkoutTimer";
 
 export const RestTimer = () => {
@@ -102,7 +103,7 @@ export const RestTimer = () => {
             />
           </View>
           <View style={styles.timeAdjustRow}>
-            <Button
+            {/* <Button
               title="-15"
               onPress={() => adjust(-15000)}
               disabled={restTimerRun.status === "paused"}
@@ -111,6 +112,18 @@ export const RestTimer = () => {
               title="+15"
               onPress={() => adjust(15000)}
               disabled={restTimerRun.status === "paused"}
+            /> */}
+            <CustomButton
+              title="-15"
+              onPress={() => adjust(-15000)}
+              disabled={restTimerRun.status === "paused"}
+              style={styles.customButton}
+            />
+            <CustomButton
+              title="+15"
+              onPress={() => adjust(15000)}
+              disabled={restTimerRun.status === "paused"}
+              style={styles.customButton}
             />
           </View>
 
@@ -191,5 +204,8 @@ const styles = StyleSheet.create({
   timeAdjustRow: {
     flexDirection: "row",
     justifyContent: "space-between",
+  },
+  customButton: {
+    margin: 8,
   },
 });
