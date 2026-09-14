@@ -1,3 +1,4 @@
+import CustomDropdown from "@/components/CustomDropdown";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import { ThemedText } from "@/components/ui/ThemedText";
 import { useWeightUnit } from "@/contexts/weightUnitContext";
@@ -36,10 +37,10 @@ function Delta({ value, formatValue = String, suffix = "" }: DeltaProps) {
 }
 
 const RANGES = [
-  { label: "30D", days: 30 },
-  { label: "90D", days: 90 },
-  { label: "1Y", days: 365 },
-] as const;
+  { label: "30 Days", value: 30 },
+  { label: "90 Days", value: 90 },
+  { label: "1 Year", value: 365 },
+];
 
 type Range = (typeof RANGES)[number];
 
@@ -60,25 +61,22 @@ export default function Statistics() {
 
   const { weightUnit } = useWeightUnit();
 
-  const [range] = useState<Range>(RANGES[0]);
+  const [range, setRange] = useState<Range>(RANGES[0]);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   const { data } = useQuery({
     queryKey: ["statisticsData", range],
     queryFn: async () => {
-      try {
-        const now = Date.now();
-        const windowMs = range.days * 86_400_000;
+      const now = Date.now();
+      const windowMs = range.value * 86_400_000;
 
-        const [current, previous, exercises] = await Promise.all([
-          getWorkoutStats(db, now - windowMs, now),
-          getWorkoutStats(db, now - 2 * windowMs, now - windowMs),
-          getLatestExercises(db),
-        ]);
+      const [current, previous, exercises] = await Promise.all([
+        getWorkoutStats(db, now - windowMs, now),
+        getWorkoutStats(db, now - 2 * windowMs, now - windowMs),
+        getLatestExercises(db),
+      ]);
 
-        return { current, previous, exercises };
-      } catch (error) {
-        console.error("error:", error);
-      }
+      return { current, previous, exercises };
     },
   });
 
@@ -112,6 +110,20 @@ export default function Statistics() {
       style={[styles.container, { backgroundColor: screenBackground }]}
     >
       <ThemedText type="title">Statistics</ThemedText>
+      <View style={styles.dateRangeDropDownView}>
+        <CustomDropdown
+          options={RANGES}
+          value={range.value}
+          open={isDropdownOpen}
+          onOpenChange={setIsDropdownOpen}
+          onSelect={(option) => {
+            const next = RANGES.find((r) => r.value === option);
+            if (next) setRange(next);
+          }}
+          fullWidth
+          centerText
+        />
+      </View>
       <View style={styles.mainDataView}>
         <View
           style={[
@@ -248,5 +260,10 @@ const styles = StyleSheet.create({
   },
   listContent: {
     paddingBottom: 20,
+  },
+  dateRangeDropDownView: {
+    alignItems: "center",
+    marginBottom: 10,
+    marginTop: 10,
   },
 });

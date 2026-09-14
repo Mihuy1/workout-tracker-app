@@ -15,6 +15,8 @@ interface CustomDropDownProps<T extends string | number> {
   onOpenChange: (open: boolean) => void;
   onSelect: (option: T) => void | Promise<void>;
   width?: number;
+  fullWidth?: boolean;
+  centerText?: boolean;
 }
 
 export default function CustomDropdown<T extends string | number>({
@@ -24,6 +26,8 @@ export default function CustomDropdown<T extends string | number>({
   onOpenChange,
   onSelect,
   width = 140,
+  fullWidth = false,
+  centerText = false,
 }: CustomDropDownProps<T>) {
   const border = useThemeColor({}, "border");
   const iconColor = useThemeColor({}, "iconColor");
@@ -34,7 +38,11 @@ export default function CustomDropdown<T extends string | number>({
 
   return (
     <View
-      style={[styles.dropdown, { width }, open && styles.dropDownOpen]}
+      style={[
+        styles.dropdown,
+        fullWidth ? styles.fullWidth : { width },
+        open && styles.dropDownOpen,
+      ]}
       onTouchStart={(event) => event.stopPropagation()}
     >
       <Pressable
@@ -43,7 +51,9 @@ export default function CustomDropdown<T extends string | number>({
         onPress={() => onOpenChange(!open)}
         style={[styles.dropdownTrigger, { borderColor: border }]}
       >
-        <ThemedText>{selectedLabel}</ThemedText>
+        <ThemedText style={centerText && styles.centerText}>
+          {selectedLabel}
+        </ThemedText>
         <IconSymbol
           name="chevron.right"
           size={18}
@@ -144,6 +154,9 @@ const styles = StyleSheet.create({
     position: "relative",
     width: 140,
   },
+  fullWidth: {
+    width: "100%",
+  },
   dropDownOpen: {
     zIndex: 100,
     elevation: 100,
@@ -176,5 +189,9 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
+  },
+  centerText: {
+    flex: 1,
+    textAlign: "center",
   },
 });
