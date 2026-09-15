@@ -14,6 +14,8 @@ import { useCallback, useState } from "react";
 import { FlatList } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+const workoutKeyExtractor = (workout: CompletedWorkout) => workout.id;
+
 export default function TabTwoScreen() {
   const db = useSQLiteContext();
   const { weightUnit } = useWeightUnit();
@@ -104,9 +106,14 @@ export default function TabTwoScreen() {
 
       <FlatList
         data={historyData}
-        keyExtractor={(item) => item.id}
+        keyExtractor={workoutKeyExtractor}
         renderItem={renderItem}
-      ></FlatList>
+        // Workout cards are tall and expansion adds many native views.
+        // Keep a smaller offscreen window and mount fewer cards per batch.
+        initialNumToRender={5}
+        maxToRenderPerBatch={4}
+        windowSize={7}
+      />
     </SafeAreaView>
   );
 }

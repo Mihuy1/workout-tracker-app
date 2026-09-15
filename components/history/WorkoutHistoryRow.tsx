@@ -22,8 +22,6 @@ export const WorkoutHistoryRow = memo(function WorkoutHistoryRow({
   onToggle,
   onDelete,
 }: WorkoutHistoryRowProps) {
-  const { weightUnit } = useWeightUnit();
-
   const cardBg = useThemeColor({}, "surface");
   const cardBorder = useThemeColor({}, "border");
   const shadowColor = "#000";
@@ -39,44 +37,7 @@ export const WorkoutHistoryRow = memo(function WorkoutHistoryRow({
       ]}
     >
       <Pressable onPress={() => onToggle(workout.id)}>
-        <View style={styles.titleContainer}>
-          <View style={styles.removeView}>
-            <Pressable
-              onPress={(event) => {
-                event.stopPropagation();
-                onDelete(workout.id);
-              }}
-            >
-              <IconSymbol name={"x.circle"} size={24} color={"red"} />
-            </Pressable>
-          </View>
-        </View>
-        <ThemedText type="default" style={styles.title}>
-          {workout.workoutName}
-        </ThemedText>
-        <View style={styles.statsRow}>
-          <View style={styles.statColumn}>
-            <ThemedText type="small">Duration</ThemedText>
-            <WorkoutTimer elapsedTimeMs={workout.workoutDurationMs} />
-          </View>
-
-          <View style={styles.statColumn}>
-            <ThemedText type="small">Volume</ThemedText>
-            <ThemedText>
-              {formatWeight(workout.totalVolumeGrams, weightUnit)}
-            </ThemedText>
-          </View>
-
-          {workout.prCount > 0 && (
-            <View style={styles.statColumn}>
-              <ThemedText type="small">Records</ThemedText>
-              <View style={styles.recordContainer}>
-                <IconSymbol name="trophy.fill" color="#f5cc46" size={18} />
-                <ThemedText>{workout.prCount}</ThemedText>
-              </View>
-            </View>
-          )}
-        </View>
+        <WorkoutHistoryHeader workout={workout} onDelete={onDelete} />
         <View style={[styles.separator, { backgroundColor: cardBorder }]} />
         <WorkoutHistoryCard
           exercises={workout.exercises}
@@ -84,6 +45,57 @@ export const WorkoutHistoryRow = memo(function WorkoutHistoryRow({
         />
       </Pressable>
     </View>
+  );
+});
+
+// Expansion changes only the exercise details, so retain the header subtree.
+const WorkoutHistoryHeader = memo(function WorkoutHistoryHeader({
+  workout,
+  onDelete,
+}: Pick<WorkoutHistoryRowProps, "workout" | "onDelete">) {
+  const { weightUnit } = useWeightUnit();
+
+  return (
+    <>
+      <View style={styles.titleContainer}>
+        <View style={styles.removeView}>
+          <Pressable
+            onPress={(event) => {
+              event.stopPropagation();
+              onDelete(workout.id);
+            }}
+          >
+            <IconSymbol name={"x.circle"} size={24} color={"red"} />
+          </Pressable>
+        </View>
+      </View>
+      <ThemedText type="default" style={styles.title}>
+        {workout.workoutName}
+      </ThemedText>
+      <View style={styles.statsRow}>
+        <View style={styles.statColumn}>
+          <ThemedText type="small">Duration</ThemedText>
+          <WorkoutTimer elapsedTimeMs={workout.workoutDurationMs} />
+        </View>
+
+        <View style={styles.statColumn}>
+          <ThemedText type="small">Volume</ThemedText>
+          <ThemedText>
+            {formatWeight(workout.totalVolumeGrams, weightUnit)}
+          </ThemedText>
+        </View>
+
+        {workout.prCount > 0 && (
+          <View style={styles.statColumn}>
+            <ThemedText type="small">Records</ThemedText>
+            <View style={styles.recordContainer}>
+              <IconSymbol name="trophy.fill" color="#f5cc46" size={18} />
+              <ThemedText>{workout.prCount}</ThemedText>
+            </View>
+          </View>
+        )}
+      </View>
+    </>
   );
 });
 

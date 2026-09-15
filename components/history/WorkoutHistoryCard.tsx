@@ -19,6 +19,28 @@ export function WorkoutHistoryCard({
   exercises,
   isExpanded,
 }: WorkoutHistoryCardProps) {
+  if (isExpanded) {
+    return <ExpandedWorkoutHistoryCard exercises={exercises} />;
+  }
+
+  return (
+    <View>
+      {exercises.map((exercise, index) => (
+        <ThemedText
+          key={`${exercise.exerciseId}-${index}`}
+          type="default"
+          style={styles.summaryRow}
+        >
+          {exercise.sets.length} sets of {exercise.name}
+        </ThemedText>
+      ))}
+    </View>
+  );
+}
+
+function ExpandedWorkoutHistoryCard({
+  exercises,
+}: Pick<WorkoutHistoryCardProps, "exercises">) {
   const { weightUnit } = useWeightUnit();
 
   const surfaceMuted = useThemeColor({}, "surfaceMuted");
@@ -30,95 +52,86 @@ export function WorkoutHistoryCard({
   return (
     <View>
       {exercises.map((exercise, index) => (
-        <View key={`${exercise.name}-${index}`}>
-          {!isExpanded ? (
-            <View>
-              <ThemedText type="default" style={styles.summaryRow}>
-                {exercise.sets.length} sets of {exercise.name}
-              </ThemedText>
-            </View>
-          ) : (
-            <View
+        <View
+          key={`${exercise.exerciseId}-${index}`}
+          style={[
+            styles.exerciseWrapper,
+            {
+              backgroundColor: surfaceMuted,
+              borderColor: border,
+            },
+          ]}
+        >
+          <ThemedText
+            type="defaultSemiBold"
+            style={[styles.exerciseName, { color: accent }]}
+          >
+            {exercise.name}
+          </ThemedText>
+          <View style={[styles.tableHeader, { borderBottomColor: border }]}>
+            <ThemedText
+              type="defaultSemiBold"
+              style={[styles.cell, styles.setCol, { color: mutedText }]}
+            >
+              SET
+            </ThemedText>
+            <ThemedText
+              type="defaultSemiBold"
               style={[
-                styles.exerciseWrapper,
-                {
-                  backgroundColor: surfaceMuted,
-                  borderColor: border,
-                },
+                styles.cell,
+                styles.weightUnitCol,
+                { color: mutedText },
               ]}
             >
+              WEIGHT & REPS
+            </ThemedText>
+            <View style={styles.prCol}>
               <ThemedText
                 type="defaultSemiBold"
-                style={[styles.exerciseName, { color: accent }]}
+                style={{ color: mutedText }}
               >
-                {exercise.name}
+                PR
               </ThemedText>
-              <View style={[styles.tableHeader, { borderBottomColor: border }]}>
+            </View>
+          </View>
+
+          <View>
+            {exercise.sets.map((set, index) => (
+              <View
+                key={set.id}
+                style={[
+                  styles.tableRow,
+                  { borderColor: border },
+                  index % 2 === 0
+                    ? { backgroundColor: rowEven }
+                    : { backgroundColor: surfaceMuted },
+                ]}
+              >
                 <ThemedText
-                  type="defaultSemiBold"
-                  style={[styles.cell, styles.setCol, { color: mutedText }]}
+                  type="default"
+                  style={[styles.cell, styles.setCol]}
                 >
-                  SET
+                  {index + 1}
                 </ThemedText>
                 <ThemedText
-                  type="defaultSemiBold"
-                  style={[
-                    styles.cell,
-                    styles.weightUnitCol,
-                    { color: mutedText },
-                  ]}
+                  type="default"
+                  style={[styles.cell, styles.weightUnitCol]}
                 >
-                  WEIGHT & REPS
+                  {set.weight} {weightUnit} x {set.reps} reps
                 </ThemedText>
+
                 <View style={styles.prCol}>
-                  <ThemedText
-                    type="defaultSemiBold"
-                    style={{ color: mutedText }}
-                  >
-                    PR
-                  </ThemedText>
+                  {set.achievements.map((achievement, index) => {
+                    return (
+                      <ThemedText type="small" key={index}>
+                        {ACHIEVEMENT_TYPE_LABELS[achievement.type]}
+                      </ThemedText>
+                    );
+                  })}
                 </View>
               </View>
-
-              <View>
-                {exercise.sets.map((set, index) => (
-                  <View
-                    key={set.id}
-                    style={[
-                      styles.tableRow,
-                      { borderColor: border },
-                      index % 2 === 0
-                        ? { backgroundColor: rowEven }
-                        : { backgroundColor: surfaceMuted },
-                    ]}
-                  >
-                    <ThemedText
-                      type="default"
-                      style={[styles.cell, styles.setCol]}
-                    >
-                      {index + 1}
-                    </ThemedText>
-                    <ThemedText
-                      type="default"
-                      style={[styles.cell, styles.weightUnitCol]}
-                    >
-                      {set.weight} {weightUnit} x {set.reps} reps
-                    </ThemedText>
-
-                    <View style={styles.prCol}>
-                      {set.achievements.map((achievement, index) => {
-                        return (
-                          <ThemedText type="small" key={index}>
-                            {ACHIEVEMENT_TYPE_LABELS[achievement.type]}
-                          </ThemedText>
-                        );
-                      })}
-                    </View>
-                  </View>
-                ))}
-              </View>
-            </View>
-          )}
+            ))}
+          </View>
         </View>
       ))}
     </View>
