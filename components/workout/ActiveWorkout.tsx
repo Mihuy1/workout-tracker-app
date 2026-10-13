@@ -1,6 +1,5 @@
 import { LiveWorkoutTimer } from "@/components/timer/LiveWorkoutTimer";
 import { RestTimer } from "@/components/timer/RestTimer";
-import { CustomButton } from "@/components/ui/CustomButton";
 import { ThemedView } from "@/components/ui/ThemedView";
 import { useDefaultRestTime } from "@/contexts/restTimePreferenceContext";
 import { useWeightUnit } from "@/contexts/weightUnitContext";
@@ -21,6 +20,7 @@ import {
   type ScrollViewProps,
 } from "react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
+import { CustomButton } from "../ui/CustomButton";
 import { WorkoutExerciseCard } from "./WorkoutExerciseCard";
 
 const EMPTY_PREFILLED_SETS: SetRow[] = [];
@@ -87,14 +87,17 @@ export function ActiveWorkout({ routineId, startedAt }: ActiveWorkoutProps) {
               />
             </View>
           )}
-        />
-
-        <CustomButton
-          variant="plain"
-          title="Add an exercise"
-          onPress={() => router.push("/exercise-list")}
+          ListFooterComponent={
+            <CustomButton
+              variant="filled"
+              title="Add an exercise"
+              onPress={() => router.push("/exercise-list")}
+              style={{ alignSelf: "center", width: "60%" }}
+            />
+          }
         />
       </View>
+
       <RestTimer />
     </ThemedView>
   );
@@ -112,7 +115,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   exerciseListContent: {
-    paddingBottom: 200,
+    paddingBottom: 20,
   },
   headerRow: {
     flexDirection: "row",

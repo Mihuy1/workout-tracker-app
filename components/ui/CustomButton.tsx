@@ -14,7 +14,6 @@ import { ThemedText } from "./ThemedText";
 export type CustomButtonProps = {
   title: string;
   onPress: (event: GestureResponderEvent) => void;
-  /** `plain` renders tint-colored text without a background, like an iOS text button. */
   variant?: "filled" | "plain";
   backgroundColor?: ColorValue;
   textColor?: ColorValue;
