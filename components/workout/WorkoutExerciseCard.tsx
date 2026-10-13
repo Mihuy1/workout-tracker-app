@@ -1,4 +1,5 @@
 import { RestTimePicker } from "@/components/timer/RestTimePicker";
+import { CustomButton } from "@/components/ui/CustomButton";
 import { CustomModal } from "@/components/ui/CustomModal";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import { ThemedText } from "@/components/ui/ThemedText";
@@ -21,14 +22,7 @@ import {
 } from "@/utils/workoutSetValidation";
 import * as Haptics from "expo-haptics";
 import { memo, useState } from "react";
-import {
-  Button,
-  Keyboard,
-  Pressable,
-  StyleSheet,
-  TextInput,
-  View,
-} from "react-native";
+import { Keyboard, Pressable, StyleSheet, TextInput, View } from "react-native";
 
 type WorkoutExerciseCardProps = {
   exercise: Exercise;
@@ -400,7 +394,8 @@ export const WorkoutExerciseCard = memo(function WorkoutExerciseCard({
         );
       })}
 
-      <Button
+      <CustomButton
+        variant="plain"
         title="Add Set"
         onPress={() => {
           Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);

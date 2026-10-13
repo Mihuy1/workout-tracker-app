@@ -6,12 +6,12 @@ import { useEffect, useState } from "react";
 import {
   Animated,
   AppState,
-  Button,
   Easing,
   StyleSheet,
   useColorScheme,
   View,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { CustomButton } from "../ui/CustomButton";
 import { WorkoutTimer } from "./WorkoutTimer";
 
@@ -21,6 +21,7 @@ export const RestTimer = () => {
     useRestTimerActions();
   const [now, setNow] = useState(Date.now);
   const [animatedProgress] = useState(() => new Animated.Value(0));
+  const insets = useSafeAreaInsets();
 
   const theme = useColorScheme() === "dark" ? "dark" : "light";
   const colors = Colors[theme];
@@ -145,18 +146,29 @@ export const RestTimer = () => {
             />
           </View>
 
-          <View style={styles.buttonRow}>
-            <Button
+          <View
+            style={[
+              styles.buttonRow,
+              { paddingBottom: Math.max(30, insets.bottom) },
+            ]}
+          >
+            <CustomButton
+              variant="plain"
               title="Resume"
               onPress={resumeRestTimer}
               disabled={restTimerRun.status === "running"}
             />
-            <Button
+            <CustomButton
+              variant="plain"
               title="Pause"
               onPress={pauseRestTimer}
               disabled={restTimerRun.status !== "running"}
             />
-            <Button title="Skip" onPress={clearRestTimer} />
+            <CustomButton
+              variant="plain"
+              title="Skip"
+              onPress={clearRestTimer}
+            />
           </View>
         </View>
       )}
@@ -199,7 +211,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-around",
     marginTop: 10,
-    paddingBottom: 30,
   },
   timeAdjustRow: {
     flexDirection: "row",

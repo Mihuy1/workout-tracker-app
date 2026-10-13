@@ -1,3 +1,4 @@
+import { useThemeColor } from "@/hooks/use-theme-color";
 import {
   Platform,
   Pressable,
@@ -13,6 +14,8 @@ import { ThemedText } from "./ThemedText";
 export type CustomButtonProps = {
   title: string;
   onPress: (event: GestureResponderEvent) => void;
+  /** `plain` renders tint-colored text without a background, like an iOS text button. */
+  variant?: "filled" | "plain";
   backgroundColor?: ColorValue;
   textColor?: ColorValue;
   disabled?: boolean;
@@ -23,13 +26,27 @@ export type CustomButtonProps = {
 export function CustomButton({
   title,
   onPress,
-  backgroundColor = "#007AFF",
-  textColor = "#FFFFFF",
+  variant = "filled",
+  backgroundColor,
+  textColor,
   disabled = false,
   style,
   textStyle,
 }: CustomButtonProps) {
+  const tintColor = useThemeColor({}, "tint");
+  const mutedText = useThemeColor({}, "mutedText");
   const pressedOpacity = Platform.OS === "ios" ? 0.5 : 0.85;
+  const isPlain = variant === "plain";
+
+  // Plain buttons turn grey when disabled; filled buttons fade instead.
+  const resolvedBackground =
+    backgroundColor ?? (isPlain ? "transparent" : "#007AFF");
+  const resolvedTextColor = isPlain
+    ? disabled
+      ? mutedText
+      : (textColor ?? tintColor)
+    : (textColor ?? "#FFFFFF");
+  const disabledOpacity = isPlain ? 1 : 0.5;
 
   return (
     <Pressable
@@ -38,15 +55,17 @@ export function CustomButton({
       style={({ pressed }) => [
         styles.button,
         {
-          backgroundColor,
-          opacity: disabled ? 0.5 : pressed ? pressedOpacity : 1,
+          backgroundColor: resolvedBackground,
+          opacity: disabled ? disabledOpacity : pressed ? pressedOpacity : 1,
         },
         style,
       ]}
       accessibilityRole="button"
       accessibilityState={{ disabled }}
     >
-      <ThemedText style={[styles.title, { color: textColor }, textStyle]}>
+      <ThemedText
+        style={[styles.title, { color: resolvedTextColor }, textStyle]}
+      >
         {title}
       </ThemedText>
     </Pressable>
