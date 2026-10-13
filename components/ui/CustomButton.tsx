@@ -40,7 +40,7 @@ export function CustomButton({
 
   // Plain buttons turn grey when disabled; filled buttons fade instead.
   const resolvedBackground =
-    backgroundColor ?? (isPlain ? "transparent" : "#007AFF");
+    backgroundColor ?? (isPlain ? "transparent" : tintColor);
   const resolvedTextColor = isPlain
     ? disabled
       ? mutedText

@@ -3,7 +3,6 @@ import { RestTimer } from "@/components/timer/RestTimer";
 import { CustomButton } from "@/components/ui/CustomButton";
 import { ThemedView } from "@/components/ui/ThemedView";
 import { useDefaultRestTime } from "@/contexts/restTimePreferenceContext";
-import { useRestTimer } from "@/contexts/restTimerContext";
 import { useWeightUnit } from "@/contexts/weightUnitContext";
 import { useWorkoutState } from "@/contexts/workoutStateContext";
 import {
@@ -14,9 +13,14 @@ import { SetRow } from "@/types/workout";
 import { useQuery } from "@tanstack/react-query";
 import { router } from "expo-router";
 import { useSQLiteContext } from "expo-sqlite";
-import { FlatList, StyleSheet, View, type ScrollViewProps } from "react-native";
+import {
+  FlatList,
+  Platform,
+  StyleSheet,
+  View,
+  type ScrollViewProps,
+} from "react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { WorkoutExerciseCard } from "./WorkoutExerciseCard";
 
 const EMPTY_PREFILLED_SETS: SetRow[] = [];
@@ -36,8 +40,6 @@ export function ActiveWorkout({ routineId, startedAt }: ActiveWorkoutProps) {
   const { exercises } = useWorkoutState();
   const { weightUnit } = useWeightUnit();
   const { defaultRestTime } = useDefaultRestTime();
-  const { restTimerRun } = useRestTimer();
-  const insets = useSafeAreaInsets();
   const exerciseIds = exercises.map((ex) => ex.exerciseId);
 
   const { data: baselines = {} } = useQuery({
@@ -54,13 +56,7 @@ export function ActiveWorkout({ routineId, startedAt }: ActiveWorkoutProps) {
 
   return (
     <ThemedView style={styles.container}>
-      <View
-        style={[
-          styles.content,
-          // The rest timer pads for the bottom inset itself when it is shown.
-          !restTimerRun && { paddingBottom: Math.max(10, insets.bottom) },
-        ]}
-      >
+      <View style={styles.content}>
         <LiveWorkoutTimer startedAt={startedAt} />
 
         <FlatList
@@ -68,7 +64,10 @@ export function ActiveWorkout({ routineId, startedAt }: ActiveWorkoutProps) {
           data={exercises}
           keyExtractor={(item) => item.exerciseId}
           renderScrollComponent={renderScrollComponent}
-          keyboardDismissMode="interactive"
+          // "interactive" is iOS-only; Android dismisses on drag instead.
+          keyboardDismissMode={
+            Platform.OS === "ios" ? "interactive" : "on-drag"
+          }
           keyboardShouldPersistTaps="always"
           contentContainerStyle={styles.exerciseListContent}
           showsVerticalScrollIndicator={false}
