@@ -42,7 +42,7 @@ export default function RootLayout() {
                 <WorkoutProvider>
                   <RestTimerProvider>
                     <ThemeContextProvider>
-                      <Stack>
+                      <Stack screenOptions={{ headerTitleAlign: "center" }}>
                         <Stack.Screen
                           name="(tabs)"
                           options={{ headerShown: false }}
