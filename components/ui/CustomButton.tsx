@@ -34,7 +34,8 @@ export function CustomButton({
 }: CustomButtonProps) {
   const tintColor = useThemeColor({}, "tint");
   const mutedText = useThemeColor({}, "mutedText");
-  const pressedOpacity = Platform.OS === "ios" ? 0.5 : 0.85;
+  // Android shows a ripple instead of dimming on press.
+  const pressedOpacity = Platform.OS === "ios" ? 0.5 : 1;
   const isPlain = variant === "plain";
 
   // Plain buttons turn grey when disabled; filled buttons fade instead.
@@ -51,8 +52,9 @@ export function CustomButton({
     <Pressable
       onPress={onPress}
       disabled={disabled}
+      android_ripple={{ color: "rgba(127, 127, 127, 0.2)" }}
       style={({ pressed }) => [
-        styles.button,
+        buttonStyles.button,
         {
           backgroundColor: resolvedBackground,
           opacity: disabled ? disabledOpacity : pressed ? pressedOpacity : 1,
@@ -63,7 +65,7 @@ export function CustomButton({
       accessibilityState={{ disabled }}
     >
       <ThemedText
-        style={[styles.title, { color: resolvedTextColor }, textStyle]}
+        style={[buttonStyles.title, { color: resolvedTextColor }, textStyle]}
       >
         {title}
       </ThemedText>
@@ -71,7 +73,7 @@ export function CustomButton({
   );
 }
 
-const styles = StyleSheet.create({
+export const buttonStyles = StyleSheet.create({
   button: {
     height: 44,
     paddingHorizontal: 16,

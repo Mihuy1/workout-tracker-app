@@ -1,3 +1,4 @@
+import { buttonStyles } from "@/components/ui/CustomButton";
 import { CustomModal } from "@/components/ui/CustomModal";
 import { ActiveWorkout } from "@/components/workout/ActiveWorkout";
 import { useRestTimerActions } from "@/contexts/restTimerContext";
@@ -25,7 +26,7 @@ import {
 import { HeaderButton, usePreventRemove } from "expo-router/react-navigation";
 import { useSQLiteContext } from "expo-sqlite";
 import { useRef, useState } from "react";
-import { StyleSheet, Text } from "react-native";
+import { Text } from "react-native";
 
 export default function NewWorkoutScreen() {
   const db = useSQLiteContext();
@@ -278,7 +279,12 @@ export default function NewWorkoutScreen() {
               onPress={handleDiscardPress}
               disabled={isFinishing || isExiting}
             >
-              <Text style={[styles.headerButtonText, { color: tintColor }]}>
+              <Text
+                style={[
+                  buttonStyles.title,
+                  { color: tintColor, fontWeight: "400" },
+                ]}
+              >
                 Discard
               </Text>
             </HeaderButton>
@@ -291,9 +297,8 @@ export default function NewWorkoutScreen() {
             >
               <Text
                 style={[
-                  styles.headerButtonText,
-                  styles.headerButtonTextBold,
-                  { color: tintColor },
+                  buttonStyles.title,
+                  { color: tintColor, fontWeight: "600" },
                 ]}
               >
                 Complete
@@ -426,12 +431,3 @@ export default function NewWorkoutScreen() {
     </>
   );
 }
-
-const styles = StyleSheet.create({
-  headerButtonText: {
-    fontSize: 17,
-  },
-  headerButtonTextBold: {
-    fontWeight: "600",
-  },
-});
