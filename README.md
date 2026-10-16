@@ -22,9 +22,6 @@ An iOS-first workout tracker built with React Native and Expo. Create reusable r
 - Review workout statistics and exercise progress charts
 - Follow the device's light or dark color scheme
 
-## Status
-
-The app is currently focused on iOS and has not yet been tested on Android.
 
 ## Run locally
 
