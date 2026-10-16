@@ -1,10 +1,10 @@
+import { CustomButton } from "@/components/ui/CustomButton";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import { Colors } from "@/constants/theme";
 import { useThemeColor } from "@/hooks/use-theme-color";
 import * as Haptics from "expo-haptics";
 import { useState } from "react";
 import {
-  Button,
   Modal,
   Pressable,
   StyleSheet,
@@ -115,7 +115,7 @@ export const RestTimePicker = ({
               />
               <Text style={[styles.text, { color: colors.text }]}>Sec</Text>
             </View>
-            <Button title="Apply" onPress={handleApply} />
+            <CustomButton title="Apply" onPress={handleApply} />
           </Pressable>
         </Pressable>
       </Modal>

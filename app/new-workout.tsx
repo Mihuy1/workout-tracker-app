@@ -1,9 +1,11 @@
+import { buttonStyles } from "@/components/ui/CustomButton";
 import { CustomModal } from "@/components/ui/CustomModal";
 import { ActiveWorkout } from "@/components/workout/ActiveWorkout";
 import { useRestTimerActions } from "@/contexts/restTimerContext";
 import { useWeightUnit } from "@/contexts/weightUnitContext";
 import { useWorkoutActions } from "@/contexts/workoutActionsContext";
 import { useWorkoutState } from "@/contexts/workoutStateContext";
+import { useThemeColor } from "@/hooks/use-theme-color";
 import { getRoutine } from "@/storage/routineRepository";
 import { saveWorkoutAndMaybeRoutine } from "@/storage/workoutRepository";
 import type { Exercise } from "@/types/workout";
@@ -21,13 +23,14 @@ import {
   useLocalSearchParams,
   useNavigation,
 } from "expo-router";
-import { usePreventRemove } from "expo-router/react-navigation";
+import { HeaderButton, usePreventRemove } from "expo-router/react-navigation";
 import { useSQLiteContext } from "expo-sqlite";
 import { useRef, useState } from "react";
-import { Button } from "react-native";
+import { Text } from "react-native";
 
 export default function NewWorkoutScreen() {
   const db = useSQLiteContext();
+  const tintColor = useThemeColor({}, "tint");
   const { weightUnit } = useWeightUnit();
   const queryClient = useQueryClient();
   const { presetTitle, routineId } = useLocalSearchParams<{
@@ -272,19 +275,35 @@ export default function NewWorkoutScreen() {
           title: presetTitle ? presetTitle : "New Workout",
           gestureEnabled: !shouldPreventRemove,
           headerLeft: () => (
-            <Button
-              title="Discard"
+            <HeaderButton
               onPress={handleDiscardPress}
               disabled={isFinishing || isExiting}
-            />
+            >
+              <Text
+                style={[
+                  buttonStyles.title,
+                  { color: tintColor, fontWeight: "400" },
+                ]}
+              >
+                Discard
+              </Text>
+            </HeaderButton>
           ),
           headerBackButtonMenuEnabled: false,
           headerRight: () => (
-            <Button
-              title="Complete"
+            <HeaderButton
               onPress={handleCompletePress}
               disabled={isFinishing || isExiting}
-            />
+            >
+              <Text
+                style={[
+                  buttonStyles.title,
+                  { color: tintColor, fontWeight: "600" },
+                ]}
+              >
+                Complete
+              </Text>
+            </HeaderButton>
           ),
         }}
       />
