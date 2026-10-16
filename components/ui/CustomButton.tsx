@@ -1,3 +1,4 @@
+import { useThemeColor } from "@/hooks/use-theme-color";
 import {
   Platform,
   Pressable,
@@ -13,6 +14,7 @@ import { ThemedText } from "./ThemedText";
 export type CustomButtonProps = {
   title: string;
   onPress: (event: GestureResponderEvent) => void;
+  variant?: "filled" | "plain";
   backgroundColor?: ColorValue;
   textColor?: ColorValue;
   disabled?: boolean;
@@ -23,37 +25,55 @@ export type CustomButtonProps = {
 export function CustomButton({
   title,
   onPress,
-  backgroundColor = "#007AFF",
-  textColor = "#FFFFFF",
+  variant = "filled",
+  backgroundColor,
+  textColor,
   disabled = false,
   style,
   textStyle,
 }: CustomButtonProps) {
-  const pressedOpacity = Platform.OS === "ios" ? 0.5 : 0.85;
+  const tintColor = useThemeColor({}, "tint");
+  const mutedText = useThemeColor({}, "mutedText");
+  // Android shows a ripple instead of dimming on press.
+  const pressedOpacity = Platform.OS === "ios" ? 0.5 : 1;
+  const isPlain = variant === "plain";
+
+  // Plain buttons turn grey when disabled; filled buttons fade instead.
+  const resolvedBackground =
+    backgroundColor ?? (isPlain ? "transparent" : tintColor);
+  const resolvedTextColor = isPlain
+    ? disabled
+      ? mutedText
+      : (textColor ?? tintColor)
+    : (textColor ?? "#FFFFFF");
+  const disabledOpacity = isPlain ? 1 : 0.5;
 
   return (
     <Pressable
       onPress={onPress}
       disabled={disabled}
+      android_ripple={{ color: "rgba(127, 127, 127, 0.2)" }}
       style={({ pressed }) => [
-        styles.button,
+        buttonStyles.button,
         {
-          backgroundColor,
-          opacity: disabled ? 0.5 : pressed ? pressedOpacity : 1,
+          backgroundColor: resolvedBackground,
+          opacity: disabled ? disabledOpacity : pressed ? pressedOpacity : 1,
         },
         style,
       ]}
       accessibilityRole="button"
       accessibilityState={{ disabled }}
     >
-      <ThemedText style={[styles.title, { color: textColor }, textStyle]}>
+      <ThemedText
+        style={[buttonStyles.title, { color: resolvedTextColor }, textStyle]}
+      >
         {title}
       </ThemedText>
     </Pressable>
   );
 }
 
-const styles = StyleSheet.create({
+export const buttonStyles = StyleSheet.create({
   button: {
     height: 44,
     paddingHorizontal: 16,

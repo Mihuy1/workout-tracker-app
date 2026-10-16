@@ -6,12 +6,12 @@ import { useEffect, useState } from "react";
 import {
   Animated,
   AppState,
-  Button,
   Easing,
   StyleSheet,
   useColorScheme,
   View,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { CustomButton } from "../ui/CustomButton";
 import { WorkoutTimer } from "./WorkoutTimer";
 
@@ -21,6 +21,7 @@ export const RestTimer = () => {
     useRestTimerActions();
   const [now, setNow] = useState(Date.now);
   const [animatedProgress] = useState(() => new Animated.Value(0));
+  const insets = useSafeAreaInsets();
 
   const theme = useColorScheme() === "dark" ? "dark" : "light";
   const colors = Colors[theme];
@@ -81,29 +82,31 @@ export const RestTimer = () => {
     );
   };
 
+  // RestTimer owns the bottom safe-area inset: with no timer it only reserves
+  // the inset so the content above stays clear of the navigation bar.
+  if (!restTimerRun) return <View style={{ height: insets.bottom }} />;
+
   return (
-    <>
-      {restTimerRun && (
-        <View
-          style={[
-            styles.container,
-            {
-              backgroundColor: colors.restTimeBackground,
-              borderColor: colors.restTimeBorder,
-            },
-          ]}
-        >
-          <View style={styles.restTimeText}>
-            <WorkoutTimer
-              fontSize={30}
-              fontWeight={600}
-              lineHeight={58}
-              elapsedTimeMs={timeLeft}
-              countdown
-            />
-          </View>
-          <View style={styles.timeAdjustRow}>
-            {/* <Button
+    <View
+      style={[
+        styles.container,
+        {
+          backgroundColor: colors.restTimeBackground,
+          borderColor: colors.restTimeBorder,
+        },
+      ]}
+    >
+      <View style={styles.restTimeText}>
+        <WorkoutTimer
+          fontSize={30}
+          fontWeight={600}
+          lineHeight={58}
+          elapsedTimeMs={timeLeft}
+          countdown
+        />
+      </View>
+      <View style={styles.timeAdjustRow}>
+        {/* <Button
               title="-15"
               onPress={() => adjust(-15000)}
               disabled={restTimerRun.status === "paused"}
@@ -113,54 +116,56 @@ export const RestTimer = () => {
               onPress={() => adjust(15000)}
               disabled={restTimerRun.status === "paused"}
             /> */}
-            <CustomButton
-              title="-15"
-              onPress={() => adjust(-15000)}
-              disabled={restTimerRun.status === "paused"}
-              style={styles.customButton}
-            />
-            <CustomButton
-              title="+15"
-              onPress={() => adjust(15000)}
-              disabled={restTimerRun.status === "paused"}
-              style={styles.customButton}
-            />
-          </View>
+        <CustomButton
+          title="-15"
+          onPress={() => adjust(-15000)}
+          disabled={restTimerRun.status === "paused"}
+          style={styles.customButton}
+        />
+        <CustomButton
+          title="+15"
+          onPress={() => adjust(15000)}
+          disabled={restTimerRun.status === "paused"}
+          style={styles.customButton}
+        />
+      </View>
 
-          <View
-            style={[
-              styles.barTrack,
-              { backgroundColor: colors.restTimeBorder },
-            ]}
-          >
-            <Animated.View
-              style={[
-                styles.barFill,
-                {
-                  backgroundColor: colors.barColor,
-                  transformOrigin: "left center",
-                  transform: [{ scaleX: animatedProgress }],
-                },
-              ]}
-            />
-          </View>
+      <View
+        style={[styles.barTrack, { backgroundColor: colors.restTimeBorder }]}
+      >
+        <Animated.View
+          style={[
+            styles.barFill,
+            {
+              backgroundColor: colors.barColor,
+              transformOrigin: "left center",
+              transform: [{ scaleX: animatedProgress }],
+            },
+          ]}
+        />
+      </View>
 
-          <View style={styles.buttonRow}>
-            <Button
-              title="Resume"
-              onPress={resumeRestTimer}
-              disabled={restTimerRun.status === "running"}
-            />
-            <Button
-              title="Pause"
-              onPress={pauseRestTimer}
-              disabled={restTimerRun.status !== "running"}
-            />
-            <Button title="Skip" onPress={clearRestTimer} />
-          </View>
-        </View>
-      )}
-    </>
+      <View
+        style={[
+          styles.buttonRow,
+          { paddingBottom: Math.max(30, insets.bottom) },
+        ]}
+      >
+        <CustomButton
+          variant="plain"
+          title="Resume"
+          onPress={resumeRestTimer}
+          disabled={restTimerRun.status === "running"}
+        />
+        <CustomButton
+          variant="plain"
+          title="Pause"
+          onPress={pauseRestTimer}
+          disabled={restTimerRun.status !== "running"}
+        />
+        <CustomButton variant="plain" title="Skip" onPress={clearRestTimer} />
+      </View>
+    </View>
   );
 };
 
@@ -199,7 +204,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-around",
     marginTop: 10,
-    paddingBottom: 30,
   },
   timeAdjustRow: {
     flexDirection: "row",

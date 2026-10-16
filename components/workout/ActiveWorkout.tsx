@@ -12,10 +12,23 @@ import { SetRow } from "@/types/workout";
 import { useQuery } from "@tanstack/react-query";
 import { router } from "expo-router";
 import { useSQLiteContext } from "expo-sqlite";
-import { Button, FlatList, StyleSheet, View } from "react-native";
+import {
+  FlatList,
+  Platform,
+  StyleSheet,
+  View,
+  type ScrollViewProps,
+} from "react-native";
+import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
+import { CustomButton } from "../ui/CustomButton";
 import { WorkoutExerciseCard } from "./WorkoutExerciseCard";
 
 const EMPTY_PREFILLED_SETS: SetRow[] = [];
+
+// Defined at module level so FlatList gets the same component on every render.
+const renderScrollComponent = (props: ScrollViewProps) => (
+  <KeyboardAwareScrollView {...props} bottomOffset={24} />
+);
 
 type ActiveWorkoutProps = {
   routineId?: string | null;
@@ -50,8 +63,11 @@ export function ActiveWorkout({ routineId, startedAt }: ActiveWorkoutProps) {
           style={styles.exerciseList}
           data={exercises}
           keyExtractor={(item) => item.exerciseId}
-          automaticallyAdjustKeyboardInsets
-          keyboardDismissMode="interactive"
+          renderScrollComponent={renderScrollComponent}
+          // "interactive" is iOS-only; Android dismisses on drag instead.
+          keyboardDismissMode={
+            Platform.OS === "ios" ? "interactive" : "on-drag"
+          }
           keyboardShouldPersistTaps="always"
           contentContainerStyle={styles.exerciseListContent}
           showsVerticalScrollIndicator={false}
@@ -71,13 +87,17 @@ export function ActiveWorkout({ routineId, startedAt }: ActiveWorkoutProps) {
               />
             </View>
           )}
-        />
-
-        <Button
-          title="Add an exercise"
-          onPress={() => router.push("/exercise-list")}
+          ListFooterComponent={
+            <CustomButton
+              variant="filled"
+              title="Add an exercise"
+              onPress={() => router.push("/exercise-list")}
+              style={{ alignSelf: "center", width: "60%" }}
+            />
+          }
         />
       </View>
+
       <RestTimer />
     </ThemedView>
   );
@@ -95,7 +115,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   exerciseListContent: {
-    paddingBottom: 200,
+    paddingBottom: 20,
   },
   headerRow: {
     flexDirection: "row",
