@@ -48,7 +48,8 @@
       "expo-web-browser",
       "expo-status-bar",
       "expo-sqlite",
-      "expo-widgets"
+      "expo-widgets",
+      "./plugins/withSceneDelegate"
     ],
     "experiments": {
       "typedRoutes": true,
