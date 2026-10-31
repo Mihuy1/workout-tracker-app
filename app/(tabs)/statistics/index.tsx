@@ -195,7 +195,7 @@ export default function Statistics() {
               ]}
               onPress={() =>
                 router.push({
-                  pathname: "../exercise-progress",
+                  pathname: "/statistics/exercise-progress",
                   params: {
                     exerciseId: item.exercise_id,
                     exerciseName: item.exercise_name,

@@ -9,7 +9,7 @@ import { Stack, useLocalSearchParams } from "expo-router";
 import { useSQLiteContext } from "expo-sqlite";
 import { useState } from "react";
 import { ScrollView, StyleSheet, View } from "react-native";
-import { Range, RANGES } from "./(tabs)/statistics";
+import { Range, RANGES } from "./index";
 
 export default function ExerciseProgressScreen() {
   const db = useSQLiteContext();
