@@ -8,6 +8,10 @@ An iOS-first workout tracker built with React Native and Expo. Create reusable r
 | :-------------------------------------------------------------------------------------------------------------: | :-----------------------------------------------------------------------------------------------------------------: | :----------------------------------------------------------------------------------------: |
 | <img src="images/Home_screen_iphone-17-pro.png" alt="Home screen showing saved workout routines" width="260" /> | <img src="images/Workout_iphone-17-pro.png" alt="Active workout with weight and repetition tracking" width="260" /> | <img src="images/History_iphone-17-pro.png" alt="Completed workout history" width="260" /> |
 
+|                                                    Statistics                                                     |                                                  Exercise progress                                                   |
+| :---------------------------------------------------------------------------------------------------------------: | :------------------------------------------------------------------------------------------------------------------: |
+| <img src="images/Statistics_iphone-17-pro.png" alt="Statistics page with workout totals and exercises" width="260" /> | <img src="images/Progress_chart_iphone-17-pro.png" alt="Exercise progress chart showing heaviest weight over time" width="260" /> |
+
 ## Features
 
 - Start an empty workout or build and reuse saved routines
