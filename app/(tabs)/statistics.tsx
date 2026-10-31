@@ -9,7 +9,7 @@ import {
   WorkoutStats,
 } from "@/storage/workoutRepository";
 import { formatWeight, formatWeightValue } from "@/utils/weightUnits";
-import { useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { router } from "expo-router";
 import { useSQLiteContext } from "expo-sqlite";
 import { useState } from "react";
@@ -43,13 +43,13 @@ function Delta({ value, formatValue = String, suffix = "" }: DeltaProps) {
   );
 }
 
-const RANGES = [
+export const RANGES = [
   { label: "30 Days", value: 30 },
   { label: "90 Days", value: 90 },
   { label: "1 Year", value: 365 },
 ];
 
-type Range = (typeof RANGES)[number];
+export type Range = (typeof RANGES)[number];
 
 const DEFAULT_STATS: WorkoutStats = {
   workoutCount: 0,
@@ -85,6 +85,7 @@ export default function Statistics() {
 
       return { current, previous, exercises };
     },
+    placeholderData: keepPreviousData,
   });
 
   const stats = data?.current ?? DEFAULT_STATS;
@@ -198,6 +199,7 @@ export default function Statistics() {
                   params: {
                     exerciseId: item.exercise_id,
                     exerciseName: item.exercise_name,
+                    days: range.value,
                   },
                 })
               }

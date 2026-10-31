@@ -166,6 +166,7 @@ export async function getExerciseStats(
   db: SQLiteDatabase,
   exerciseId: string,
   weightUnit: WeightUnit,
+  days: number,
 ) {
   const rows = await db.getAllAsync<ExerciseStatsType>(
     `
@@ -183,11 +184,11 @@ export async function getExerciseStats(
 
     LEFT JOIN workout_sets ws ON ws.workout_exercise_id = we.id
 
-    WHERE we.exercise_id = ?
+    WHERE we.exercise_id = ? AND w.completed_at >= ?
 
     ORDER BY w.completed_at ASC
     `,
-    [exerciseId],
+    [exerciseId, Date.now() - days * 86_400_000],
   );
 
   const heaviestWeightMap = new Map<number, number>();

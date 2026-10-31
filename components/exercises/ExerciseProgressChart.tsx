@@ -72,6 +72,38 @@ export function ExerciseProgressChart({
         )
       : 0;
 
+  // Only label every Nth point so the x-axis dates don't overlap. Count from
+  // the end so the most recent point is always labelled.
+  const minLabelSpacing = 36;
+  const maxLabels = Math.max(1, Math.floor(chartWidth / minLabelSpacing));
+  const labelStep = Math.ceil(data.length / maxLabels);
+  // gifted-charts squeezes each label into a box only `spacing` wide, which
+  // truncates "28 Oct" to "2". Render shown labels in a wider, centered box.
+  const chartData = data.map((point, index) => {
+    const showLabel = (data.length - 1 - index) % labelStep === 0;
+    return {
+      ...point,
+      label: showLabel ? point.label : "",
+      labelComponent: showLabel
+        ? () => (
+            <View
+              style={{
+                width: minLabelSpacing,
+                marginLeft: (spacing - minLabelSpacing) / 2,
+              }}
+            >
+              <ThemedText
+                numberOfLines={1}
+                style={[styles.xAxisLabel, { color: textColor }]}
+              >
+                {point.label}
+              </ThemedText>
+            </View>
+          )
+        : undefined,
+    };
+  });
+
   return (
     <View
       style={[
@@ -100,7 +132,7 @@ export function ExerciseProgressChart({
       >
         {containerWidth > 0 && (
           <LineChart
-            data={data}
+            data={chartData}
             height={220}
             width={chartWidth}
             rulesLength={chartWidth}
@@ -207,6 +239,11 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 6,
+  },
+  xAxisLabel: {
+    fontSize: 10,
+    lineHeight: 14,
+    textAlign: "center",
   },
   legendColor: {
     width: 12,
