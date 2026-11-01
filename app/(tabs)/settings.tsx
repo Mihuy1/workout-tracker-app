@@ -1,4 +1,5 @@
 import CustomDropdown from "@/components/CustomDropdown";
+import { ScreenContainer } from "@/components/ui/ScreenContainer";
 import { ThemedText } from "@/components/ui/ThemedText";
 import { APPEARANCE_OPTIONS } from "@/constants/theme";
 import {
@@ -7,11 +8,9 @@ import {
 } from "@/contexts/restTimePreferenceContext";
 import { useThemeProvider } from "@/contexts/themeContext";
 import { useWeightUnit } from "@/contexts/weightUnitContext";
-import { useThemeColor } from "@/hooks/use-theme-color";
 import { WEIGHT_UNIT_OPTIONS } from "@/utils/weightUnits";
 import { useState } from "react";
 import { ScrollView, StyleSheet, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 
 type OpenDropdown = "appearance" | "weightUnit" | "defaultRestTime" | null;
 
@@ -20,22 +19,16 @@ export default function TabThreeScreen() {
   const { weightUnit, setWeightUnit } = useWeightUnit();
   const { defaultRestTime, setDefaultRestTime } = useDefaultRestTime();
 
-  const background = useThemeColor({}, "background");
-
   const [openDropdown, setOpenDropdown] = useState<OpenDropdown>(null);
 
   return (
-    <SafeAreaView
-      edges={["top", "left", "right"]}
-      style={[styles.safeArea, { backgroundColor: background }]}
-    >
+    <ScreenContainer>
+      <ThemedText type="title">Settings</ThemedText>
       <ScrollView
         style={styles.container}
         contentContainerStyle={styles.content}
         onTouchStart={() => setOpenDropdown(null)}
       >
-        <ThemedText type="subtitle">Settings Screen</ThemedText>
-
         <View style={styles.dropdowns}>
           <View style={styles.dropdown}>
             <ThemedText type="defaultSemiBold">Appearance</ThemedText>
@@ -80,14 +73,11 @@ export default function TabThreeScreen() {
           </View>
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </ScreenContainer>
   );
 }
 
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-  },
   container: {
     flex: 1,
   },

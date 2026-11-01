@@ -1,5 +1,6 @@
 import CustomDropdown from "@/components/CustomDropdown";
 import { IconSymbol } from "@/components/ui/IconSymbol";
+import { ScreenContainer } from "@/components/ui/ScreenContainer";
 import { ThemedText } from "@/components/ui/ThemedText";
 import { useWeightUnit } from "@/contexts/weightUnitContext";
 import { useThemeColor } from "@/hooks/use-theme-color";
@@ -14,7 +15,6 @@ import { router } from "expo-router";
 import { useSQLiteContext } from "expo-sqlite";
 import { useState } from "react";
 import { FlatList, Pressable, StyleSheet, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 
 type DeltaProps = {
   value: number;
@@ -60,7 +60,6 @@ const DEFAULT_STATS: WorkoutStats = {
 
 export default function Statistics() {
   const tintColor = useThemeColor({}, "tint");
-  const screenBackground = useThemeColor({}, "background");
   const cardBg = useThemeColor({}, "surface");
   const cardBorder = useThemeColor({}, "border");
 
@@ -103,20 +102,14 @@ export default function Statistics() {
 
   if (!data)
     return (
-      <SafeAreaView
-        edges={["top", "left", "right"]}
-        style={[styles.container, { backgroundColor: screenBackground }]}
-      >
+      <ScreenContainer>
         <ThemedText>Loading...</ThemedText>
-      </SafeAreaView>
+      </ScreenContainer>
     );
 
   const formattedDuration = formatDuration(stats.totalDuration);
   return (
-    <SafeAreaView
-      edges={["top", "left", "right"]}
-      style={[styles.container, { backgroundColor: screenBackground }]}
-    >
+    <ScreenContainer>
       <ThemedText type="title">Statistics</ThemedText>
       <View style={styles.dateRangeDropDownView}>
         <CustomDropdown
@@ -221,16 +214,11 @@ export default function Statistics() {
           )}
         ></FlatList>
       </View>
-    </SafeAreaView>
+    </ScreenContainer>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    paddingHorizontal: 10,
-  },
-
   mainDataView: {
     display: "flex",
     flexDirection: "row",

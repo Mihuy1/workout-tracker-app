@@ -1,8 +1,8 @@
 import { WorkoutHistoryRow } from "@/components/history/WorkoutHistoryRow";
 import { CustomModal } from "@/components/ui/CustomModal";
+import { ScreenContainer } from "@/components/ui/ScreenContainer";
 import { ThemedText } from "@/components/ui/ThemedText";
 import { useWeightUnit } from "@/contexts/weightUnitContext";
-import { useThemeColor } from "@/hooks/use-theme-color";
 import {
   type CompletedWorkout,
   deleteWorkout,
@@ -11,8 +11,7 @@ import {
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSQLiteContext } from "expo-sqlite";
 import { useCallback, useState } from "react";
-import { FlatList } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { FlatList, View } from "react-native";
 
 const workoutKeyExtractor = (workout: CompletedWorkout) => workout.id;
 
@@ -25,7 +24,6 @@ export default function TabTwoScreen() {
     null,
   );
   const closeDeleteModal = () => setSelectedWorkoutId(null);
-  const screenBg = useThemeColor({}, "background");
 
   const toggleWorkout = useCallback((id: string) => {
     setExpandedId((currentId) => (currentId === id ? null : id));
@@ -77,19 +75,13 @@ export default function TabTwoScreen() {
 
   if (isLoading)
     return (
-      <SafeAreaView
-        edges={["top", "left", "right"]}
-        style={{ flex: 1, backgroundColor: screenBg }}
-      >
+      <ScreenContainer>
         <ThemedText>Loading...</ThemedText>
-      </SafeAreaView>
+      </ScreenContainer>
     );
 
   return (
-    <SafeAreaView
-      edges={["top", "left", "right"]}
-      style={{ flex: 1, backgroundColor: screenBg }}
-    >
+    <ScreenContainer>
       <CustomModal
         visible={selectedWorkoutId !== null}
         title="Delete Workout?"
@@ -104,16 +96,19 @@ export default function TabTwoScreen() {
         }}
       />
 
-      <FlatList
-        data={historyData}
-        keyExtractor={workoutKeyExtractor}
-        renderItem={renderItem}
-        // Workout cards are tall and expansion adds many native views.
-        // Keep a smaller offscreen window and mount fewer cards per batch.
-        initialNumToRender={5}
-        maxToRenderPerBatch={4}
-        windowSize={7}
-      />
-    </SafeAreaView>
+      <View>
+        <ThemedText type="title">History</ThemedText>
+        <FlatList
+          data={historyData}
+          keyExtractor={workoutKeyExtractor}
+          renderItem={renderItem}
+          // Workout cards are tall and expansion adds many native views.
+          // Keep a smaller offscreen window and mount fewer cards per batch.
+          initialNumToRender={5}
+          maxToRenderPerBatch={4}
+          windowSize={7}
+        />
+      </View>
+    </ScreenContainer>
   );
 }

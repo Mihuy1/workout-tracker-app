@@ -1,7 +1,7 @@
-import { ThemedText } from "@/components/ui/ThemedText";
+import { RoutineCard } from "@/components/routines/RoutineCard";
 import { CustomButton } from "@/components/ui/CustomButton";
 import { CustomModal } from "@/components/ui/CustomModal";
-import { RoutineCard } from "@/components/routines/RoutineCard";
+import { ThemedText } from "@/components/ui/ThemedText";
 import { useThemeColor } from "@/hooks/use-theme-color";
 import { router } from "expo-router";
 import { useState } from "react";
@@ -12,8 +12,8 @@ import {
   StyleSheet,
   View,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 
+import { ScreenContainer } from "@/components/ui/ScreenContainer";
 import { deleteRoutine, getAllRoutines } from "@/storage/routineRepository";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSQLiteContext } from "expo-sqlite";
@@ -68,18 +68,13 @@ export default function HomeScreen() {
 
   if (isLoading)
     return (
-      <View
-        style={[styles.container, { backgroundColor: screenBackground }]}
-      >
+      <ScreenContainer>
         <ThemedText type="title">Loading...</ThemedText>
-      </View>
+      </ScreenContainer>
     );
 
   return (
-    <SafeAreaView
-      edges={["top", "left", "right"]}
-      style={[styles.container, { backgroundColor: screenBackground }]}
-    >
+    <ScreenContainer>
       <CustomModal
         visible={modalVisible}
         title={`Remove ${deleteRoutineName} ?`}
@@ -133,15 +128,11 @@ export default function HomeScreen() {
           }}
         />
       </View>
-    </SafeAreaView>
+    </ScreenContainer>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    paddingHorizontal: 10,
-  },
   content: {
     flex: 1,
     gap: 12,
