@@ -27,7 +27,7 @@ const EMPTY_PREFILLED_SETS: SetRow[] = [];
 
 // Defined at module level so FlatList gets the same component on every render.
 const renderScrollComponent = (props: ScrollViewProps) => (
-  <KeyboardAwareScrollView {...props} bottomOffset={24} />
+  <KeyboardAwareScrollView {...props} bottomOffset={24} mode="layout" />
 );
 
 type ActiveWorkoutProps = {

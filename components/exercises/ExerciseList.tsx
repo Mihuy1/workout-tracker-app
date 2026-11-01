@@ -7,6 +7,7 @@ import exercises from "@/data/exercises.json";
 import { useThemeColor } from "@/hooks/use-theme-color";
 import { Exercise } from "@/types/workout";
 import { router } from "expo-router";
+import { useHeaderHeight } from "expo-router/build/react-navigation/index.js";
 import Fuse from "fuse.js";
 import { useMemo, useRef, useState } from "react";
 import { FlatList, Pressable, StyleSheet, TextInput, View } from "react-native";
@@ -29,6 +30,7 @@ export function ExerciseList() {
   const mutedText = useThemeColor({}, "mutedText");
   const surfaceMuted = useThemeColor({}, "surfaceMuted");
   const accent = useThemeColor({}, "barColor");
+  const headerHeight = useHeaderHeight();
 
   const selectedExercisesNames = useMemo(
     () => new Set(workoutExercises.map((exercise) => exercise.name)),
@@ -111,7 +113,7 @@ export function ExerciseList() {
   };
 
   return (
-    <ThemedView style={styles.container}>
+    <ThemedView style={[styles.container, { paddingTop: headerHeight }]}>
       <View
         style={[styles.searchBar, { backgroundColor: surface, borderColor }]}
       >
