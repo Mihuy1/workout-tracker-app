@@ -76,13 +76,13 @@ export const useDefaultRestTime = () => {
 
 export const DEFAULT_REST_TIME_OPTIONS = [
   { value: 30, label: "30s" },
-  { value: 60, label: "1m" },
-  { value: 90, label: "1m 30s" },
-  { value: 120, label: "2m" },
-  { value: 150, label: "2m 30s" },
-  { value: 180, label: "3m" },
-  { value: 210, label: "3m 30s" },
-  { value: 240, label: "4m" },
-  { value: 270, label: "4m 30s" },
-  { value: 300, label: "5m" },
+  { value: 60, label: "1min" },
+  { value: 90, label: "1min 30s" },
+  { value: 120, label: "2min" },
+  { value: 150, label: "2min 30s" },
+  { value: 180, label: "3min" },
+  { value: 210, label: "3min 30s" },
+  { value: 240, label: "4min" },
+  { value: 270, label: "4min 30s" },
+  { value: 300, label: "5min" },
 ];

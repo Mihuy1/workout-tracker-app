@@ -59,7 +59,7 @@ export default function TabThreeScreen() {
           </View>
           <View>
             <View style={styles.dropdown}>
-              <ThemedText type="defaultSemiBold">Default Rest</ThemedText>
+              <ThemedText type="defaultSemiBold">Default Rest Timer</ThemedText>
               <CustomDropdown
                 value={defaultRestTime}
                 options={DEFAULT_REST_TIME_OPTIONS}
