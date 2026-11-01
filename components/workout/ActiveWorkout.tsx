@@ -57,8 +57,6 @@ export function ActiveWorkout({ routineId, startedAt }: ActiveWorkoutProps) {
   return (
     <ThemedView style={styles.container}>
       <View style={styles.content}>
-        <LiveWorkoutTimer startedAt={startedAt} />
-
         <FlatList
           style={styles.exerciseList}
           data={exercises}
@@ -71,6 +69,7 @@ export function ActiveWorkout({ routineId, startedAt }: ActiveWorkoutProps) {
           keyboardShouldPersistTaps="always"
           contentContainerStyle={styles.exerciseListContent}
           showsVerticalScrollIndicator={false}
+          contentInsetAdjustmentBehavior="automatic"
           renderItem={({ item }) => (
             <View style={{ marginBottom: 5 }}>
               <WorkoutExerciseCard
@@ -87,6 +86,7 @@ export function ActiveWorkout({ routineId, startedAt }: ActiveWorkoutProps) {
               />
             </View>
           )}
+          ListHeaderComponent={<LiveWorkoutTimer startedAt={startedAt} />}
           ListFooterComponent={
             <CustomButton
               variant="filled"
