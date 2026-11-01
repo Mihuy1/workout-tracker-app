@@ -7,7 +7,7 @@ import exercises from "@/data/exercises.json";
 import { useThemeColor } from "@/hooks/use-theme-color";
 import { Exercise } from "@/types/workout";
 import { router } from "expo-router";
-import { useHeaderHeight } from "expo-router/build/react-navigation/index.js";
+import { useHeaderHeight } from "expo-router/react-navigation";
 import Fuse from "fuse.js";
 import { useMemo, useRef, useState } from "react";
 import { FlatList, Pressable, StyleSheet, TextInput, View } from "react-native";
