@@ -23,6 +23,7 @@ import {
 import * as Haptics from "expo-haptics";
 import { memo, useState } from "react";
 import { Keyboard, Pressable, StyleSheet, TextInput, View } from "react-native";
+import ReanimatedSwipeable from "react-native-gesture-handler/ReanimatedSwipeable";
 
 type WorkoutExerciseCardProps = {
   exercise: Exercise;
@@ -65,8 +66,6 @@ export const WorkoutExerciseCard = memo(function WorkoutExerciseCard({
   const successColor = useThemeColor({}, "success");
 
   const [confirmExerciseRemove, setConfirmExerciseRemove] = useState(false);
-  const [confirmSetRemove, setConfirmSetRemove] = useState(false);
-  const [setToRemove, setSetToRemove] = useState<number | null>(null);
   const [invalidSetVisible, setInvalidSetVisible] = useState(false);
 
   function calculateSetAchievements(
@@ -180,22 +179,7 @@ export const WorkoutExerciseCard = memo(function WorkoutExerciseCard({
         }}
         onSecondary={() => setConfirmExerciseRemove(false)}
       />
-      <CustomModal
-        visible={confirmSetRemove}
-        title="Remove Set"
-        message="Are you sure you want to remove the set"
-        primaryButtonText="Yes"
-        secondaryButtonText="No"
-        primaryButtonRed
-        onRequestClose={() => setConfirmSetRemove(false)}
-        onPrimary={() => {
-          if (setToRemove) {
-            setConfirmSetRemove(false);
-            removeSet(workoutName, setToRemove);
-          }
-        }}
-        onSecondary={() => setConfirmSetRemove(false)}
-      />
+
       <View style={styles.titleRow}>
         <ThemedText type="defaultSemiBold">{workoutName}</ThemedText>
 
@@ -230,14 +214,16 @@ export const WorkoutExerciseCard = memo(function WorkoutExerciseCard({
         >
           REPS
         </ThemedText>
-        <IconSymbol
-          name="checkmark"
-          size={18}
-          color={iconColor}
-          style={[styles.cell, styles.actionCol]}
-        />
-
-        <View style={[styles.cell, styles.actionCol]} />
+        <View
+          style={[styles.iconButton, { marginLeft: "auto", height: undefined }]}
+        >
+          <IconSymbol
+            name="checkmark"
+            size={18}
+            color={iconColor}
+            style={[styles.cell, styles.actionCol]}
+          />
+        </View>
       </View>
 
       {exercise.sets.map((item, index) => {
@@ -254,163 +240,169 @@ export const WorkoutExerciseCard = memo(function WorkoutExerciseCard({
           : "0";
         const suggestedReps = suggestedSet?.reps ?? "";
         return (
-          <View
+          <ReanimatedSwipeable
             key={item.id}
-            style={[
-              styles.tableRow,
-              { borderColor },
-              item.complete
-                ? {
-                    backgroundColor: completedBackground,
-                    borderColor: completedBorder,
-                  }
-                : {
-                    backgroundColor: surfaceMuted,
-                    borderColor: borderColor,
-                  },
-            ]}
-          >
-            <ThemedText type="default" style={[styles.cell, styles.setCol]}>
-              {index + 1}
-            </ThemedText>
-
-            <TextInput
-              style={[
-                styles.input,
-                styles.weightUnitCol,
-                { borderColor, color: textColor, backgroundColor: surface },
-              ]}
-              value={item.weight}
-              onChangeText={(text) => {
-                if (!isWeightInput(text)) return;
-                updateSet(workoutName, item.id, {
-                  weight: text,
-                  complete: false,
-                  achievements: [],
-                });
-              }}
-              placeholder={suggestedWeightPlaceholder}
-              placeholderTextColor={placeholderColor}
-              keyboardType="decimal-pad"
-            />
-
-            <TextInput
-              style={[
-                styles.input,
-                styles.repsCol,
-                { borderColor, color: textColor, backgroundColor: surface },
-              ]}
-              value={item.reps}
-              onChangeText={(text) => {
-                if (!isRepsInput(text)) return;
-                updateSet(workoutName, item.id, {
-                  reps: text,
-                  complete: false,
-                  achievements: [],
-                });
-              }}
-              placeholder={suggestedReps || "0"}
-              placeholderTextColor={placeholderColor}
-              keyboardType="number-pad"
-            />
-
-            <Pressable
-              disabled={!prBaseline}
-              style={styles.iconButton}
-              onPress={() => {
-                Keyboard.dismiss();
-
-                const finalWeight =
-                  item.weight !== "" ? item.weight : suggestedWeight;
-
-                const finalReps = item.reps !== "" ? item.reps : suggestedReps;
-
-                const values = parseSetValues(finalWeight, finalReps);
-                if (!values) {
-                  Haptics.notificationAsync(
-                    Haptics.NotificationFeedbackType.Warning,
-                  );
-                  setInvalidSetVisible(true);
-                  return;
-                }
-
-                const willBeCompleted = !item.complete;
-
-                if (!prBaseline) return;
-
-                if (willBeCompleted) {
-                  triggerRestTimer(restTime);
-                }
-
-                const weightUnitNumber = weightToGrams(
-                  values.weight,
-                  weightUnit,
-                );
-
-                const achievements: SetAchievement[] = willBeCompleted
-                  ? calculateSetAchievements(
-                      prBaseline,
-                      item.id,
-                      exercise.sets,
-                      weightUnitNumber,
-                      values.reps,
-                    )
-                  : [];
-
-                if (willBeCompleted) {
-                  if (achievements.length > 0) {
-                    Haptics.notificationAsync(
-                      Haptics.NotificationFeedbackType.Success,
-                    );
-                  } else {
-                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-                  }
-                } else {
-                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                }
-
-                handleCompleteSet(
-                  workoutName,
-                  item.id,
-                  !item.complete,
-                  finalWeight.trim().replace(",", "."),
-                  String(values.reps),
-                  achievements,
-                );
-              }}
-            >
-              <IconSymbol
-                name={
-                  !item.complete
-                    ? "circle"
-                    : item.achievements.length > 0
-                      ? "trophy.fill"
-                      : "checkmark"
-                }
-                size={24}
-                color={
-                  item.achievements.length > 0
-                    ? "#f5cc46"
-                    : item.complete
-                      ? successColor
-                      : iconColor
-                }
-              />
-            </Pressable>
-            <View style={[styles.cell, styles.actionCol]}>
+            friction={2}
+            rightThreshold={40}
+            overshootRight={false}
+            renderRightActions={() => (
               <Pressable
-                style={styles.iconButton}
+                style={styles.deleteAction}
                 onPress={() => {
                   Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-                  setSetToRemove(item.id);
-                  setConfirmSetRemove(true);
-                  // removeSet(workoutName, item.id);
+                  removeSet(workoutName, item.id);
                 }}
               >
-                <IconSymbol name="minus.circle" size={24} color="red" />
+                <ThemedText style={styles.deleteActionText}>Delete</ThemedText>
+              </Pressable>
+            )}
+          >
+            <View
+              key={item.id}
+              style={[
+                styles.tableRow,
+                { borderColor },
+                item.complete
+                  ? {
+                      backgroundColor: completedBackground,
+                      borderColor: completedBorder,
+                    }
+                  : {
+                      backgroundColor: surfaceMuted,
+                      borderColor: borderColor,
+                    },
+              ]}
+            >
+              <ThemedText type="default" style={[styles.cell, styles.setCol]}>
+                {index + 1}
+              </ThemedText>
+
+              <TextInput
+                style={[
+                  styles.input,
+                  styles.weightUnitCol,
+                  { borderColor, color: textColor, backgroundColor: surface },
+                ]}
+                value={item.weight}
+                onChangeText={(text) => {
+                  if (!isWeightInput(text)) return;
+                  updateSet(workoutName, item.id, {
+                    weight: text,
+                    complete: false,
+                    achievements: [],
+                  });
+                }}
+                placeholder={suggestedWeightPlaceholder}
+                placeholderTextColor={placeholderColor}
+                keyboardType="decimal-pad"
+              />
+
+              <TextInput
+                style={[
+                  styles.input,
+                  styles.repsCol,
+                  { borderColor, color: textColor, backgroundColor: surface },
+                ]}
+                value={item.reps}
+                onChangeText={(text) => {
+                  if (!isRepsInput(text)) return;
+                  updateSet(workoutName, item.id, {
+                    reps: text,
+                    complete: false,
+                    achievements: [],
+                  });
+                }}
+                placeholder={suggestedReps || "0"}
+                placeholderTextColor={placeholderColor}
+                keyboardType="number-pad"
+              />
+
+              <Pressable
+                disabled={!prBaseline}
+                style={[styles.iconButton, { marginLeft: "auto" }]}
+                onPress={() => {
+                  Keyboard.dismiss();
+
+                  const finalWeight =
+                    item.weight !== "" ? item.weight : suggestedWeight;
+
+                  const finalReps =
+                    item.reps !== "" ? item.reps : suggestedReps;
+
+                  const values = parseSetValues(finalWeight, finalReps);
+                  if (!values) {
+                    Haptics.notificationAsync(
+                      Haptics.NotificationFeedbackType.Warning,
+                    );
+                    setInvalidSetVisible(true);
+                    return;
+                  }
+
+                  const willBeCompleted = !item.complete;
+
+                  if (!prBaseline) return;
+
+                  if (willBeCompleted) {
+                    triggerRestTimer(restTime);
+                  }
+
+                  const weightUnitNumber = weightToGrams(
+                    values.weight,
+                    weightUnit,
+                  );
+
+                  const achievements: SetAchievement[] = willBeCompleted
+                    ? calculateSetAchievements(
+                        prBaseline,
+                        item.id,
+                        exercise.sets,
+                        weightUnitNumber,
+                        values.reps,
+                      )
+                    : [];
+
+                  if (willBeCompleted) {
+                    if (achievements.length > 0) {
+                      Haptics.notificationAsync(
+                        Haptics.NotificationFeedbackType.Success,
+                      );
+                    } else {
+                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                    }
+                  } else {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                  }
+
+                  handleCompleteSet(
+                    workoutName,
+                    item.id,
+                    !item.complete,
+                    finalWeight.trim().replace(",", "."),
+                    String(values.reps),
+                    achievements,
+                  );
+                }}
+              >
+                <IconSymbol
+                  name={
+                    !item.complete
+                      ? "circle"
+                      : item.achievements.length > 0
+                        ? "trophy.fill"
+                        : "checkmark"
+                  }
+                  size={24}
+                  color={
+                    item.achievements.length > 0
+                      ? "#f5cc46"
+                      : item.complete
+                        ? successColor
+                        : iconColor
+                  }
+                />
               </Pressable>
             </View>
-          </View>
+          </ReanimatedSwipeable>
         );
       })}
 
@@ -493,5 +485,16 @@ const styles = StyleSheet.create({
 
   notComplete: {
     backgroundColor: "transparent",
+  },
+
+  deleteAction: {
+    backgroundColor: "#FF3B30",
+    justifyContent: "center",
+    paddingHorizontal: 20,
+  },
+
+  deleteActionText: {
+    color: "white",
+    fontWeight: "600",
   },
 });
