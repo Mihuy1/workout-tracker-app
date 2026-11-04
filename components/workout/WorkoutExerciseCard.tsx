@@ -64,7 +64,9 @@ export const WorkoutExerciseCard = memo(function WorkoutExerciseCard({
   const completedBorder = useThemeColor({}, "completedBorder");
   const successColor = useThemeColor({}, "success");
 
-  const [confirmVisible, setConfirmVisible] = useState(false);
+  const [confirmExerciseRemove, setConfirmExerciseRemove] = useState(false);
+  const [confirmSetRemove, setConfirmSetRemove] = useState(false);
+  const [setToRemove, setSetToRemove] = useState<number | null>(null);
   const [invalidSetVisible, setInvalidSetVisible] = useState(false);
 
   function calculateSetAchievements(
@@ -165,23 +167,39 @@ export const WorkoutExerciseCard = memo(function WorkoutExerciseCard({
         onPrimary={() => setInvalidSetVisible(false)}
       />
       <CustomModal
-        visible={confirmVisible}
-        title="Remove Exercise? "
+        visible={confirmExerciseRemove}
+        title="Remove Exercise"
         message={`Are you sure you want to remove "${workoutName}"`}
         primaryButtonText="Yes"
         secondaryButtonText="No"
         primaryButtonRed
-        onRequestClose={() => setConfirmVisible(false)}
+        onRequestClose={() => setConfirmExerciseRemove(false)}
         onPrimary={() => {
-          setConfirmVisible(false);
+          setConfirmExerciseRemove(false);
           removeExercise(workoutName);
         }}
-        onSecondary={() => setConfirmVisible(false)}
+        onSecondary={() => setConfirmExerciseRemove(false)}
+      />
+      <CustomModal
+        visible={confirmSetRemove}
+        title="Remove Set"
+        message="Are you sure you want to remove the set"
+        primaryButtonText="Yes"
+        secondaryButtonText="No"
+        primaryButtonRed
+        onRequestClose={() => setConfirmSetRemove(false)}
+        onPrimary={() => {
+          if (setToRemove) {
+            setConfirmSetRemove(false);
+            removeSet(workoutName, setToRemove);
+          }
+        }}
+        onSecondary={() => setConfirmSetRemove(false)}
       />
       <View style={styles.titleRow}>
         <ThemedText type="defaultSemiBold">{workoutName}</ThemedText>
 
-        <Pressable hitSlop={10} onPress={() => setConfirmVisible(true)}>
+        <Pressable hitSlop={10} onPress={() => setConfirmExerciseRemove(true)}>
           <IconSymbol name="x.circle" size={24} color="red" />
         </Pressable>
       </View>
@@ -384,7 +402,9 @@ export const WorkoutExerciseCard = memo(function WorkoutExerciseCard({
                 style={styles.iconButton}
                 onPress={() => {
                   Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-                  removeSet(workoutName, item.id);
+                  setSetToRemove(item.id);
+                  setConfirmSetRemove(true);
+                  // removeSet(workoutName, item.id);
                 }}
               >
                 <IconSymbol name="minus.circle" size={24} color="red" />
@@ -466,6 +486,9 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     paddingHorizontal: 8,
     marginHorizontal: 6,
+    paddingVertical: 0,
+    includeFontPadding: false,
+    textAlignVertical: "center",
   },
 
   notComplete: {
