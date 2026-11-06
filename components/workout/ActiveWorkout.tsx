@@ -10,8 +10,9 @@ import {
 } from "@/storage/workoutRepository";
 import { SetRow } from "@/types/workout";
 import { useQuery } from "@tanstack/react-query";
-import { router } from "expo-router";
+import { router, useIsFocused } from "expo-router";
 import { useSQLiteContext } from "expo-sqlite";
+import { useCallback } from "react";
 import {
   FlatList,
   Platform,
@@ -25,11 +26,6 @@ import { WorkoutExerciseCard } from "./WorkoutExerciseCard";
 
 const EMPTY_PREFILLED_SETS: SetRow[] = [];
 
-// Defined at module level so FlatList gets the same component on every render.
-const renderScrollComponent = (props: ScrollViewProps) => (
-  <KeyboardAwareScrollView {...props} bottomOffset={24} mode="layout" />
-);
-
 type ActiveWorkoutProps = {
   routineId?: string | null;
   startedAt: number;
@@ -41,6 +37,20 @@ export function ActiveWorkout({ routineId, startedAt }: ActiveWorkoutProps) {
   const { weightUnit } = useWeightUnit();
   const { defaultRestTime } = useDefaultRestTime();
   const exerciseIds = exercises.map((ex) => ex.exerciseId);
+
+  const isFocused = useIsFocused();
+
+  const renderScrollComponent = useCallback(
+    (props: ScrollViewProps) => (
+      <KeyboardAwareScrollView
+        {...props}
+        enabled={isFocused}
+        bottomOffset={24}
+        mode="layout"
+      />
+    ),
+    [isFocused],
+  );
 
   const { data: baselines = {} } = useQuery({
     queryKey: ["baselines", exerciseIds],

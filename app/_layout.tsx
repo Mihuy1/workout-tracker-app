@@ -53,6 +53,10 @@ export default function RootLayout() {
                             name="modal"
                             options={{ presentation: "modal", title: "Modal" }}
                           />
+                          <Stack.Screen
+                            name="exercise-list"
+                            options={{ presentation: "modal" }}
+                          />
                         </Stack>
                         <StatusBar style="auto" />
                       </ThemeContextProvider>
