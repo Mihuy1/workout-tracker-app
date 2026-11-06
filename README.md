@@ -10,7 +10,7 @@ An iOS-first workout tracker built with React Native and Expo. Create reusable r
 
 |                                                       Statistics                                                        |                                                     Exercise progress                                                      |                                                     Settings                                                      |
 | :---------------------------------------------------------------------------------------------------------------------: | :------------------------------------------------------------------------------------------------------------------------: | :---------------------------------------------------------------------------------------------------------------: |
-| <img src="images/Statistics_iphone-18-pro.png" alt="Statistics page with workout totals and exercises" width="260" /> | <img src="images/Progress_chart_iphone-18-pro.png" alt="Exercise progress chart showing heaviest weight over time" width="260" /> | <img src="images/Settings_iphone-17-pro.png" alt="Settings screen with appearance, weight unit, and default rest timer options" width="260" /> |
+| <img src="images/Statistics_iphone-18-pro.png" alt="Statistics page with workout totals and exercises" width="260" /> | <img src="images/Progress_chart_iphone-18-pro.png" alt="Exercise progress chart showing heaviest weight over time" width="260" /> | <img src="images/Settings_iphone-18-pro.png" alt="Settings screen with appearance, weight unit, and default rest timer options" width="260" /> |
 
 ## Features
 
