@@ -20,6 +20,8 @@ type ExerciseProgressProps = {
     label: string;
     dataPointText: string;
   }[];
+
+  setScrollEnabled: (scroll: boolean) => void;
 };
 
 type ExerciseDataType = "Heaviest Weight" | "One Rep Max";
@@ -28,6 +30,7 @@ export function ExerciseProgressChart({
   exerciseName,
   heaviestWeight,
   oneRepMax,
+  setScrollEnabled,
 }: ExerciseProgressProps) {
   const { weightUnit } = useWeightUnit();
 
@@ -131,43 +134,49 @@ export function ExerciseProgressChart({
         }}
       >
         {containerWidth > 0 && (
-          <LineChart
-            data={chartData}
-            height={220}
-            width={chartWidth}
-            rulesLength={chartWidth}
-            color={primaryColor}
-            dataPointsColor={primaryColor}
-            thickness={3}
-            spacing={spacing}
-            initialSpacing={initialSpacing}
-            endSpacing={endSpacing}
-            disableScroll
-            formatYLabel={(label) => Number(label).toFixed(1)}
-            yAxisLabelSuffix={` ${weightUnit}`}
-            yAxisLabelWidth={yAxisLabelWidth}
-            yAxisTextStyle={{ color: textColor, fontSize: 10 }}
-            xAxisLabelTextStyle={{ color: textColor, fontSize: 10 }}
-            rulesColor={borderColor}
-            xAxisColor={borderColor}
-            yAxisColor={borderColor}
-            focusEnabled
-            dataPointsRadius={4}
-            showTextOnFocus
-            showVerticalLines
-            verticalLinesColor={borderColor}
-            isAnimated
-            showDataPointLabelOnFocus
-            pointerConfig={{}}
-            getPointerProps={({ pointerIndex }: { pointerIndex: number }) => {
-              const point = data[pointerIndex];
+          <View
+            onTouchStart={() => setScrollEnabled(false)}
+            onTouchEnd={() => setScrollEnabled(true)}
+            onTouchCancel={() => setScrollEnabled(true)}
+          >
+            <LineChart
+              data={chartData}
+              height={220}
+              width={chartWidth}
+              rulesLength={chartWidth}
+              color={primaryColor}
+              dataPointsColor={primaryColor}
+              thickness={3}
+              spacing={spacing}
+              initialSpacing={initialSpacing}
+              endSpacing={endSpacing}
+              disableScroll
+              formatYLabel={(label) => Number(label).toFixed(1)}
+              yAxisLabelSuffix={` ${weightUnit}`}
+              yAxisLabelWidth={yAxisLabelWidth}
+              yAxisTextStyle={{ color: textColor, fontSize: 10 }}
+              xAxisLabelTextStyle={{ color: textColor, fontSize: 10 }}
+              rulesColor={borderColor}
+              xAxisColor={borderColor}
+              yAxisColor={borderColor}
+              focusEnabled
+              dataPointsRadius={4}
+              showTextOnFocus
+              showVerticalLines
+              verticalLinesColor={borderColor}
+              isAnimated
+              showDataPointLabelOnFocus
+              pointerConfig={{}}
+              getPointerProps={({ pointerIndex }: { pointerIndex: number }) => {
+                const point = data[pointerIndex];
 
-              if (point) {
-                setSelectedLabel(point.label);
-                setSelectedValue(point.dataPointText);
-              }
-            }}
-          />
+                if (point) {
+                  setSelectedLabel(point.label);
+                  setSelectedValue(point.dataPointText);
+                }
+              }}
+            />
+          </View>
         )}
       </View>
       <View style={styles.buttonRow}>

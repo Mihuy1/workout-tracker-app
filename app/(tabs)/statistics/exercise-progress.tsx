@@ -6,6 +6,7 @@ import { useWeightUnit } from "@/contexts/weightUnitContext";
 import { getExerciseStats } from "@/storage/workoutRepository";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { Stack, useLocalSearchParams } from "expo-router";
+import { useHeaderHeight } from "expo-router/react-navigation";
 import { useSQLiteContext } from "expo-sqlite";
 import { useState } from "react";
 import { ScrollView, StyleSheet, View } from "react-native";
@@ -14,8 +15,10 @@ import { Range, RANGES } from "./index";
 export default function ExerciseProgressScreen() {
   const db = useSQLiteContext();
   const { weightUnit } = useWeightUnit();
+  const headerHeight = useHeaderHeight();
 
   const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
+  const [scrollEnabled, setScrollEnabled] = useState(true);
 
   const { exerciseId, exerciseName, days } = useLocalSearchParams<{
     exerciseId: string;
@@ -48,8 +51,11 @@ export default function ExerciseProgressScreen() {
 
       <ThemedView style={styles.container}>
         <ScrollView
-          contentInsetAdjustmentBehavior="automatic"
-          contentContainerStyle={styles.content}
+          scrollEnabled={scrollEnabled}
+          contentContainerStyle={[
+            styles.content,
+            { paddingTop: headerHeight + 16 },
+          ]}
         >
           {isPending && <ThemedText>Loading exercise data...</ThemedText>}
 
@@ -75,6 +81,7 @@ export default function ExerciseProgressScreen() {
                 exerciseName={exerciseName}
                 heaviestWeight={data.heaviestWeight}
                 oneRepMax={data.oneRepMax}
+                setScrollEnabled={setScrollEnabled}
               />
             </View>
           )}
