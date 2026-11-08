@@ -1,23 +1,8 @@
 import { useThemeColor } from "@/hooks/use-theme-color";
+import { CustomDropDownProps } from "@/utils/CustomDropdown.types";
 import { Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { IconSymbol } from "./ui/IconSymbol";
 import { ThemedText } from "./ui/ThemedText";
-
-interface DropdownOption<T extends string | number> {
-  value: T;
-  label: string;
-}
-
-interface CustomDropDownProps<T extends string | number> {
-  options: readonly DropdownOption<T>[];
-  value: T;
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  onSelect: (option: T) => void | Promise<void>;
-  width?: number;
-  fullWidth?: boolean;
-  centerText?: boolean;
-}
 
 export default function CustomDropdown<T extends string | number>({
   options,

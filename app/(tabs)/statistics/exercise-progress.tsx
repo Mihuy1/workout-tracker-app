@@ -61,18 +61,20 @@ export default function ExerciseProgressScreen() {
 
           {error && <ThemedText>Could not load exercise data.</ThemedText>}
 
-          <CustomDropdown
-            options={RANGES}
-            value={range.value}
-            open={isDropdownOpen}
-            onOpenChange={setIsDropdownOpen}
-            onSelect={(option) => {
-              const next = RANGES.find((r) => r.value === option);
-              if (next) setRange(next);
-            }}
-            fullWidth
-            centerText
-          />
+          <View style={styles.customDropDownView}>
+            <CustomDropdown
+              options={RANGES}
+              value={range.value}
+              open={isDropdownOpen}
+              onOpenChange={setIsDropdownOpen}
+              onSelect={(option) => {
+                const next = RANGES.find((r) => r.value === option);
+                if (next) setRange(next);
+              }}
+              fullWidth
+              centerText
+            />
+          </View>
 
           {data && (
             <View style={{ paddingTop: 15 }}>
@@ -97,5 +99,8 @@ const styles = StyleSheet.create({
   },
   content: {
     padding: 16,
+  },
+  customDropDownView: {
+    alignItems: "center",
   },
 });
