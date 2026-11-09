@@ -1,5 +1,6 @@
 import { useThemeColor } from "@/hooks/use-theme-color";
 import { CustomDropDownProps } from "@/utils/CustomDropdown.types";
+import { useState } from "react";
 import { Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { IconSymbol } from "./ui/IconSymbol";
 import { ThemedText } from "./ui/ThemedText";
@@ -21,19 +22,26 @@ export default function CustomDropdown<T extends string | number>({
   const selectedLabel =
     options.find((option) => option.value === value)?.label ?? String(value);
 
+  const [internalOpen, setInternalOpen] = useState(false);
+  const isOpen = open ?? internalOpen;
+  const setOpen = (next: boolean) => {
+    setInternalOpen(next);
+    onOpenChange?.(next);
+  };
+
   return (
     <View
       style={[
         styles.dropdown,
         fullWidth ? styles.fullWidth : { width },
-        open && styles.dropDownOpen,
+        isOpen && styles.dropDownOpen,
       ]}
       onTouchStart={(event) => event.stopPropagation()}
     >
       <Pressable
         accessibilityRole="button"
-        accessibilityState={{ expanded: open }}
-        onPress={() => onOpenChange(!open)}
+        accessibilityState={{ expanded: isOpen }}
+        onPress={() => setOpen(!isOpen)}
         style={[styles.dropdownTrigger, { borderColor: border }]}
       >
         <ThemedText style={centerText && styles.centerText}>
@@ -44,11 +52,11 @@ export default function CustomDropdown<T extends string | number>({
           size={18}
           color={iconColor}
           style={{
-            transform: [{ rotate: open ? "90deg" : "0deg" }],
+            transform: [{ rotate: isOpen ? "90deg" : "0deg" }],
           }}
         />
       </Pressable>
-      {open && (
+      {isOpen && (
         <View
           style={[
             styles.dropdownMenu,
@@ -72,7 +80,7 @@ export default function CustomDropdown<T extends string | number>({
                   key={option.value}
                   onPress={async () => {
                     await onSelect(option.value);
-                    onOpenChange(false);
+                    setOpen(false);
                   }}
                   style={({ pressed }) => [
                     styles.dropdownOption,

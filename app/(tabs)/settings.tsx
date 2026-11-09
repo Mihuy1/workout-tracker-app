@@ -39,6 +39,7 @@ export default function TabThreeScreen() {
                 label: value,
               }))}
               open={openDropdown === "appearance"}
+              style="menu"
               onOpenChange={(open) =>
                 setOpenDropdown(open ? "appearance" : null)
               }
@@ -52,6 +53,7 @@ export default function TabThreeScreen() {
               options={WEIGHT_UNIT_OPTIONS}
               open={openDropdown === "weightUnit"}
               onSelect={setWeightUnit}
+              style="menu"
               onOpenChange={(open) =>
                 setOpenDropdown(open ? "weightUnit" : null)
               }
@@ -65,6 +67,7 @@ export default function TabThreeScreen() {
                 options={DEFAULT_REST_TIME_OPTIONS}
                 open={openDropdown === "defaultRestTime"}
                 onSelect={setDefaultRestTime}
+                style="menu"
                 onOpenChange={(open) =>
                   setOpenDropdown(open ? "defaultRestTime" : null)
                 }

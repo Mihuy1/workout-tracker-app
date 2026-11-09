@@ -18,9 +18,6 @@ export const COLOR_SCHEMES: Record<
   Dark: "dark",
 };
 
-// const tintColorLight = "#0a7ea4";
-// const tintColorDark = "#fff";
-
 const tintColorLight = "#007AFF";
 const tintColorDark = "#0A84FF";
 
@@ -51,6 +48,9 @@ export const Colors = {
 
     noButtonBackground: "#d80000",
     noButtonText: "#fff",
+
+    chipBackground: "#F2F2F7",
+    chipBorder: "#E5E5EA",
   },
   dark: {
     text: "#ECEDEE",
@@ -78,6 +78,9 @@ export const Colors = {
 
     noButtonBackground: "#d80000",
     noButtonText: "#fff",
+
+    chipBackground: "#2c2c2e",
+    chipBorder: "#3a3a3c",
   },
 };
 

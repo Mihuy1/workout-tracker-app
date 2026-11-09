@@ -1,19 +1,18 @@
 import { CustomButton } from "@/components/ui/CustomButton";
 import { IconSymbol } from "@/components/ui/IconSymbol";
-import { ThemedText } from "@/components/ui/ThemedText";
 import { Colors } from "@/constants/theme";
+import { DEFAULT_REST_TIME_OPTIONS } from "@/contexts/restTimePreferenceContext";
 import { useThemeColor } from "@/hooks/use-theme-color";
-import * as Haptics from "expo-haptics";
 import { useState } from "react";
 import {
   Modal,
   Pressable,
   StyleSheet,
-  Text,
-  TextInput,
   useColorScheme,
   View,
 } from "react-native";
+import CustomDropdown from "../CustomDropdown";
+import { ThemedText } from "../ui/ThemedText";
 
 interface RestTimePickerProps {
   restTime: number;
@@ -29,40 +28,12 @@ export const RestTimePicker = ({
   const theme = useColorScheme() === "dark" ? "dark" : "light";
   const colors = Colors[theme];
   const defaultIconColor = useThemeColor({}, "tint");
+  const chipBackground = useThemeColor({}, "chipBackground");
+  const chipBorder = useThemeColor({}, "chipBorder");
 
-  const [seconds, setSeconds] = useState(() => (restTime % 60).toString());
-  const [minutes, setMinutes] = useState(() =>
-    Math.floor(restTime / 60).toString(),
-  );
   const [showPicker, setShowPicker] = useState(false);
 
-  const handleNumberInput = (text: string) => {
-    const integersOnly = text.replace(/[^0-9]/g, "");
-
-    setMinutes(integersOnly);
-  };
-
-  const handleSecondsInput = (text: string) => {
-    const integersOnly = text.replace(/[^0-9]/g, "");
-
-    setSeconds(integersOnly);
-  };
-
-  const handleOpen = () => {
-    setMinutes(Math.floor(restTime / 60).toString());
-    setSeconds((restTime % 60).toString());
-    setShowPicker(true);
-  };
-
-  const handleApply = () => {
-    const minutesValue = Number(minutes || 0);
-    const secondsValue = Number(seconds || 0);
-
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    setRestTime(minutesValue * 60 + secondsValue);
-    setShowPicker(false);
-  };
-
+  const handleOpen = () => setShowPicker(true);
   const resolvedColor = iconColor ?? defaultIconColor;
 
   return (
@@ -73,14 +44,21 @@ export const RestTimePicker = ({
       }}
     >
       <Pressable
-        hitSlop={10}
+        hitSlop={8}
         onPress={handleOpen}
-        style={styles.restTimerButton}
+        style={({ pressed }) => [
+          styles.chip,
+          {
+            backgroundColor: chipBackground,
+            borderColor: chipBorder,
+            opacity: pressed ? 0.6 : 1,
+          },
+        ]}
       >
-        <ThemedText darkColor={resolvedColor} lightColor={resolvedColor}>
-          Rest: {minutes}m {seconds}s
-        </ThemedText>
         <IconSymbol name="timer" color={resolvedColor} />
+        <ThemedText style={{ color: resolvedColor }}>
+          {Math.floor(restTime / 60)}m {restTime % 60}s
+        </ThemedText>
       </Pressable>
       <Modal
         onRequestClose={() => setShowPicker(false)}
@@ -97,38 +75,14 @@ export const RestTimePicker = ({
             onPress={(e) => e.stopPropagation()}
           >
             <View style={styles.inputsView}>
-              <TextInput
-                style={[
-                  styles.textInput,
-                  {
-                    color: colors.text,
-                    borderColor: colors.border,
-                    backgroundColor: colors.background,
-                  },
-                ]}
-                keyboardType="numeric"
-                value={minutes}
-                onChangeText={(text) => handleNumberInput(text)}
-                autoFocus
+              <CustomDropdown
+                options={DEFAULT_REST_TIME_OPTIONS}
+                value={restTime}
+                onSelect={(option) => setRestTime(Number(option))}
+                style="wheel"
               />
-              <Text style={[styles.text, { color: colors.text }]}>Min</Text>
-
-              <TextInput
-                style={[
-                  styles.textInput,
-                  {
-                    color: colors.text,
-                    borderColor: colors.border,
-                    backgroundColor: colors.background,
-                  },
-                ]}
-                keyboardType="numeric"
-                value={seconds}
-                onChangeText={(text) => handleSecondsInput(text)}
-              />
-              <Text style={[styles.text, { color: colors.text }]}>Sec</Text>
             </View>
-            <CustomButton title="Apply" onPress={handleApply} />
+            <CustomButton title="Done" onPress={() => setShowPicker(false)} />
           </Pressable>
         </Pressable>
       </Modal>
@@ -139,7 +93,6 @@ export const RestTimePicker = ({
 const styles = StyleSheet.create({
   modalView: {
     margin: 20,
-    // backgroundColor: "white",
     borderRadius: 20,
     padding: 24,
     width: "88%",
@@ -159,33 +112,19 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     gap: 10,
   },
-
-  textInput: {
-    borderWidth: 1,
-    // borderColor: "#ccc",
-    // backgroundColor: "#f0f0f0",
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-  },
-  text: {
-    margin: 0,
-    padding: 0,
-  },
   backdrop: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.35)",
     justifyContent: "center",
     alignItems: "center",
   },
-  iconButton: {
-    width: 44,
-    height: 44,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  restTimerButton: {
+  chip: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 4,
+    gap: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 999,
+    borderWidth: StyleSheet.hairlineWidth,
   },
 });

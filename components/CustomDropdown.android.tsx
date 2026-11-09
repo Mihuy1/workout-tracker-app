@@ -9,6 +9,7 @@ import {
   Text,
   TextButton,
 } from "@expo/ui/jetpack-compose";
+import { useState } from "react";
 
 const checkIcon = require("@/assets/icons/check.xml");
 
@@ -25,15 +26,22 @@ export default function CustomDropdown<T extends string | number>({
   const selectedLabel =
     options.find((option) => option.value === value)?.label ?? String(value);
 
+  const [internalOpen, setInternalOpen] = useState(false);
+  const isOpen = open ?? internalOpen;
+  const setOpen = (next: boolean) => {
+    setInternalOpen(next);
+    onOpenChange?.(next);
+  };
+
   return (
     <Host matchContents>
       <Box>
-        <TextButton onClick={() => onOpenChange(true)}>
+        <TextButton onClick={() => setOpen(true)}>
           <Text>{`${selectedLabel}`}</Text>
         </TextButton>
         <DropdownMenuPopup
-          expanded={open}
-          onDismissRequest={() => onOpenChange(false)}
+          expanded={isOpen}
+          onDismissRequest={() => setOpen(false)}
         >
           <DropdownMenuGroup>
             {options.map((option) => (
@@ -41,7 +49,7 @@ export default function CustomDropdown<T extends string | number>({
                 key={option.value}
                 selected={option.value === value}
                 onClick={() => {
-                  onOpenChange(false);
+                  setOpen(false);
                   onSelect(option.value);
                 }}
               >

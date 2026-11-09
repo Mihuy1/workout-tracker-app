@@ -1,4 +1,3 @@
-import { RestTimePicker } from "@/components/timer/RestTimePicker";
 import { CustomButton } from "@/components/ui/CustomButton";
 import { CustomModal } from "@/components/ui/CustomModal";
 import { IconSymbol } from "@/components/ui/IconSymbol";
@@ -24,6 +23,7 @@ import * as Haptics from "expo-haptics";
 import { memo, useState } from "react";
 import { Keyboard, Pressable, StyleSheet, TextInput, View } from "react-native";
 import ReanimatedSwipeable from "react-native-gesture-handler/ReanimatedSwipeable";
+import { RestTimePicker } from "../timer/RestTimePicker";
 
 type WorkoutExerciseCardProps = {
   exercise: Exercise;
@@ -445,7 +445,6 @@ const styles = StyleSheet.create({
   subTitleRow: {
     flexDirection: "column",
     alignItems: "flex-start",
-    // justifyContent: "center",
     gap: 12,
     paddingTop: 6,
   },
