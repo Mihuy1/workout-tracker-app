@@ -78,7 +78,7 @@ export const RestTimePicker = ({
         style={styles.restTimerButton}
       >
         <ThemedText darkColor={resolvedColor} lightColor={resolvedColor}>
-          Rest: {restTime}
+          Rest: {minutes}m {seconds}s
         </ThemedText>
         <IconSymbol name="timer" color={resolvedColor} />
       </Pressable>
