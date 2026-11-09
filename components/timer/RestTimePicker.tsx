@@ -1,5 +1,6 @@
 import { CustomButton } from "@/components/ui/CustomButton";
 import { IconSymbol } from "@/components/ui/IconSymbol";
+import { ThemedText } from "@/components/ui/ThemedText";
 import { Colors } from "@/constants/theme";
 import { useThemeColor } from "@/hooks/use-theme-color";
 import * as Haptics from "expo-haptics";
@@ -17,14 +18,17 @@ import {
 interface RestTimePickerProps {
   restTime: number;
   setRestTime: (time: number) => void;
+  iconColor?: string;
 }
 
 export const RestTimePicker = ({
   restTime,
   setRestTime,
+  iconColor,
 }: RestTimePickerProps) => {
   const theme = useColorScheme() === "dark" ? "dark" : "light";
   const colors = Colors[theme];
+  const defaultIconColor = useThemeColor({}, "tint");
 
   const [seconds, setSeconds] = useState(() => (restTime % 60).toString());
   const [minutes, setMinutes] = useState(() =>
@@ -59,6 +63,8 @@ export const RestTimePicker = ({
     setShowPicker(false);
   };
 
+  const resolvedColor = iconColor ?? defaultIconColor;
+
   return (
     <View
       style={{
@@ -66,8 +72,15 @@ export const RestTimePicker = ({
         justifyContent: "center",
       }}
     >
-      <Pressable hitSlop={10} onPress={handleOpen}>
-        <IconSymbol name="timer" color={useThemeColor({}, "iconColor")} />
+      <Pressable
+        hitSlop={10}
+        onPress={handleOpen}
+        style={styles.restTimerButton}
+      >
+        <ThemedText darkColor={resolvedColor} lightColor={resolvedColor}>
+          Rest: {restTime}
+        </ThemedText>
+        <IconSymbol name="timer" color={resolvedColor} />
       </Pressable>
       <Modal
         onRequestClose={() => setShowPicker(false)}
@@ -169,5 +182,10 @@ const styles = StyleSheet.create({
     height: 44,
     alignItems: "center",
     justifyContent: "center",
+  },
+  restTimerButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
   },
 });

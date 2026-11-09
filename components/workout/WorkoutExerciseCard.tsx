@@ -58,6 +58,7 @@ export const WorkoutExerciseCard = memo(function WorkoutExerciseCard({
   const surface = useThemeColor({}, "surface");
   const surfaceMuted = useThemeColor({}, "surfaceMuted");
   const textColor = useThemeColor({}, "text");
+  const tintColor = useThemeColor({}, "tint");
   const placeholderColor = useThemeColor({}, "placeholder");
   const iconColor = useThemeColor({}, "icon");
 
@@ -195,6 +196,7 @@ export const WorkoutExerciseCard = memo(function WorkoutExerciseCard({
         <RestTimePicker
           restTime={restTime}
           setRestTime={(t) => setRestTime(workoutName, t)}
+          iconColor={tintColor}
         />
       </View>
 
@@ -441,9 +443,9 @@ const styles = StyleSheet.create({
   },
 
   subTitleRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
+    flexDirection: "column",
+    alignItems: "flex-start",
+    // justifyContent: "center",
     gap: 12,
     paddingTop: 6,
   },
