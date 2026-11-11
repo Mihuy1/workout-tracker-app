@@ -2,6 +2,7 @@ import { ThemedText } from "@/components/ui/ThemedText";
 import { useWeightUnit } from "@/contexts/weightUnitContext";
 import { useThemeColor } from "@/hooks/use-theme-color";
 import type { CompletedWorkout } from "@/storage/workoutRepository";
+import { getSetLabel, getSetTypeColor } from "@/utils/setTypes";
 import { StyleSheet, View } from "react-native";
 
 type WorkoutHistoryCardProps = {
@@ -109,9 +110,16 @@ function ExpandedWorkoutHistoryCard({
               >
                 <ThemedText
                   type="default"
-                  style={[styles.cell, styles.setCol]}
+                  style={[
+                    styles.cell,
+                    styles.setCol,
+                    set.type !== "normal" && {
+                      color: getSetTypeColor(set.type),
+                      fontWeight: "600",
+                    },
+                  ]}
                 >
-                  {index + 1}
+                  {getSetLabel(set.type, index + 1)}
                 </ThemedText>
                 <ThemedText
                   type="default"

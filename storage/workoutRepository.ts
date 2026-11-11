@@ -1,4 +1,5 @@
 import { Exercise, ExercisePrBaseline, SetRow } from "@/types/workout";
+import { toSetType } from "@/utils/setTypes";
 import { estimateOneRepMax } from "@/utils/oneRepMax";
 import {
   formatWeightValue,
@@ -28,6 +29,7 @@ type HistoryRow = {
 
   set_id: number | null;
   set_number: number | null;
+  set_type: string | null;
   weight_grams: number | null;
   reps: number | null;
 
@@ -42,6 +44,7 @@ type LatestPerformanceRow = {
   exercise_id: string;
   rest_seconds: number | null;
   set_number: number;
+  set_type: string | null;
   weight_grams: number;
   reps: number;
 };
@@ -266,6 +269,7 @@ export async function getWorkoutHistory(
 
       ws.id AS set_id,
       ws.set_number,
+      ws.set_type,
       ws.weight_grams,
       ws.reps,
 
@@ -353,6 +357,7 @@ export async function getWorkoutHistory(
     if (!set) {
       set = {
         id: row.set_number,
+        type: toSetType(row.set_type),
         complete: true,
         weight: formatWeightValue(row.weight_grams, weightUnit),
         reps: String(row.reps),
@@ -437,12 +442,19 @@ async function insertWorkout(
             INSERT INTO workout_sets (
               workout_exercise_id,
               set_number,
+              set_type,
               weight_grams,
               reps
             )
-            VALUES (?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?)
             `,
-        [workoutExerciseId, setPosition + 1, weight, Number(set.reps)],
+        [
+          workoutExerciseId,
+          setPosition + 1,
+          toSetType(set.type),
+          weight,
+          Number(set.reps),
+        ],
       );
 
       const workoutSetId = setResult.lastInsertRowId;
@@ -548,6 +560,7 @@ export async function getLatestExercisePerformances(
       ranked.exercise_id,
       ranked.rest_seconds,
       ws.set_number,
+      ws.set_type,
       ws.weight_grams,
       ws.reps
     FROM ranked_exercises ranked
@@ -572,6 +585,7 @@ export async function getLatestExercisePerformances(
 
     result[row.exercise_id].sets.push({
       id: row.set_number,
+      type: toSetType(row.set_type),
       complete: false,
       weight: String(gramsToWeight(row.weight_grams, weightUnit)),
       reps: String(row.reps),

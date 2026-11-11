@@ -1,5 +1,6 @@
 import exerciseCatalog from "@/data/exercises.json";
 import { Exercise } from "@/types/workout";
+import { parseSetTypes } from "@/utils/setTypes";
 import type { SQLiteDatabase } from "expo-sqlite";
 
 export type Routine = {
@@ -26,6 +27,7 @@ type RoutineRow = {
   exercise_id: string | null;
   rest_seconds: number | null;
   set_count: number | null;
+  set_types: string | null;
   position: number | null;
 };
 
@@ -34,6 +36,7 @@ type RoutineExerciseRow = {
   exercise_id: string;
   rest_seconds: number | null;
   set_count: number;
+  set_types: string | null;
   position: number;
 };
 
@@ -43,7 +46,7 @@ const exercisesById = new Map(
 
 export async function getAllRoutines(db: SQLiteDatabase) {
   const rows = await db.getAllAsync<RoutineRow>(`
-      SELECT r.id as routine_id, r.name as routine_name, r.created_at, r.updated_at, re.exercise_id, re.rest_seconds, re.set_count, re.position FROM routines r LEFT JOIN routine_exercises re ON r.id = re.routine_id  ORDER BY r.created_at DESC, re.position ASC
+      SELECT r.id as routine_id, r.name as routine_name, r.created_at, r.updated_at, re.exercise_id, re.rest_seconds, re.set_count, re.set_types, re.position FROM routines r LEFT JOIN routine_exercises re ON r.id = re.routine_id  ORDER BY r.created_at DESC, re.position ASC
     `);
 
   const routinesMap = new Map<string, Routine>();
@@ -68,6 +71,7 @@ export async function getAllRoutines(db: SQLiteDatabase) {
 
       if (catalogueExericse) {
         const setCount = row.set_count ?? 1;
+        const setTypes = parseSetTypes(row.set_types, setCount);
 
         routine.exercises.push({
           exerciseId: catalogueExericse.id,
@@ -76,6 +80,7 @@ export async function getAllRoutines(db: SQLiteDatabase) {
           restTime: row.rest_seconds ?? null,
           sets: Array.from({ length: setCount }, (_, index) => ({
             id: index + 1,
+            type: setTypes[index],
             complete: false,
             weight: "",
             reps: "",
@@ -99,13 +104,14 @@ export async function insertRoutine(db: SQLiteDatabase, routine: Routine) {
   for (const [index, exercise] of routine.exercises.entries()) {
     const exerciseRow = await db.runAsync(
       `
-          INSERT INTO routine_exercises (routine_id, exercise_id, rest_seconds, set_count, position) VALUES (?, ?, ?, ?, ?)
+          INSERT INTO routine_exercises (routine_id, exercise_id, rest_seconds, set_count, set_types, position) VALUES (?, ?, ?, ?, ?, ?)
           `,
       [
         routine.id,
         exercise.exerciseId,
         exercise.restTime,
         exercise.sets.length,
+        JSON.stringify(exercise.sets.map((set) => set.type)),
         index,
       ],
     );
@@ -134,13 +140,14 @@ export async function replaceRoutine(
   for (const [position, exercise] of routine.exercises.entries()) {
     await db.runAsync(
       `
-        INSERT INTO routine_exercises (routine_id, exercise_id, rest_seconds, set_count, position) VALUES (?, ?, ?, ?, ?)
+        INSERT INTO routine_exercises (routine_id, exercise_id, rest_seconds, set_count, set_types, position) VALUES (?, ?, ?, ?, ?, ?)
         `,
       [
         routine.id,
         exercise.exerciseId,
         exercise.restTime,
         exercise.sets.length,
+        JSON.stringify(exercise.sets.map((set) => set.type)),
         position,
       ],
     );
@@ -167,6 +174,7 @@ export async function getRoutine(db: SQLiteDatabase, routineId: string) {
           re.exercise_id,
           re.rest_seconds,
           re.set_count,
+          re.set_types,
           re.position
 
           FROM routines r
@@ -196,6 +204,7 @@ export async function getRoutine(db: SQLiteDatabase, routineId: string) {
     }
 
     const setCount = row.set_count ?? 1;
+    const setTypes = parseSetTypes(row.set_types, setCount);
 
     exercises.push({
       exerciseId: catalogueExercise.id,
@@ -204,6 +213,7 @@ export async function getRoutine(db: SQLiteDatabase, routineId: string) {
       restTime: row.rest_seconds ?? null,
       sets: Array.from({ length: setCount }, (_, index) => ({
         id: index + 1,
+        type: setTypes[index],
         complete: false,
         weight: "",
         reps: "",
@@ -226,7 +236,7 @@ export async function getRoutineExercises(
   routienId: string,
 ) {
   const rows = await db.getAllAsync<RoutineExerciseRow>(
-    `SELECT routine_id, exercise_id, rest_seconds, set_count, position FROM routine_exercises WHERE routine_id = ?`,
+    `SELECT routine_id, exercise_id, rest_seconds, set_count, set_types, position FROM routine_exercises WHERE routine_id = ?`,
     [routienId],
   );
 

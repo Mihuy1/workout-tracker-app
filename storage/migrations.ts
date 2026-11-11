@@ -1,6 +1,6 @@
 import type { SQLiteDatabase } from "expo-sqlite";
 
-const DATABASE_VERSION = 4;
+const DATABASE_VERSION = 5;
 
 export async function migrateDatabase(db: SQLiteDatabase) {
   // These settings are applied whenever the database is opened.
@@ -181,5 +181,20 @@ export async function migrateDatabase(db: SQLiteDatabase) {
     });
 
     await db.execAsync("PRAGMA foreign_keys = ON;");
+  }
+
+  if (currentVersion < 5) {
+    await db.withTransactionAsync(async () => {
+      // set_types holds a JSON array with one set type per routine set.
+      await db.execAsync(`
+        ALTER TABLE workout_sets
+          ADD COLUMN set_type TEXT NOT NULL DEFAULT 'normal';
+
+        ALTER TABLE routine_exercises
+          ADD COLUMN set_types TEXT;
+      `);
+
+      await db.execAsync("PRAGMA user_version = 5;");
+    });
   }
 }

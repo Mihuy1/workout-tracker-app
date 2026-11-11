@@ -1,3 +1,4 @@
+import CustomDropdown from "@/components/CustomDropdown";
 import { CustomButton } from "@/components/ui/CustomButton";
 import { CustomModal } from "@/components/ui/CustomModal";
 import { IconSymbol } from "@/components/ui/IconSymbol";
@@ -13,6 +14,11 @@ import {
   SetRow,
 } from "@/types/workout";
 import { estimateOneRepMax } from "@/utils/oneRepMax";
+import {
+  getSetLabel,
+  getSetTypeColor,
+  SET_TYPE_OPTIONS,
+} from "@/utils/setTypes";
 import { formatWeightValue, weightToGrams } from "@/utils/weightUnits";
 import {
   isRepsInput,
@@ -201,7 +207,10 @@ export const WorkoutExerciseCard = memo(function WorkoutExerciseCard({
       </View>
 
       <View style={[styles.tableHeader, { borderColor }]}>
-        <ThemedText type="defaultSemiBold" style={[styles.cell, styles.setCol]}>
+        <ThemedText
+          type="defaultSemiBold"
+          style={[styles.cell, styles.setCol, styles.setHeader]}
+        >
           SET
         </ThemedText>
         <ThemedText
@@ -275,9 +284,21 @@ export const WorkoutExerciseCard = memo(function WorkoutExerciseCard({
                     },
               ]}
             >
-              <ThemedText type="default" style={[styles.cell, styles.setCol]}>
-                {index + 1}
-              </ThemedText>
+              <View style={[styles.setCol, styles.setTypeCell]}>
+                <CustomDropdown
+                  options={SET_TYPE_OPTIONS}
+                  value={item.type}
+                  anchorLabel={getSetLabel(item.type, index + 1)}
+                  anchorColor={getSetTypeColor(item.type) ?? textColor}
+                  onSelect={(type) => {
+                    if (type === item.type) return;
+                    Haptics.selectionAsync();
+                    updateSet(workoutName, item.id, { type });
+                  }}
+                  width={58}
+                  variant="borderless"
+                />
+              </View>
 
               <TextInput
                 style={[
@@ -468,7 +489,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 6,
   },
 
-  setCol: { width: 50 },
+  setCol: { width: 58 },
+  setHeader: { textAlign: "center" },
+  setTypeCell: { alignItems: "center", justifyContent: "center" },
   weightUnitCol: { width: 90 },
   repsCol: { width: 90 },
   actionCol: { flex: 1, alignItems: "flex-end" },

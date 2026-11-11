@@ -1,10 +1,13 @@
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { useThemeColor } from "@/hooks/use-theme-color";
 import { CustomDropDownProps } from "@/utils/CustomDropdown.types";
-import { Host, Picker, Text } from "@expo/ui/swift-ui";
+import { Host, Menu, Picker, Text } from "@expo/ui/swift-ui";
 import {
   background,
+  contentShape,
+  foregroundStyle,
   frame,
+  labelsHidden,
   padding,
   pickerStyle,
   shapes,
@@ -24,6 +27,8 @@ export default function CustomDropdown<T extends string | number>({
   fullWidth = false,
   centerText = false,
   variant,
+  anchorLabel,
+  anchorColor,
 }: CustomDropDownProps<T>) {
   const border = useThemeColor({}, "border");
   const chipBackground = useThemeColor({}, "chipBackground");
@@ -54,6 +59,41 @@ export default function CustomDropdown<T extends string | number>({
             tint(tintColor),
           ]
         : [];
+
+  // A custom anchor label can't be shown by a menu-style Picker (it always
+  // shows the selected option), so wrap an inline Picker in a Menu instead.
+  if (anchorLabel !== undefined) {
+    return (
+      <Host matchContents colorScheme={colorScheme}>
+        <Menu
+          label={
+            <Text
+              modifiers={[
+                foregroundStyle(anchorColor ?? tintColor),
+                frame({ minWidth: 44, minHeight: 36 }),
+                contentShape(shapes.rectangle()),
+              ]}
+            >
+              {anchorLabel}
+            </Text>
+          }
+          modifiers={variantModifiers}
+        >
+          <Picker
+            selection={value}
+            onSelectionChange={(selected) => onSelect(selected as T)}
+            modifiers={[pickerStyle("inline"), labelsHidden()]}
+          >
+            {options.map((option) => (
+              <Text key={option.value} modifiers={[tag(option.value)]}>
+                {option.label}
+              </Text>
+            ))}
+          </Picker>
+        </Menu>
+      </Host>
+    );
+  }
 
   return (
     <Host

@@ -14,13 +14,19 @@ export default function CustomDropdown<T extends string | number>({
   width = 140,
   fullWidth = false,
   centerText = false,
+  anchorLabel,
+  anchorColor,
 }: CustomDropDownProps<T>) {
   const border = useThemeColor({}, "border");
   const iconColor = useThemeColor({}, "iconColor");
   const surface = useThemeColor({}, "surface");
   const selectedBackground = useThemeColor({}, "surfaceMuted");
   const selectedLabel =
-    options.find((option) => option.value === value)?.label ?? String(value);
+    anchorLabel ??
+    options.find((option) => option.value === value)?.label ??
+    String(value);
+  // A custom anchor label is a compact trigger: no chevron, centered text.
+  const compact = anchorLabel !== undefined;
 
   const [internalOpen, setInternalOpen] = useState(false);
   const isOpen = open ?? internalOpen;
@@ -42,24 +48,36 @@ export default function CustomDropdown<T extends string | number>({
         accessibilityRole="button"
         accessibilityState={{ expanded: isOpen }}
         onPress={() => setOpen(!isOpen)}
-        style={[styles.dropdownTrigger, { borderColor: border }]}
+        style={[
+          styles.dropdownTrigger,
+          { borderColor: border },
+          compact && styles.compactTrigger,
+        ]}
       >
-        <ThemedText style={centerText && styles.centerText}>
+        <ThemedText
+          style={[
+            (centerText || compact) && styles.centerText,
+            anchorColor ? { color: anchorColor } : undefined,
+          ]}
+        >
           {selectedLabel}
         </ThemedText>
-        <IconSymbol
-          name="chevron.right"
-          size={18}
-          color={iconColor}
-          style={{
-            transform: [{ rotate: isOpen ? "90deg" : "0deg" }],
-          }}
-        />
+        {!compact && (
+          <IconSymbol
+            name="chevron.right"
+            size={18}
+            color={iconColor}
+            style={{
+              transform: [{ rotate: isOpen ? "90deg" : "0deg" }],
+            }}
+          />
+        )}
       </Pressable>
       {isOpen && (
         <View
           style={[
             styles.dropdownMenu,
+            compact && styles.compactMenu,
             {
               backgroundColor: surface,
               borderColor: border,
@@ -175,6 +193,14 @@ const styles = StyleSheet.create({
     zIndex: 20,
     elevation: 4,
     maxHeight: 200,
+  },
+  compactTrigger: {
+    paddingHorizontal: 4,
+    borderWidth: 0,
+  },
+  compactMenu: {
+    right: undefined,
+    minWidth: 150,
   },
   dropdownOption: {
     minHeight: 42,

@@ -107,6 +107,7 @@ export function ExerciseList() {
       sets: [
         {
           id: 1,
+          type: "normal",
           complete: false,
           weight: "",
           reps: "",

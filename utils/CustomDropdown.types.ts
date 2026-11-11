@@ -6,6 +6,10 @@ export interface DropdownOption<T extends string | number> {
 export interface CustomDropDownProps<T extends string | number> {
   options: readonly DropdownOption<T>[];
   value: T;
+  /** Shown on the trigger instead of the selected option's label. */
+  anchorLabel?: string;
+  /** Text color of the trigger. */
+  anchorColor?: string;
   open?: boolean;
   hideAnchor?: boolean;
   onOpenChange?: (open: boolean) => void;

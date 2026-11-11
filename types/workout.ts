@@ -4,8 +4,11 @@ export type SetAchievement = {
   newBestValue: number;
 };
 
+export type SetType = "normal" | "warmup" | "dropset" | "failure";
+
 export type SetRow = {
   id: number;
+  type: SetType;
   complete: boolean;
   weight: string;
   reps: string;
