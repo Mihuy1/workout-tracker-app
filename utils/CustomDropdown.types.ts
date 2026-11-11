@@ -7,6 +7,7 @@ export interface CustomDropDownProps<T extends string | number> {
   options: readonly DropdownOption<T>[];
   value: T;
   open?: boolean;
+  hideAnchor?: boolean;
   onOpenChange?: (open: boolean) => void;
   onSelect: (option: T) => void | Promise<void>;
   style?: "menu" | "wheel";

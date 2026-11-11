@@ -33,11 +33,11 @@ export default function CustomDropdown<T extends string | number>({
   centerText = false,
   variant,
   style,
+  hideAnchor = true,
 }: CustomDropDownProps<T>) {
   const backgroundColor = useThemeColor({}, "background");
   const colorScheme = useColorScheme();
   const chipBackground = useThemeColor({}, "chipBackground");
-  const chipBorder = useThemeColor({}, "chipBorder");
   const surface = useThemeColor({}, "surface");
   const surfaceMuted = useThemeColor({}, "surfaceMuted");
   const text = useThemeColor({}, "text");
@@ -88,7 +88,7 @@ export default function CustomDropdown<T extends string | number>({
     return (
       <Host matchContents colorScheme={colorScheme}>
         <Box>
-          {renderAnchor()}
+          {!hideAnchor && renderAnchor()}
           {isOpen && (
             <ModalBottomSheet
               ref={sheetRef}
@@ -119,7 +119,7 @@ export default function CustomDropdown<T extends string | number>({
   return (
     <Host matchContents colorScheme={colorScheme}>
       <Box>
-        {renderAnchor()}
+        {hideAnchor ? renderAnchor() : []}
         <DropdownMenuPopup
           expanded={isOpen}
           onDismissRequest={() => setOpen(false)}

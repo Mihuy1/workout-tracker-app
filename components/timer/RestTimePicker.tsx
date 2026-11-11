@@ -28,43 +28,45 @@ export const RestTimePicker = ({
   const handleOpen = () => setShowPicker(true);
   const resolvedColor = iconColor ?? defaultIconColor;
 
-  if (Platform.OS === "android") {
-    return (
-      <CustomDropdown
-        options={DEFAULT_REST_TIME_OPTIONS}
-        value={restTime}
-        onSelect={(option) => setRestTime(Number(option))}
-        style="wheel"
-        variant="chip"
-      />
-    );
-  }
+  const chip = (
+    <Pressable
+      hitSlop={8}
+      onPress={handleOpen}
+      style={({ pressed }) => [
+        styles.chip,
+        {
+          backgroundColor: chipBackground,
+          borderColor: chipBorder,
+          opacity: pressed ? 0.6 : 1,
+        },
+      ]}
+    >
+      <IconSymbol name="timer" color={resolvedColor} />
+      <ThemedText style={{ color: resolvedColor }}>
+        {Math.floor(restTime / 60)}m {restTime % 60}s
+      </ThemedText>
+    </Pressable>
+  );
 
-  if (Platform.OS === "ios")
-    return (
-      <View
-        style={{
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-      >
-        <Pressable
-          hitSlop={8}
-          onPress={handleOpen}
-          style={({ pressed }) => [
-            styles.chip,
-            {
-              backgroundColor: chipBackground,
-              borderColor: chipBorder,
-              opacity: pressed ? 0.6 : 1,
-            },
-          ]}
-        >
-          <IconSymbol name="timer" color={resolvedColor} />
-          <ThemedText style={{ color: resolvedColor }}>
-            {Math.floor(restTime / 60)}m {restTime % 60}s
-          </ThemedText>
-        </Pressable>
+  return (
+    <View
+      style={{
+        alignItems: "center",
+        justifyContent: "center",
+      }}
+    >
+      {chip}
+      {Platform.OS === "android" ? (
+        <CustomDropdown
+          options={DEFAULT_REST_TIME_OPTIONS}
+          value={restTime}
+          onSelect={(option) => setRestTime(Number(option))}
+          style="wheel"
+          open={showPicker}
+          onOpenChange={setShowPicker}
+          hideAnchor
+        />
+      ) : (
         <Modal
           onRequestClose={() => setShowPicker(false)}
           visible={showPicker}
@@ -91,8 +93,9 @@ export const RestTimePicker = ({
             </Pressable>
           </Pressable>
         </Modal>
-      </View>
-    );
+      )}
+    </View>
+  );
 };
 
 const styles = StyleSheet.create({
