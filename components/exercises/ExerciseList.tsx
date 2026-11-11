@@ -10,7 +10,14 @@ import { router } from "expo-router";
 import { useHeaderHeight } from "expo-router/react-navigation";
 import Fuse from "fuse.js";
 import { useMemo, useRef, useState } from "react";
-import { FlatList, Pressable, StyleSheet, TextInput, View } from "react-native";
+import {
+  FlatList,
+  Platform,
+  Pressable,
+  StyleSheet,
+  TextInput,
+  View,
+} from "react-native";
 import { ExercisePickerRow, ExercisePickerRowItem } from "./ExercisePickerRow";
 
 const FILTERS = ["All", "Strength", "Stretch", "Cardio"] as const;
@@ -113,7 +120,13 @@ export function ExerciseList() {
   };
 
   return (
-    <ThemedView style={[styles.container, { paddingTop: headerHeight }]}>
+    <ThemedView
+      style={[
+        styles.container,
+        // Only iOS lays content out under the header; Android already offsets it.
+        Platform.OS === "ios" && { paddingTop: headerHeight },
+      ]}
+    >
       <View
         style={[styles.searchBar, { backgroundColor: surface, borderColor }]}
       >

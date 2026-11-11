@@ -9,7 +9,7 @@ import { Stack, useLocalSearchParams } from "expo-router";
 import { useHeaderHeight } from "expo-router/react-navigation";
 import { useSQLiteContext } from "expo-sqlite";
 import { useState } from "react";
-import { ScrollView, StyleSheet, View } from "react-native";
+import { Platform, ScrollView, StyleSheet, View } from "react-native";
 import { Range, RANGES } from "./index";
 
 export default function ExerciseProgressScreen() {
@@ -54,7 +54,8 @@ export default function ExerciseProgressScreen() {
           scrollEnabled={scrollEnabled}
           contentContainerStyle={[
             styles.content,
-            { paddingTop: headerHeight + 16 },
+            // Only iOS lays content out under the header; Android already offsets it.
+            { paddingTop: Platform.OS === "ios" ? headerHeight + 16 : 16 },
           ]}
         >
           {isPending && <ThemedText>Loading exercise data...</ThemedText>}
