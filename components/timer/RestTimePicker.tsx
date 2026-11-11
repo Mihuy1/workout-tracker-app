@@ -1,16 +1,9 @@
 import { CustomButton } from "@/components/ui/CustomButton";
 import { IconSymbol } from "@/components/ui/IconSymbol";
-import { Colors } from "@/constants/theme";
 import { DEFAULT_REST_TIME_OPTIONS } from "@/contexts/restTimePreferenceContext";
 import { useThemeColor } from "@/hooks/use-theme-color";
 import { useState } from "react";
-import {
-  Modal,
-  Pressable,
-  StyleSheet,
-  useColorScheme,
-  View,
-} from "react-native";
+import { Modal, Platform, Pressable, StyleSheet, View } from "react-native";
 import CustomDropdown from "../CustomDropdown";
 import { ThemedText } from "../ui/ThemedText";
 
@@ -25,8 +18,7 @@ export const RestTimePicker = ({
   setRestTime,
   iconColor,
 }: RestTimePickerProps) => {
-  const theme = useColorScheme() === "dark" ? "dark" : "light";
-  const colors = Colors[theme];
+  const backgroundColor = useThemeColor({}, "background");
   const defaultIconColor = useThemeColor({}, "tint");
   const chipBackground = useThemeColor({}, "chipBackground");
   const chipBorder = useThemeColor({}, "chipBorder");
@@ -36,58 +28,71 @@ export const RestTimePicker = ({
   const handleOpen = () => setShowPicker(true);
   const resolvedColor = iconColor ?? defaultIconColor;
 
-  return (
-    <View
-      style={{
-        alignItems: "center",
-        justifyContent: "center",
-      }}
-    >
-      <Pressable
-        hitSlop={8}
-        onPress={handleOpen}
-        style={({ pressed }) => [
-          styles.chip,
-          {
-            backgroundColor: chipBackground,
-            borderColor: chipBorder,
-            opacity: pressed ? 0.6 : 1,
-          },
-        ]}
-      >
-        <IconSymbol name="timer" color={resolvedColor} />
-        <ThemedText style={{ color: resolvedColor }}>
-          {Math.floor(restTime / 60)}m {restTime % 60}s
-        </ThemedText>
-      </Pressable>
-      <Modal
-        onRequestClose={() => setShowPicker(false)}
-        visible={showPicker}
-        animationType="fade"
-        transparent
+  if (Platform.OS === "android") {
+    return (
+      <CustomDropdown
+        options={DEFAULT_REST_TIME_OPTIONS}
+        value={restTime}
+        onSelect={(option) => setRestTime(Number(option))}
+        style="wheel"
+        variant="chip"
+      />
+    );
+  }
+
+  if (Platform.OS === "ios")
+    return (
+      <View
+        style={{
+          alignItems: "center",
+          justifyContent: "center",
+        }}
       >
         <Pressable
-          style={[styles.backdrop]}
-          onPress={() => setShowPicker(false)}
+          hitSlop={8}
+          onPress={handleOpen}
+          style={({ pressed }) => [
+            styles.chip,
+            {
+              backgroundColor: chipBackground,
+              borderColor: chipBorder,
+              opacity: pressed ? 0.6 : 1,
+            },
+          ]}
+        >
+          <IconSymbol name="timer" color={resolvedColor} />
+          <ThemedText style={{ color: resolvedColor }}>
+            {Math.floor(restTime / 60)}m {restTime % 60}s
+          </ThemedText>
+        </Pressable>
+        <Modal
+          onRequestClose={() => setShowPicker(false)}
+          visible={showPicker}
+          animationType="fade"
+          transparent
         >
           <Pressable
-            style={[styles.modalView, { backgroundColor: colors.background }]}
-            onPress={(e) => e.stopPropagation()}
+            style={[styles.backdrop]}
+            onPress={() => setShowPicker(false)}
           >
-            <View style={styles.inputsView}>
-              <CustomDropdown
-                options={DEFAULT_REST_TIME_OPTIONS}
-                value={restTime}
-                onSelect={(option) => setRestTime(Number(option))}
-                style="wheel"
-              />
-            </View>
-            <CustomButton title="Done" onPress={() => setShowPicker(false)} />
+            <Pressable
+              style={[styles.modalView, { backgroundColor: backgroundColor }]}
+              onPress={(e) => e.stopPropagation()}
+            >
+              <View style={styles.inputsView}>
+                <CustomDropdown
+                  options={DEFAULT_REST_TIME_OPTIONS}
+                  value={restTime}
+                  onSelect={(option) => setRestTime(Number(option))}
+                  style="wheel"
+                />
+              </View>
+              <CustomButton title="Done" onPress={() => setShowPicker(false)} />
+            </Pressable>
           </Pressable>
-        </Pressable>
-      </Modal>
-    </View>
-  );
+        </Modal>
+      </View>
+    );
 };
 
 const styles = StyleSheet.create({

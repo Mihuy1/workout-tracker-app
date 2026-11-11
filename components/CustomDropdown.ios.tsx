@@ -1,7 +1,17 @@
+import { useColorScheme } from "@/hooks/use-color-scheme";
 import { useThemeColor } from "@/hooks/use-theme-color";
 import { CustomDropDownProps } from "@/utils/CustomDropdown.types";
 import { Host, Picker, Text } from "@expo/ui/swift-ui";
-import { pickerStyle, strokeBorder, tag } from "@expo/ui/swift-ui/modifiers";
+import {
+  background,
+  frame,
+  padding,
+  pickerStyle,
+  shapes,
+  strokeBorder,
+  tag,
+  tint,
+} from "@expo/ui/swift-ui/modifiers";
 
 export default function CustomDropdown<T extends string | number>({
   options,
@@ -13,26 +23,51 @@ export default function CustomDropdown<T extends string | number>({
   width = 140,
   fullWidth = false,
   centerText = false,
+  variant,
 }: CustomDropDownProps<T>) {
   const border = useThemeColor({}, "border");
+  const chipBackground = useThemeColor({}, "chipBackground");
+  const chipBorder = useThemeColor({}, "chipBorder");
+  const tintColor = useThemeColor({}, "tint");
+
+  const colorScheme = useColorScheme();
+
+  const variantModifiers =
+    variant === "bordered"
+      ? [
+          strokeBorder({
+            content: border,
+            shape: "roundedRectangle",
+            cornerRadius: 8,
+            style: { lineWidth: 1 },
+          }),
+        ]
+      : variant === "chip"
+        ? [
+            padding({ horizontal: 2 }),
+            background(chipBackground, shapes.capsule()),
+            strokeBorder({
+              content: chipBorder,
+              shape: "capsule",
+              style: { lineWidth: 0.5 },
+            }),
+            tint(tintColor),
+          ]
+        : [];
 
   return (
-    <Host matchContents>
+    <Host
+      matchContents={fullWidth ? { vertical: true } : true}
+      style={fullWidth ? { width: "100%" } : undefined}
+      colorScheme={colorScheme}
+    >
       <Picker
         selection={value}
         onSelectionChange={(selected) => onSelect(selected as T)}
         modifiers={[
           pickerStyle(style),
-          ...(style === "menu"
-            ? [
-                strokeBorder({
-                  content: border,
-                  shape: "roundedRectangle",
-                  cornerRadius: 8,
-                  style: { lineWidth: 1 },
-                }),
-              ]
-            : []),
+          ...(fullWidth ? [frame({ maxWidth: 1000 })] : []),
+          ...variantModifiers,
         ]}
       >
         {options.map((option) => (

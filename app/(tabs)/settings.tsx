@@ -1,11 +1,9 @@
 import CustomDropdown from "@/components/CustomDropdown";
+import { RestTimePicker } from "@/components/timer/RestTimePicker";
 import { ScreenContainer } from "@/components/ui/ScreenContainer";
 import { ThemedText } from "@/components/ui/ThemedText";
 import { APPEARANCE_OPTIONS } from "@/constants/theme";
-import {
-  DEFAULT_REST_TIME_OPTIONS,
-  useDefaultRestTime,
-} from "@/contexts/restTimePreferenceContext";
+import { useDefaultRestTime } from "@/contexts/restTimePreferenceContext";
 import { useThemeProvider } from "@/contexts/themeContext";
 import { useWeightUnit } from "@/contexts/weightUnitContext";
 import { WEIGHT_UNIT_OPTIONS } from "@/utils/weightUnits";
@@ -44,6 +42,7 @@ export default function TabThreeScreen() {
                 setOpenDropdown(open ? "appearance" : null)
               }
               onSelect={setTheme}
+              variant="chip"
             />
           </View>
           <View style={styles.dropdown}>
@@ -57,22 +56,15 @@ export default function TabThreeScreen() {
               onOpenChange={(open) =>
                 setOpenDropdown(open ? "weightUnit" : null)
               }
+              variant="chip"
             />
           </View>
-          <View>
-            <View style={styles.dropdown}>
-              <ThemedText type="defaultSemiBold">Default Rest Timer</ThemedText>
-              <CustomDropdown
-                value={defaultRestTime}
-                options={DEFAULT_REST_TIME_OPTIONS}
-                open={openDropdown === "defaultRestTime"}
-                onSelect={setDefaultRestTime}
-                style="menu"
-                onOpenChange={(open) =>
-                  setOpenDropdown(open ? "defaultRestTime" : null)
-                }
-              />
-            </View>
+          <View style={styles.dropdown}>
+            <ThemedText type="defaultSemiBold">Default Rest Timer</ThemedText>
+            <RestTimePicker
+              restTime={defaultRestTime}
+              setRestTime={setDefaultRestTime}
+            />
           </View>
         </View>
       </ScrollView>
@@ -112,35 +104,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     width: "100%",
-  },
-  dropdownLabel: {
-    minHeight: 42,
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  dropdownTrigger: {
-    minHeight: 42,
-    paddingHorizontal: 12,
-    borderWidth: 1,
-    borderRadius: 8,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-  dropdownMenu: {
-    marginTop: 4,
-    borderWidth: 1,
-    borderRadius: 8,
-    overflow: "hidden",
-    zIndex: 20,
-    elevation: 4,
-  },
-  dropdownOption: {
-    minHeight: 42,
-    paddingHorizontal: 12,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
   },
   separator: {
     height: StyleSheet.hairlineWidth,

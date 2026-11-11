@@ -44,6 +44,7 @@ function Delta({ value, formatValue = String, suffix = "" }: DeltaProps) {
 }
 
 export const RANGES = [
+  { label: "14 Days", value: 14 },
   { label: "30 Days", value: 30 },
   { label: "90 Days", value: 90 },
   { label: "1 Year", value: 365 },
@@ -121,8 +122,9 @@ export default function Statistics() {
             const next = RANGES.find((r) => r.value === option);
             if (next) setRange(next);
           }}
-          fullWidth
           centerText
+          style="menu"
+          variant="borderless"
         />
       </View>
       <View style={styles.mainDataView}>
