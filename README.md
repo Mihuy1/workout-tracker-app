@@ -56,3 +56,6 @@ npm run web
 - Expo SQLite
 - TanStack Query
 - TypeScript
+
+## License
+[MIT](https://github.com/Mihuy1/workout-tracker-app/blob/main/LICENSE)
