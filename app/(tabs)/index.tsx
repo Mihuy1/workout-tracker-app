@@ -21,7 +21,6 @@ export default function HomeScreen() {
   const queryClient = useQueryClient();
   const db = useSQLiteContext();
   const cardBackground = useThemeColor({}, "surface");
-  const screenBackground = useThemeColor({}, "background");
   const cardBorder = useThemeColor({}, "border");
   const buttonBackground = useThemeColor({}, "surfaceMuted");
   const tintColor = useThemeColor({}, "tint");
