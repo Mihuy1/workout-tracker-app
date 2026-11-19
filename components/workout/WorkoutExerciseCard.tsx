@@ -24,6 +24,8 @@ import { memo, useState } from "react";
 import { Keyboard, Pressable, StyleSheet, TextInput, View } from "react-native";
 import ReanimatedSwipeable from "react-native-gesture-handler/ReanimatedSwipeable";
 import { RestTimePicker } from "../timer/RestTimePicker";
+import CustomDropdown from "../CustomDropdown";
+import { getSetColor, getSetLabel, SET_TYPE_OPTIONS } from "@/types/setTypes";
 
 type WorkoutExerciseCardProps = {
   exercise: Exercise;
@@ -201,18 +203,21 @@ export const WorkoutExerciseCard = memo(function WorkoutExerciseCard({
       </View>
 
       <View style={[styles.tableHeader, { borderColor }]}>
-        <ThemedText type="defaultSemiBold" style={[styles.cell, styles.setCol]}>
+        <ThemedText
+          type="defaultSemiBold"
+          style={[styles.cell, styles.setCol, styles.cellHeader]}
+        >
           SET
         </ThemedText>
         <ThemedText
           type="defaultSemiBold"
-          style={[styles.cell, styles.weightUnitCol]}
+          style={[styles.cell, styles.weightUnitCol, styles.cellHeader]}
         >
           {weightUnit.toUpperCase()}
         </ThemedText>
         <ThemedText
           type="defaultSemiBold"
-          style={[styles.cell, styles.repsCol]}
+          style={[styles.cell, styles.repsCol, styles.cellHeader]}
         >
           REPS
         </ThemedText>
@@ -223,12 +228,15 @@ export const WorkoutExerciseCard = memo(function WorkoutExerciseCard({
             name="checkmark"
             size={18}
             color={iconColor}
-            style={[styles.cell, styles.actionCol]}
+            style={[styles.cell, styles.actionCol, styles.cellHeader]}
           />
         </View>
       </View>
 
       {exercise.sets.map((item, index) => {
+        const normalSetNumber = exercise.sets
+          .slice(0, index + 1)
+          .filter((s) => s.type === "normal").length;
         const suggestedSet = getSuggestionSet(index);
         const suggestedWeight = suggestedSet?.weight ?? "";
         const suggestedWeightPlaceholder = suggestedWeight
@@ -275,9 +283,21 @@ export const WorkoutExerciseCard = memo(function WorkoutExerciseCard({
                     },
               ]}
             >
-              <ThemedText type="default" style={[styles.cell, styles.setCol]}>
-                {index + 1}
-              </ThemedText>
+              <View style={[styles.setCol, styles.setTypeCell]}>
+                <CustomDropdown
+                  options={SET_TYPE_OPTIONS}
+                  value={item.type}
+                  onSelect={(type) => {
+                    if (type === item.type) return;
+                    Haptics.selectionAsync();
+                    updateSet(workoutName, item.id, { type });
+                  }}
+                  anchorLabel={getSetLabel(item.type, normalSetNumber)}
+                  anchorColor={getSetColor(item.type) ?? textColor}
+                  variant="borderless"
+                  width={58}
+                />
+              </View>
 
               <TextInput
                 style={[
@@ -382,6 +402,7 @@ export const WorkoutExerciseCard = memo(function WorkoutExerciseCard({
                     finalWeight.trim().replace(",", "."),
                     String(values.reps),
                     achievements,
+                    item.type,
                   );
                 }}
               >
@@ -468,7 +489,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 6,
   },
 
-  setCol: { width: 50 },
+  setCol: { width: 58 },
+  cellHeader: { textAlign: "center" },
+  setTypeCell: {
+    alignItems: "center",
+    justifyContent: "center",
+  },
   weightUnitCol: { width: 90 },
   repsCol: { width: 90 },
   actionCol: { flex: 1, alignItems: "flex-end" },

@@ -239,10 +239,15 @@ export default function NewWorkoutScreen() {
 
           if (!original) return true;
 
+          const originalSets = originalExercises[index].sets;
+
           return (
             exercise.exerciseId !== original.exerciseId ||
             exercise.sets.length !== original.sets.length ||
-            exercise.restTime !== original.restTime
+            exercise.restTime !== original.restTime ||
+            exercise.sets.some(
+              (set, index) => set.type !== originalSets[index].type,
+            )
           );
         });
 

@@ -111,6 +111,7 @@ export function ExerciseList() {
           weight: "",
           reps: "",
           achievements: [],
+          type: "normal",
         },
       ],
     };

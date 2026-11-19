@@ -1,5 +1,5 @@
 import { ExercisePrBaselines } from "@/storage/workoutRepository";
-import { Exercise, SetAchievement, SetRow } from "@/types/workout";
+import { Exercise, SetAchievement, SetRow, SetType } from "@/types/workout";
 import {
   createContext,
   useCallback,
@@ -20,7 +20,7 @@ type WorkoutActionsContextType = {
     exerciseName: string,
     setId: number,
     patch: Partial<
-      Pick<SetRow, "weight" | "reps" | "complete" | "achievements">
+      Pick<SetRow, "weight" | "reps" | "complete" | "achievements" | "type">
     >,
   ) => void;
   handleCompleteSet: (
@@ -30,6 +30,7 @@ type WorkoutActionsContextType = {
     weight: string,
     reps: string,
     achievements: SetAchievement[],
+    type: SetType,
   ) => void;
 
   setExerciseBaselines: (baselines: ExercisePrBaselines) => void;
@@ -96,6 +97,7 @@ export const WorkoutProvider: React.FC<React.PropsWithChildren> = ({
               weight: "",
               reps: "",
               achievements: [],
+              type: "normal",
             },
           ],
         };
@@ -117,7 +119,7 @@ export const WorkoutProvider: React.FC<React.PropsWithChildren> = ({
       exerciseName: string,
       setId: number,
       patch: Partial<
-        Pick<SetRow, "weight" | "reps" | "complete" | "achievements">
+        Pick<SetRow, "weight" | "reps" | "complete" | "achievements" | "type">
       >,
     ) => {
       setExercises((prev) =>
@@ -141,6 +143,7 @@ export const WorkoutProvider: React.FC<React.PropsWithChildren> = ({
       weight: string,
       reps: string,
       achievements: SetAchievement[],
+      type: SetType,
     ) => {
       setExercises((prev) =>
         prev.map((ex) => {
@@ -150,7 +153,7 @@ export const WorkoutProvider: React.FC<React.PropsWithChildren> = ({
             ...ex,
             sets: ex.sets.map((set) =>
               set.id === setId
-                ? { ...set, complete, weight, reps, achievements }
+                ? { ...set, complete, weight, reps, achievements, type }
                 : set,
             ),
           };

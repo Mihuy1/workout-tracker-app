@@ -1,4 +1,4 @@
-import { Exercise, ExercisePrBaseline, SetRow } from "@/types/workout";
+import { Exercise, ExercisePrBaseline, SetRow, SetType } from "@/types/workout";
 import { estimateOneRepMax } from "@/utils/oneRepMax";
 import {
   formatWeightValue,
@@ -30,6 +30,7 @@ type HistoryRow = {
   set_number: number | null;
   weight_grams: number | null;
   reps: number | null;
+  set_type: SetType;
 
   workout_set_achievement_id: number | null;
   workout_set_id: number | null;
@@ -44,6 +45,7 @@ type LatestPerformanceRow = {
   set_number: number;
   weight_grams: number;
   reps: number;
+  set_type: SetType;
 };
 
 type ExercisePrBaselineRow = {
@@ -141,7 +143,7 @@ export async function getWorkoutStats(
         ) AS total_sets,
 
         (SELECT COALESCE(
-          SUM(duration_ms), 0) 
+          SUM(duration_ms), 0)
           FROM workouts WHERE completed_at >= ? AND completed_at < ?) AS total_duration,
 
         (SELECT SUM(ws.weight_grams * ws.reps)
@@ -170,7 +172,7 @@ export async function getExerciseStats(
 ) {
   const rows = await db.getAllAsync<ExerciseStatsType>(
     `
-    SELECT 
+    SELECT
 
     w.completed_at,
 
@@ -268,6 +270,7 @@ export async function getWorkoutHistory(
       ws.set_number,
       ws.weight_grams,
       ws.reps,
+      ws.set_type,
 
       wsa.id AS workout_set_achievement_id,
       wsa.workout_set_id,
@@ -356,6 +359,7 @@ export async function getWorkoutHistory(
         complete: true,
         weight: formatWeightValue(row.weight_grams, weightUnit),
         reps: String(row.reps),
+        type: row.set_type,
         achievements: [],
       };
 
@@ -438,11 +442,18 @@ async function insertWorkout(
               workout_exercise_id,
               set_number,
               weight_grams,
-              reps
+              reps,
+              set_type
             )
-            VALUES (?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?)
             `,
-        [workoutExerciseId, setPosition + 1, weight, Number(set.reps)],
+        [
+          workoutExerciseId,
+          setPosition + 1,
+          weight,
+          Number(set.reps),
+          set.type,
+        ],
       );
 
       const workoutSetId = setResult.lastInsertRowId;
@@ -549,7 +560,8 @@ export async function getLatestExercisePerformances(
       ranked.rest_seconds,
       ws.set_number,
       ws.weight_grams,
-      ws.reps
+      ws.reps,
+      ws.set_type
     FROM ranked_exercises ranked
     JOIN workout_sets ws
       ON ws.workout_exercise_id = ranked.workout_exercise_id
@@ -575,6 +587,7 @@ export async function getLatestExercisePerformances(
       complete: false,
       weight: String(gramsToWeight(row.weight_grams, weightUnit)),
       reps: String(row.reps),
+      type: row.set_type,
       achievements: [],
     });
   }

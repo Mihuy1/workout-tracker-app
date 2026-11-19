@@ -1,5 +1,5 @@
 import exerciseCatalog from "@/data/exercises.json";
-import { Exercise } from "@/types/workout";
+import { Exercise, SetType } from "@/types/workout";
 import type { SQLiteDatabase } from "expo-sqlite";
 
 export type Routine = {
@@ -22,6 +22,8 @@ type RoutineRow = {
   routine_name: string;
   created_at: number;
   updated_at: number;
+  set_type: SetType | null;
+  set_number: number | null;
 
   exercise_id: string | null;
   rest_seconds: number | null;
@@ -43,10 +45,11 @@ const exercisesById = new Map(
 
 export async function getAllRoutines(db: SQLiteDatabase) {
   const rows = await db.getAllAsync<RoutineRow>(`
-      SELECT r.id as routine_id, r.name as routine_name, r.created_at, r.updated_at, re.exercise_id, re.rest_seconds, re.set_count, re.position FROM routines r LEFT JOIN routine_exercises re ON r.id = re.routine_id  ORDER BY r.created_at DESC, re.position ASC
+      SELECT r.id as routine_id, r.name as routine_name, r.created_at, r.updated_at, re.exercise_id, re.rest_seconds, re.set_count, re.position, rs.set_type, rs.set_number FROM routines r LEFT JOIN routine_exercises re ON r.id = re.routine_id LEFT JOIN routine_sets rs ON re.routine_id = rs.routine_id AND re.exercise_id = rs.exercise_id ORDER BY r.created_at DESC, re.position ASC, rs.set_number ASC
     `);
 
   const routinesMap = new Map<string, Routine>();
+  const exercisesMap = new Map<string, Exercise>();
 
   for (const row of rows) {
     let routine = routinesMap.get(row.routine_id);
@@ -59,33 +62,39 @@ export async function getAllRoutines(db: SQLiteDatabase) {
         updatedAt: row.updated_at,
         exercises: [],
       };
-
       routinesMap.set(row.routine_id, routine);
     }
 
     if (row.exercise_id !== null) {
-      const catalogueExericse = exercisesById.get(row.exercise_id);
+      const exerciseKey = JSON.stringify([row.exercise_id, row.routine_id]);
+      const exerciseInfo = exercisesById.get(row.exercise_id);
+      let exercise = exercisesMap.get(exerciseKey);
 
-      if (catalogueExericse) {
-        const setCount = row.set_count ?? 1;
-
-        routine.exercises.push({
-          exerciseId: catalogueExericse.id,
-          name: catalogueExericse.name,
-          mechanic: catalogueExericse.mechanic,
+      if (!exercise && exerciseInfo) {
+        exercise = {
+          exerciseId: row.exercise_id,
+          name: exerciseInfo.name,
           restTime: row.rest_seconds ?? null,
-          sets: Array.from({ length: setCount }, (_, index) => ({
-            id: index + 1,
-            complete: false,
-            weight: "",
-            reps: "",
-            achievements: [],
-          })),
+          mechanic: exerciseInfo.mechanic,
+          sets: [],
+        };
+
+        exercisesMap.set(exerciseKey, exercise);
+        routine.exercises.push(exercise);
+      }
+
+      if (exercise && row.set_number !== null && row.set_type !== null) {
+        exercise.sets.push({
+          id: row.set_number,
+          type: row.set_type,
+          complete: false,
+          weight: "",
+          reps: "",
+          achievements: [],
         });
       }
     }
   }
-
   return Array.from(routinesMap.values());
 }
 
@@ -109,6 +118,15 @@ export async function insertRoutine(db: SQLiteDatabase, routine: Routine) {
         index,
       ],
     );
+
+    for (const [setIndex, set] of exercise.sets.entries()) {
+      await db.runAsync(
+        `
+          INSERT INTO routine_sets (routine_id, exercise_id, set_number, set_type) VALUES (?, ?, ?, ?)
+          `,
+        [routine.id, exercise.exerciseId, setIndex + 1, set.type],
+      );
+    }
 
     if (!exerciseRow) {
       console.warn("Failed to create exercise:", exercise);
@@ -144,6 +162,15 @@ export async function replaceRoutine(
         position,
       ],
     );
+
+    for (const [setIndex, set] of exercise.sets.entries()) {
+      await db.runAsync(
+        `
+          INSERT INTO routine_sets (routine_id, exercise_id, set_number, set_type) VALUES (?, ?, ?, ?)
+          `,
+        [routine.id, exercise.exerciseId, setIndex + 1, set.type],
+      );
+    }
   }
 }
 
@@ -167,23 +194,30 @@ export async function getRoutine(db: SQLiteDatabase, routineId: string) {
           re.exercise_id,
           re.rest_seconds,
           re.set_count,
-          re.position
+          re.position,
+
+          rs.set_type,
+          rs.set_number
 
           FROM routines r
 
           LEFT JOIN routine_exercises re
             ON re.routine_id = r.id
 
+          LEFT JOIN routine_sets rs
+            ON rs.routine_id = r.id
+            AND rs.exercise_id = re.exercise_id
+
           WHERE r.id = ?
 
-          ORDER BY re.position ASC
+          ORDER BY re.position ASC, rs.set_number ASC
         `,
     [routineId],
   );
 
   if (rows.length === 0) return null;
 
-  const exercises: Exercise[] = [];
+  const exerciseMap = new Map<string, Exercise>();
 
   for (const row of rows) {
     if (row.exercise_id === null) continue;
@@ -195,21 +229,31 @@ export async function getRoutine(db: SQLiteDatabase, routineId: string) {
       continue;
     }
 
-    const setCount = row.set_count ?? 1;
+    let exercise = exerciseMap.get(row.exercise_id);
 
-    exercises.push({
-      exerciseId: catalogueExercise.id,
-      name: catalogueExercise.name,
-      mechanic: catalogueExercise.mechanic,
-      restTime: row.rest_seconds ?? null,
-      sets: Array.from({ length: setCount }, (_, index) => ({
-        id: index + 1,
-        complete: false,
-        weight: "",
-        reps: "",
-        achievements: [],
-      })),
-    });
+    if (!exercise) {
+      exercise = {
+        exerciseId: catalogueExercise.id,
+        name: catalogueExercise.name,
+        mechanic: catalogueExercise.mechanic,
+        restTime: row.rest_seconds ?? null,
+        sets: [],
+      };
+      exerciseMap.set(row.exercise_id, exercise);
+    }
+
+    if (exercise) {
+      if (row.set_number !== null && row.set_type !== null) {
+        exercise.sets.push({
+          id: row.set_number,
+          complete: false,
+          weight: "",
+          reps: "",
+          type: row.set_type,
+          achievements: [],
+        });
+      }
+    }
   }
 
   return {
@@ -217,7 +261,7 @@ export async function getRoutine(db: SQLiteDatabase, routineId: string) {
     name: rows[0].routine_name,
     createdAt: rows[0].created_at,
     updatedAt: rows[0].updated_at,
-    exercises,
+    exercises: Array.from(exerciseMap.values()),
   };
 }
 

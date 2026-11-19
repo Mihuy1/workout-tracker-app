@@ -1,3 +1,7 @@
+export const SET_TYPES = ["normal", "warmup", "dropset", "failure"] as const;
+
+export type SetType = (typeof SET_TYPES)[number];
+
 export type SetAchievement = {
   type: string;
   previousBestValue: number;
@@ -9,6 +13,7 @@ export type SetRow = {
   complete: boolean;
   weight: string;
   reps: string;
+  type: SetType;
   achievements: SetAchievement[];
 };
 
