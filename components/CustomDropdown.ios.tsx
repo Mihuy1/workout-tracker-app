@@ -1,10 +1,13 @@
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { useThemeColor } from "@/hooks/use-theme-color";
 import { CustomDropDownProps } from "@/utils/CustomDropdown.types";
-import { Host, Picker, Text } from "@expo/ui/swift-ui";
+import { Host, Menu, Picker, Text } from "@expo/ui/swift-ui";
 import {
   background,
+  contentShape,
+  foregroundStyle,
   frame,
+  labelsHidden,
   padding,
   pickerStyle,
   shapes,
@@ -24,12 +27,13 @@ export default function CustomDropdown<T extends string | number>({
   fullWidth = false,
   centerText = false,
   variant,
+  anchorLabel,
+  anchorColor,
 }: CustomDropDownProps<T>) {
   const border = useThemeColor({}, "border");
   const chipBackground = useThemeColor({}, "chipBackground");
   const chipBorder = useThemeColor({}, "chipBorder");
   const tintColor = useThemeColor({}, "tint");
-
   const colorScheme = useColorScheme();
 
   const variantModifiers =
@@ -54,6 +58,39 @@ export default function CustomDropdown<T extends string | number>({
             tint(tintColor),
           ]
         : [];
+
+  if (anchorLabel !== undefined) {
+    return (
+      <Host matchContents colorScheme={colorScheme}>
+        <Menu
+          label={
+            <Text
+              modifiers={[
+                foregroundStyle(anchorColor ?? "black"),
+                frame({ minWidth: 44, minHeight: 36 }),
+                contentShape(shapes.rectangle()),
+              ]}
+            >
+              {anchorLabel}
+            </Text>
+          }
+          modifiers={variantModifiers}
+        >
+          <Picker
+            selection={value}
+            onSelectionChange={(selected) => onSelect(selected as T)}
+            modifiers={[pickerStyle("inline"), labelsHidden()]}
+          >
+            {options.map((option) => (
+              <Text key={option.value} modifiers={[tag(option.value)]}>
+                {option.label}
+              </Text>
+            ))}
+          </Picker>
+        </Menu>
+      </Host>
+    );
+  }
 
   return (
     <Host

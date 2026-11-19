@@ -33,7 +33,9 @@ export default function CustomDropdown<T extends string | number>({
   centerText = false,
   variant,
   style,
-  hideAnchor = true,
+  hideAnchor = false,
+  anchorLabel,
+  anchorColor,
 }: CustomDropDownProps<T>) {
   const backgroundColor = useThemeColor({}, "background");
   const colorScheme = useColorScheme();
@@ -44,7 +46,9 @@ export default function CustomDropdown<T extends string | number>({
   const tint = useThemeColor({}, "tint");
 
   const selectedLabel =
-    options.find((option) => option.value === value)?.label ?? String(value);
+    anchorLabel ??
+    options.find((option) => option.value === value)?.label ??
+    String(value);
 
   const [internalOpen, setInternalOpen] = useState(false);
   const isOpen = open ?? internalOpen;
@@ -68,18 +72,18 @@ export default function CustomDropdown<T extends string | number>({
           colors={{ containerColor: chipBackground, contentColor: tint }}
           onClick={() => setOpen(true)}
         >
-          <Text color={tint}>{selectedLabel}</Text>
+          <Text color={anchorColor ?? tint}>{selectedLabel}</Text>
         </TextButton>
       );
     if (variant === "bordered")
       return (
         <OutlinedButton onClick={() => setOpen(true)}>
-          <Text>{`${selectedLabel}`}</Text>
+          <Text color={anchorColor}>{`${selectedLabel}`}</Text>
         </OutlinedButton>
       );
     return (
-      <TextButton>
-        <Text>{`${selectedLabel}`}</Text>
+      <TextButton onClick={() => setOpen(true)}>
+        <Text color={anchorColor ?? tint}>{`${selectedLabel}`}</Text>
       </TextButton>
     );
   };
@@ -119,7 +123,7 @@ export default function CustomDropdown<T extends string | number>({
   return (
     <Host matchContents colorScheme={colorScheme}>
       <Box>
-        {hideAnchor ? renderAnchor() : []}
+        {!hideAnchor && renderAnchor()}
         <DropdownMenuPopup
           expanded={isOpen}
           onDismissRequest={() => setOpen(false)}

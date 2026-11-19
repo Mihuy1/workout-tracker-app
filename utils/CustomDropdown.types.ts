@@ -6,6 +6,8 @@ export interface DropdownOption<T extends string | number> {
 export interface CustomDropDownProps<T extends string | number> {
   options: readonly DropdownOption<T>[];
   value: T;
+  anchorLabel?: string;
+  anchorColor?: string;
   open?: boolean;
   hideAnchor?: boolean;
   onOpenChange?: (open: boolean) => void;
