@@ -1,6 +1,6 @@
 import type { SQLiteDatabase } from "expo-sqlite";
 
-const DATABASE_VERSION = 4;
+const DATABASE_VERSION = 6;
 
 export async function migrateDatabase(db: SQLiteDatabase) {
   // These settings are applied whenever the database is opened.
@@ -181,5 +181,41 @@ export async function migrateDatabase(db: SQLiteDatabase) {
     });
 
     await db.execAsync("PRAGMA foreign_keys = ON;");
+  }
+
+  if (currentVersion < 5) {
+    await db.withTransactionAsync(async () => {
+      const columns = await db.getAllAsync<{ name: string }>(
+        "PRAGMA table_info(workout_sets)",
+      );
+
+      if (!columns.some((column) => column.name === "set_type")) {
+        await db.execAsync(`
+          ALTER TABLE workout_sets
+          ADD COLUMN set_type TEXT NOT NULL DEFAULT 'normal';
+        `);
+      }
+
+      await db.execAsync("PRAGMA user_version = 5");
+    });
+  }
+
+  if (currentVersion < 6) {
+    await db.withTransactionAsync(async () => {
+      await db.execAsync(`
+        CREATE TABLE routine_sets (
+          routine_id TEXT NOT NULL,
+          exercise_id TEXT NOT NULL,
+          set_number INTEGER NOT NULL CHECK (set_number >= 1),
+          set_type TEXT NOT NULL DEFAULT 'normal' CHECK (set_type IN ('normal', 'warmup', 'dropset', 'failure')),
+
+          PRIMARY KEY (routine_id, exercise_id, set_number),
+          FOREIGN KEY (routine_id, exercise_id)
+            REFERENCES routine_exercises(routine_id, exercise_id)
+            ON DELETE CASCADE
+        );
+        `);
+      await db.execAsync("PRAGMA user_version = 6");
+    });
   }
 }
