@@ -1,5 +1,5 @@
-import CustomDropdown from "@/components/CustomDropdown";
 import { ExerciseProgressChart } from "@/components/exercises/ExerciseProgressChart";
+import CustomDropdown from "@/components/ui/CustomDropdown";
 import { ThemedText } from "@/components/ui/ThemedText";
 import { ThemedView } from "@/components/ui/ThemedView";
 import { useWeightUnit } from "@/contexts/weightUnitContext";

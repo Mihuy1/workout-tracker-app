@@ -1,5 +1,5 @@
-import CustomDropdown from "@/components/CustomDropdown";
 import { RestTimePicker } from "@/components/timer/RestTimePicker";
+import CustomDropdown from "@/components/ui/CustomDropdown";
 import { ScreenContainer } from "@/components/ui/ScreenContainer";
 import { ThemedText } from "@/components/ui/ThemedText";
 import { APPEARANCE_OPTIONS } from "@/constants/theme";

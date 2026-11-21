@@ -4,7 +4,7 @@ import { DEFAULT_REST_TIME_OPTIONS } from "@/contexts/restTimePreferenceContext"
 import { useThemeColor } from "@/hooks/use-theme-color";
 import { useState } from "react";
 import { Modal, Platform, Pressable, StyleSheet, View } from "react-native";
-import CustomDropdown from "../CustomDropdown";
+import CustomDropdown from "../ui/CustomDropdown";
 import { ThemedText } from "../ui/ThemedText";
 
 interface RestTimePickerProps {

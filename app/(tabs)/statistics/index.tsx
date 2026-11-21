@@ -1,4 +1,4 @@
-import CustomDropdown from "@/components/CustomDropdown";
+import CustomDropdown from "@/components/ui/CustomDropdown";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import { ScreenContainer } from "@/components/ui/ScreenContainer";
 import { ThemedText } from "@/components/ui/ThemedText";
