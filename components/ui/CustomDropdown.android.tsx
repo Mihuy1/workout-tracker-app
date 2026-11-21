@@ -105,6 +105,7 @@ export default function CustomDropdown<T extends string | number>({
                   <SheetOption
                     key={option.value}
                     label={option.label}
+                    color={option.color}
                     selected={option.value === value}
                     onPress={() => selectFromSheet(option.value)}
                     backgroundColor={backgroundColor}
@@ -146,7 +147,7 @@ export default function CustomDropdown<T extends string | number>({
                 }}
               >
                 <SelectableDropdownMenuItem.Text>
-                  <Text>{option.label}</Text>
+                  <Text color={option.color}>{option.label}</Text>
                 </SelectableDropdownMenuItem.Text>
                 <SelectableDropdownMenuItem.SelectedLeadingIcon>
                   <Icon source={checkIcon} size={20} />
@@ -162,6 +163,7 @@ export default function CustomDropdown<T extends string | number>({
 
 interface SheetOptionProps {
   label: string;
+  color?: string;
   selected: boolean;
   onPress: () => void;
   backgroundColor: string;
@@ -171,6 +173,7 @@ interface SheetOptionProps {
 
 function SheetOption({
   label,
+  color,
   selected,
   onPress,
   backgroundColor,
@@ -183,7 +186,7 @@ function SheetOption({
       modifiers={[clickable(onPress)]}
     >
       <ListItem.HeadlineContent>
-        <Text color={selected ? tint : textColor}>{label}</Text>
+        <Text color={color ?? (selected ? tint : textColor)}>{label}</Text>
       </ListItem.HeadlineContent>
       <ListItem.TrailingContent>
         <RadioButton
