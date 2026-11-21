@@ -6,6 +6,7 @@ import { useRestTimerActions } from "@/contexts/restTimerContext";
 import { useWeightUnit } from "@/contexts/weightUnitContext";
 import { useWorkoutActions } from "@/contexts/workoutActionsContext";
 import { useThemeColor } from "@/hooks/use-theme-color";
+import { getSetColor, SET_TYPE_OPTIONS } from "@/types/setTypes";
 import {
   Exercise,
   ExercisePrBaseline,
@@ -24,8 +25,7 @@ import { memo, useState } from "react";
 import { Keyboard, Pressable, StyleSheet, TextInput, View } from "react-native";
 import ReanimatedSwipeable from "react-native-gesture-handler/ReanimatedSwipeable";
 import { RestTimePicker } from "../timer/RestTimePicker";
-import CustomDropdown from "../CustomDropdown";
-import { getSetColor, getSetLabel, SET_TYPE_OPTIONS } from "@/types/setTypes";
+import CustomSetTypeSheet from "../ui/CustomSetTypeSheet";
 
 type WorkoutExerciseCardProps = {
   exercise: Exercise;
@@ -70,6 +70,7 @@ export const WorkoutExerciseCard = memo(function WorkoutExerciseCard({
 
   const [confirmExerciseRemove, setConfirmExerciseRemove] = useState(false);
   const [invalidSetVisible, setInvalidSetVisible] = useState(false);
+  const [setTypeId, setSetTypeId] = useState<number | null>(null);
 
   function calculateSetAchievements(
     prBaseline: ExercisePrBaseline,
@@ -236,7 +237,7 @@ export const WorkoutExerciseCard = memo(function WorkoutExerciseCard({
       {exercise.sets.map((item, index) => {
         const normalSetNumber = exercise.sets
           .slice(0, index + 1)
-          .filter((s) => s.type === "normal").length;
+          .filter((set) => set.type === "normal").length;
         const suggestedSet = getSuggestionSet(index);
         const suggestedWeight = suggestedSet?.weight ?? "";
         const suggestedWeightPlaceholder = suggestedWeight
@@ -283,21 +284,24 @@ export const WorkoutExerciseCard = memo(function WorkoutExerciseCard({
                     },
               ]}
             >
-              <View style={[styles.setCol, styles.setTypeCell]}>
-                <CustomDropdown
-                  options={SET_TYPE_OPTIONS}
-                  value={item.type}
-                  onSelect={(type) => {
-                    if (type === item.type) return;
-                    Haptics.selectionAsync();
-                    updateSet(workoutName, item.id, { type });
-                  }}
-                  anchorLabel={getSetLabel(item.type, normalSetNumber)}
-                  anchorColor={getSetColor(item.type) ?? textColor}
-                  variant="borderless"
-                  width={58}
-                />
-              </View>
+              <Pressable
+                style={({ pressed }) => [
+                  styles.setCol,
+                  styles.setTypeCell,
+                  pressed && { opacity: 0.5 },
+                ]}
+                onPress={() => setSetTypeId(item.id)}
+              >
+                <ThemedText
+                  darkColor={getSetColor(item.type)}
+                  lightColor={getSetColor(item.type)}
+                  type="defaultSemiBold"
+                >
+                  {item.type !== "normal"
+                    ? item.type.charAt(0).toUpperCase()
+                    : normalSetNumber}
+                </ThemedText>
+              </Pressable>
 
               <TextInput
                 style={[
@@ -428,6 +432,17 @@ export const WorkoutExerciseCard = memo(function WorkoutExerciseCard({
           </ReanimatedSwipeable>
         );
       })}
+
+      <CustomSetTypeSheet
+        options={SET_TYPE_OPTIONS}
+        open={setTypeId !== null}
+        onSelect={(value) => {
+          if (setTypeId) updateSet(workoutName, setTypeId, { type: value });
+        }}
+        onOpenChange={(open) => {
+          if (open === false) setSetTypeId(null);
+        }}
+      />
 
       <CustomButton
         variant="plain"
