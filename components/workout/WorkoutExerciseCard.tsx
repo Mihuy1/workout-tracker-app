@@ -437,7 +437,8 @@ export const WorkoutExerciseCard = memo(function WorkoutExerciseCard({
         options={SET_TYPE_OPTIONS}
         open={setTypeId !== null}
         onSelect={(value) => {
-          if (setTypeId) updateSet(workoutName, setTypeId, { type: value });
+          if (setTypeId != null)
+            updateSet(workoutName, setTypeId, { type: value });
         }}
         onOpenChange={(open) => {
           if (open === false) setSetTypeId(null);
