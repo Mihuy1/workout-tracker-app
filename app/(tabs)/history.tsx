@@ -102,8 +102,6 @@ export default function TabTwoScreen() {
           data={historyData}
           keyExtractor={workoutKeyExtractor}
           renderItem={renderItem}
-          // Workout cards are tall and expansion adds many native views.
-          // Keep a smaller offscreen window and mount fewer cards per batch.
           initialNumToRender={5}
           maxToRenderPerBatch={4}
           windowSize={7}
