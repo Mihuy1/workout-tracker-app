@@ -52,7 +52,7 @@ export const WorkoutExerciseCard = memo(function WorkoutExerciseCard({
   const { triggerRestTimer } = useRestTimerActions();
   const { weightUnit } = useWeightUnit();
 
-  const { name: workoutName, mechanic: workoutMechanic } = exercise;
+  const { name: exerciseName, mechanic: exerciseMechanic } = exercise;
 
   const restTime = exercise?.restTime ?? fallbackRestTime;
 
@@ -172,33 +172,33 @@ export const WorkoutExerciseCard = memo(function WorkoutExerciseCard({
       <CustomModal
         visible={confirmExerciseRemove}
         title="Remove Exercise"
-        message={`Are you sure you want to remove "${workoutName}"`}
+        message={`Are you sure you want to remove "${exerciseName}"`}
         primaryButtonText="Yes"
         secondaryButtonText="No"
         primaryButtonRed
         onRequestClose={() => setConfirmExerciseRemove(false)}
         onPrimary={() => {
           setConfirmExerciseRemove(false);
-          removeExercise(workoutName);
+          removeExercise(exerciseName);
         }}
         onSecondary={() => setConfirmExerciseRemove(false)}
       />
 
       <View style={styles.titleRow}>
-        <ThemedText type="defaultSemiBold">{workoutName}</ThemedText>
+        <ThemedText type="defaultSemiBold">{exerciseName}</ThemedText>
 
         <Pressable hitSlop={10} onPress={() => setConfirmExerciseRemove(true)}>
           <IconSymbol name="x.circle" size={24} color="red" />
         </Pressable>
       </View>
       <View style={styles.subTitleRow}>
-        {!!workoutMechanic && (
-          <ThemedText type="default">{workoutMechanic}</ThemedText>
+        {!!exerciseMechanic && (
+          <ThemedText type="default">{exerciseMechanic}</ThemedText>
         )}
 
         <RestTimePicker
           restTime={restTime}
-          setRestTime={(t) => setRestTime(workoutName, t)}
+          setRestTime={(t) => setRestTime(exerciseName, t)}
           iconColor={tintColor}
         />
       </View>
@@ -261,7 +261,7 @@ export const WorkoutExerciseCard = memo(function WorkoutExerciseCard({
                 style={styles.deleteAction}
                 onPress={() => {
                   Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-                  removeSet(workoutName, item.id);
+                  removeSet(exerciseName, item.id);
                 }}
               >
                 <ThemedText style={styles.deleteActionText}>Delete</ThemedText>
@@ -312,7 +312,7 @@ export const WorkoutExerciseCard = memo(function WorkoutExerciseCard({
                 value={item.weight}
                 onChangeText={(text) => {
                   if (!isWeightInput(text)) return;
-                  updateSet(workoutName, item.id, {
+                  updateSet(exerciseName, item.id, {
                     weight: text,
                     complete: false,
                     achievements: [],
@@ -332,7 +332,7 @@ export const WorkoutExerciseCard = memo(function WorkoutExerciseCard({
                 value={item.reps}
                 onChangeText={(text) => {
                   if (!isRepsInput(text)) return;
-                  updateSet(workoutName, item.id, {
+                  updateSet(exerciseName, item.id, {
                     reps: text,
                     complete: false,
                     achievements: [],
@@ -400,7 +400,7 @@ export const WorkoutExerciseCard = memo(function WorkoutExerciseCard({
                   }
 
                   handleCompleteSet(
-                    workoutName,
+                    exerciseName,
                     item.id,
                     !item.complete,
                     finalWeight.trim().replace(",", "."),
@@ -438,7 +438,7 @@ export const WorkoutExerciseCard = memo(function WorkoutExerciseCard({
         open={setTypeId !== null}
         onSelect={(value) => {
           if (setTypeId != null)
-            updateSet(workoutName, setTypeId, { type: value });
+            updateSet(exerciseName, setTypeId, { type: value });
         }}
         onOpenChange={(open) => {
           if (open === false) setSetTypeId(null);
@@ -450,7 +450,7 @@ export const WorkoutExerciseCard = memo(function WorkoutExerciseCard({
         title="Add Set"
         onPress={() => {
           Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-          addSet(workoutName);
+          addSet(exerciseName);
         }}
       />
     </View>
