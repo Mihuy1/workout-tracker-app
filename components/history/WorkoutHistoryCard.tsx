@@ -3,6 +3,7 @@ import { useWeightUnit } from "@/contexts/weightUnitContext";
 import { useThemeColor } from "@/hooks/use-theme-color";
 import type { CompletedWorkout } from "@/storage/workoutRepository";
 import { StyleSheet, View } from "react-native";
+import SetTypeLabel from "../ui/SetTypeLabel";
 
 type WorkoutHistoryCardProps = {
   exercises: CompletedWorkout["exercises"];
@@ -77,60 +78,58 @@ function ExpandedWorkoutHistoryCard({
             </ThemedText>
             <ThemedText
               type="defaultSemiBold"
-              style={[
-                styles.cell,
-                styles.weightUnitCol,
-                { color: mutedText },
-              ]}
+              style={[styles.cell, styles.weightUnitCol, { color: mutedText }]}
             >
               WEIGHT & REPS
             </ThemedText>
             <View style={styles.prCol}>
-              <ThemedText
-                type="defaultSemiBold"
-                style={{ color: mutedText }}
-              >
+              <ThemedText type="defaultSemiBold" style={{ color: mutedText }}>
                 PR
               </ThemedText>
             </View>
           </View>
 
           <View>
-            {exercise.sets.map((set, index) => (
-              <View
-                key={set.id}
-                style={[
-                  styles.tableRow,
-                  { borderColor: border },
-                  index % 2 === 0
-                    ? { backgroundColor: rowEven }
-                    : { backgroundColor: surfaceMuted },
-                ]}
-              >
-                <ThemedText
-                  type="default"
-                  style={[styles.cell, styles.setCol]}
+            {exercise.sets.map((set, index) => {
+              const normalSetNumber = exercise.sets
+                .slice(0, index + 1)
+                .filter((set) => set.type === "normal").length;
+              return (
+                <View
+                  key={set.id}
+                  style={[
+                    styles.tableRow,
+                    { borderColor: border },
+                    index % 2 === 0
+                      ? { backgroundColor: rowEven }
+                      : { backgroundColor: surfaceMuted },
+                  ]}
                 >
-                  {index + 1}
-                </ThemedText>
-                <ThemedText
-                  type="default"
-                  style={[styles.cell, styles.weightUnitCol]}
-                >
-                  {set.weight} {weightUnit} x {set.reps} reps
-                </ThemedText>
+                  <SetTypeLabel
+                    setType={set.type}
+                    setNumber={normalSetNumber}
+                    type="default"
+                    style={[styles.cell, styles.setCol]}
+                  />
+                  <ThemedText
+                    type="default"
+                    style={[styles.cell, styles.weightUnitCol]}
+                  >
+                    {set.weight} {weightUnit} x {set.reps} reps
+                  </ThemedText>
 
-                <View style={styles.prCol}>
-                  {set.achievements.map((achievement, index) => {
-                    return (
-                      <ThemedText type="small" key={index}>
-                        {ACHIEVEMENT_TYPE_LABELS[achievement.type]}
-                      </ThemedText>
-                    );
-                  })}
+                  <View style={styles.prCol}>
+                    {set.achievements.map((achievement, index) => {
+                      return (
+                        <ThemedText type="small" key={index}>
+                          {ACHIEVEMENT_TYPE_LABELS[achievement.type]}
+                        </ThemedText>
+                      );
+                    })}
+                  </View>
                 </View>
-              </View>
-            ))}
+              );
+            })}
           </View>
         </View>
       ))}

@@ -6,7 +6,7 @@ import { useRestTimerActions } from "@/contexts/restTimerContext";
 import { useWeightUnit } from "@/contexts/weightUnitContext";
 import { useWorkoutActions } from "@/contexts/workoutActionsContext";
 import { useThemeColor } from "@/hooks/use-theme-color";
-import { getSetColor, SET_TYPE_OPTIONS } from "@/types/setTypes";
+import { SET_TYPE_OPTIONS } from "@/types/setTypes";
 import {
   Exercise,
   ExercisePrBaseline,
@@ -26,6 +26,7 @@ import { Keyboard, Pressable, StyleSheet, TextInput, View } from "react-native";
 import ReanimatedSwipeable from "react-native-gesture-handler/ReanimatedSwipeable";
 import { RestTimePicker } from "../timer/RestTimePicker";
 import CustomSetTypeSheet from "../ui/CustomSetTypeSheet";
+import SetTypeLabel from "../ui/SetTypeLabel";
 
 type WorkoutExerciseCardProps = {
   exercise: Exercise;
@@ -292,15 +293,11 @@ export const WorkoutExerciseCard = memo(function WorkoutExerciseCard({
                 ]}
                 onPress={() => setSetTypeId(item.id)}
               >
-                <ThemedText
-                  darkColor={getSetColor(item.type)}
-                  lightColor={getSetColor(item.type)}
+                <SetTypeLabel
+                  setType={item.type}
+                  setNumber={normalSetNumber}
                   type="defaultSemiBold"
-                >
-                  {item.type !== "normal"
-                    ? item.type.charAt(0).toUpperCase()
-                    : normalSetNumber}
-                </ThemedText>
+                />
               </Pressable>
 
               <TextInput
