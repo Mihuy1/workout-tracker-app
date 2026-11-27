@@ -35,6 +35,7 @@ type WorkoutActionsContextType = {
 
   setExerciseBaselines: (baselines: ExercisePrBaselines) => void;
   clearWorkout: () => void;
+  updateExerciseOrder: (ids: string[]) => void;
 };
 
 const workoutActionsContext = createContext<
@@ -135,6 +136,19 @@ export const WorkoutProvider: React.FC<React.PropsWithChildren> = ({
     [],
   );
 
+  const updateExerciseOrder = useCallback(
+    (ids: string[]) => {
+      const exerciseMap: Record<string, Exercise> = Object.fromEntries(
+        exercises.map((ex) => [ex.exerciseId, ex]),
+      );
+
+      const orderedExercises: Exercise[] = ids.map((id) => exerciseMap[id]);
+
+      setExercises(orderedExercises);
+    },
+    [exercises],
+  );
+
   const handleCompleteSet = useCallback(
     (
       exerciseName: string,
@@ -187,6 +201,7 @@ export const WorkoutProvider: React.FC<React.PropsWithChildren> = ({
       handleCompleteSet,
       setExerciseBaselines,
       clearWorkout,
+      updateExerciseOrder,
     }),
     [
       setRestTime,
@@ -199,6 +214,7 @@ export const WorkoutProvider: React.FC<React.PropsWithChildren> = ({
       handleCompleteSet,
       setExerciseBaselines,
       clearWorkout,
+      updateExerciseOrder,
     ],
   );
 

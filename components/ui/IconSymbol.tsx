@@ -33,6 +33,7 @@ const MAPPING = {
   "arrow.up": "arrow-upward",
   "arrow.down": "arrow-downward",
   minus: "remove",
+  "line.3.horizontal": "drag-handle",
 } as const satisfies IconMapping;
 
 type IconSymbolName = keyof typeof MAPPING;
@@ -56,7 +57,9 @@ export function IconSymbol({
 }) {
   return (
     <MaterialIcons
-      color={(color ?? undefined) as ComponentProps<typeof MaterialIcons>["color"]}
+      color={
+        (color ?? undefined) as ComponentProps<typeof MaterialIcons>["color"]
+      }
       size={size}
       name={MAPPING[name]}
       style={style}
